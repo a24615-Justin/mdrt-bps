@@ -23,7 +23,7 @@
 html{font-size:16px;scroll-behavior:smooth}
 body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(154,110,0,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(15,122,58,0.06) 0%,transparent 50%),radial-gradient(ellipse 50% 40% at 60% 30%,rgba(26,86,184,0.06) 0%,transparent 50%);pointer-events:none}
-.container{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:0 0 80px}
+.container{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 0 80px}
 
 /* Header */
 .header{padding:20px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,rgba(240,244,249,0.98),rgba(240,244,249,0.0));box-shadow:0 1px 0 var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
@@ -39,7 +39,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
 .id-badge.newbie{background:rgba(181,42,30,0.12);color:var(--danger)}
 
 /* Identity switcher */
-.identity-bar{padding:10px 16px;background:var(--navy-2);border-bottom:1px solid var(--border)}
+.identity-bar{padding:10px 16px;background:var(--navy-2);border-bottom:1px solid var(--border);position:relative;z-index:1}
 .identity-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px}
 .identity-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .identity-tabs::-webkit-scrollbar{display:none}
@@ -392,14 +392,126 @@ input[type="range"]::-webkit-slider-thumb{
 
 /* 響應式：超大螢幕 (≥ 1100px) */
 @media(min-width:1100px){
-  .container{max-width:1080px}
+  .container{max-width:1280px}
   .kpi-grid{grid-template-columns:repeat(4,1fr)}
   .kpi.be.kpi-full{grid-column:1/-1}
+}
+
+/* ═══════════════════════════════════════════════════
+   寬螢幕自適應：導覽列全寬 + 內容對齊容器
+   ═══════════════════════════════════════════════════ */
+
+/* 導覽列與 identity bar：全寬背景，內容對齊容器 */
+.header{width:100%}
+.identity-bar{width:100%}
+.tab-nav{width:100%}
+
+/* 1100px 以上：導覽列內距對齊容器左右邊 */
+@media(min-width:1100px){
+  .header{
+    padding-left: max(32px, calc((100vw - 1280px) / 2 + 32px));
+    padding-right: max(32px, calc((100vw - 1280px) / 2 + 32px));
+  }
+  .identity-bar{
+    padding-left: max(20px, calc((100vw - 1280px) / 2 + 20px));
+    padding-right: max(20px, calc((100vw - 1280px) / 2 + 20px));
+  }
+  .tab-nav{
+    padding-left: max(28px, calc((100vw - 1280px) / 2 + 28px));
+    padding-right: max(28px, calc((100vw - 1280px) / 2 + 28px));
+    top:88px;
+  }
+  .header{padding-top:20px;padding-bottom:16px}
+  .tab-btn{font-size:13px;padding:9px 18px}
+}
+
+/* 1400px 以上：更寬版面，三欄輸入 + KPI 四欄 */
+@media(min-width:1400px){
+  .container{max-width:1400px}
+  .header{
+    padding-left: max(36px, calc((100vw - 1400px) / 2 + 36px));
+    padding-right: max(36px, calc((100vw - 1400px) / 2 + 36px));
+  }
+  .identity-bar{
+    padding-left: max(20px, calc((100vw - 1400px) / 2 + 20px));
+    padding-right: max(20px, calc((100vw - 1400px) / 2 + 20px));
+  }
+  .tab-nav{
+    padding-left: max(32px, calc((100vw - 1400px) / 2 + 32px));
+    padding-right: max(32px, calc((100vw - 1400px) / 2 + 32px));
+  }
+  .input-cols{grid-template-columns:1fr 1fr 1fr}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .kpi.kpi-full,.kpi.be.kpi-full{grid-column:auto}
+  .kpi.be.kpi-full{grid-column:1/-1}
+  .panel{padding:32px 40px}
+  .kpi-value{font-size:28px}
+}
+
+/* 1600px 以上：超大螢幕，更寬容器 */
+@media(min-width:1600px){
+  .container{max-width:1560px}
+  .header{
+    padding-left: max(40px, calc((100vw - 1560px) / 2 + 40px));
+    padding-right: max(40px, calc((100vw - 1560px) / 2 + 40px));
+  }
+  .identity-bar{
+    padding-left: max(20px, calc((100vw - 1560px) / 2 + 20px));
+    padding-right: max(20px, calc((100vw - 1560px) / 2 + 20px));
+  }
+  .tab-nav{
+    padding-left: max(36px, calc((100vw - 1560px) / 2 + 36px));
+    padding-right: max(36px, calc((100vw - 1560px) / 2 + 36px));
+  }
+  .input-cols{grid-template-columns:1fr 1fr 1fr}
+  .header h1{font-size:26px}
+}
+
+/* 參數說明文字 */
+.field-desc{font-size:10.5px;color:var(--text-muted);margin-top:5px;line-height:1.5;padding-left:2px}
+.field-desc strong{color:var(--text-dim);font-weight:600}
+.slider-desc{font-size:10.5px;color:var(--text-muted);margin-top:4px;line-height:1.5;padding-left:2px}
+.slider-desc strong{color:var(--text-dim);font-weight:600}
+@media(min-width:640px){
+  .field-desc,.slider-desc{font-size:11px}
+}
+
+/* ─── Annual Comparison Layout ──────────────────────────────────────────────── */
+.ac-wrap{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.ac-header{display:grid;grid-template-columns:1fr 88px 1fr;gap:8px;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.ac-trad-h{color:var(--trad)}
+.ac-broker-h{color:var(--broker);text-align:right}
+.ac-mid-h{text-align:center}
+.ac-row{display:grid;grid-template-columns:1fr 88px 1fr;gap:8px;align-items:stretch;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;transition:box-shadow .2s}
+.ac-row:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.ac-row.ac-total{background:linear-gradient(135deg,var(--trad-light),var(--broker-light));border-color:var(--gold);margin-top:4px}
+.ac-trad-col{display:flex;flex-direction:column;gap:3px}
+.ac-broker-col{display:flex;flex-direction:column;gap:3px;align-items:flex-end;text-align:right}
+.ac-mid-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-left:1px solid var(--border);border-right:1px solid var(--border);padding:0 6px;margin:-12px 0;padding-top:12px;padding-bottom:12px}
+.ac-year-label{font-size:10px;font-weight:700;color:var(--text-dim);letter-spacing:.04em;white-space:nowrap}
+.ac-amount{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;line-height:1}
+.ac-amount.trad{color:var(--trad)}
+.ac-amount.broker{color:var(--broker)}
+.ac-items{display:flex;flex-direction:column;gap:2px;margin-top:5px}
+.ac-item{font-size:9.5px;color:var(--text-muted);display:flex;align-items:center;gap:3px;line-height:1.4}
+.ac-item-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.ac-item-dot.trad{background:var(--trad);opacity:.5}
+.ac-item-dot.broker{background:var(--broker);opacity:.5}
+.ac-broker-col .ac-item{flex-direction:row-reverse}
+.ac-diff{font-size:11px;font-weight:700;padding:4px 7px;border-radius:7px;text-align:center;white-space:nowrap;line-height:1.3}
+.ac-diff.pos{background:rgba(15,122,58,0.12);color:var(--broker)}
+.ac-diff.neg{background:rgba(26,86,184,0.12);color:var(--trad)}
+.ac-diff.neu{background:var(--gold-dim);color:var(--gold)}
+@media(max-width:480px){
+  .ac-row{grid-template-columns:1fr 72px 1fr;padding:10px 10px;gap:6px}
+  .ac-amount{font-size:12px}
+  .ac-diff{font-size:10px;padding:3px 5px}
+  .ac-item{font-size:9px}
+  .ac-mid-col{padding:0 4px;padding-top:10px;padding-bottom:10px;margin:-10px 0}
 }
 </style>
 </head>
 <body class="insurance">
-<div class="container">
 
 <!-- Header -->
 <div class="header">
@@ -431,6 +543,7 @@ input[type="range"]::-webkit-slider-thumb{
   <button class="tab-btn tab-script" onclick="switchTab('script')">🧠 深度思維</button>
 </div>
 
+<div class="container">
 <!-- ═══════════════════════ PANEL: INPUT ═══════════════════════ -->
 <div id="panel-input" class="panel active">
 
@@ -448,62 +561,68 @@ input[type="range"]::-webkit-slider-thumb{
   <!-- 保險同業 -->
   <div class="field fi"><label>年化保費 FYP <span class="hint">過去3年平均</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_fyp" value="3000000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="i_fyp" value="3000000" min="0" oninput="recalc()"></div><div class="field-desc">您過去3年的平均年化保費，作為傳統收入與保經端 FYP 的計算基礎。<strong>數字越大，兩邊的差距也越明顯。</strong></div></div>
   <div class="field fi"><label>傳統公司首年佣金率</label>
-    <div class="input-wrap"><input type="number" id="i_rate_trad" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="i_rate_trad" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">傳統壽險公司給付的首年保費佣金比率。<strong>傳統年收入 = FYP × 此比率 + 續期佣金。</strong></div></div>
   <div class="field fi"><label>年度續期佣金 ⊙ <span class="hint">沉沒成本核心</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_ry_sunk" value="500000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="i_ry_sunk" value="500000" min="0" oninput="recalc()"></div><div class="field-desc">每年從舊保單獲得的續期佣金。轉職後此收入不會立刻歸零，而是依「年遞減係數」逐年遞減，<strong>直到被保經端新續佣取代。</strong></div></div>
+
+  <div class="field fi" style="display:none"><label>續期佣金年遞減係數 <span class="hint">單遞減模型</span></label>
+    <div class="input-wrap"><input type="number" id="i_ry_decay" value="0.6" min="0.1" max="0.99" step="0.05" class="no-prefix" oninput="recalc()"></div><div class="field-desc">轉職後每年保留的舊保單續佣比率。<strong>0.6 = 每年遞減 40%</strong>（Year1：60%、Year2：36%、Year3：22%⋯）。係數越高表示舊客戶保留率越佳，轉職期間仍有部分續佣緩衝，不會斷崖式歸零。</div></div>
 
   <!-- 銀行理專 -->
   <div class="field fb"><label>年度銷售保費 <span class="hint">過去3年平均</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_fyp" value="5000000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="b_fyp" value="5000000" min="0" oninput="recalc()"></div><div class="field-desc">您在銀行通路每年銷售的保費總額。搭配「客戶轉換率」換算出可帶走的保經端 FYP，<strong>是整個試算的起點。</strong></div></div>
   <div class="field fb"><label>銀行保險佣金率</label>
-    <div class="input-wrap"><input type="number" id="b_rate_trad" value="8" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="b_rate_trad" value="8" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">銀行給付的保費佣金比率，<strong>通常僅有保經公司的 1/4 ~ 1/5</strong>，這是轉職後佣金收入大幅提升的主因。</div></div>
   <div class="field fb"><label>年度固定薪資 ⊙ <span class="hint">底薪＋獎金</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_salary" value="800000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="b_salary" value="800000" min="0" oninput="recalc()"></div><div class="field-desc">底薪加上年度績效獎金的總和。<strong>轉職後此項完全歸零</strong>，是理專最大的沉沒成本。試算顯示補回這個缺口所需的時間。</div></div>
   <div class="field fb"><label>客戶 AUM 規模</label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_aum" value="50000000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="b_aum" value="50000000" min="0" oninput="recalc()"></div><div class="field-desc">您目前管理的客戶資產總規模。<strong>僅用於深度思維文案中呈現</strong>，強化「客戶跟的是您這個人」的核心論述，不影響財務試算。</div></div>
   <div class="field fb"><label>客戶轉換率 ⊙ <span class="hint">可帶走並轉為保險客戶</span></label>
-    <div class="input-wrap"><input type="number" id="b_conv" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="b_conv" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">預估能跟隨您轉職、並轉為保險客戶的比率。<strong>保經端 FYP = 銀行銷售保費 × 此比率。</strong>這是最關鍵的心理障礙參數，建議誠實評估。</div></div>
 
   <!-- 壽險主管 -->
   <div class="field fm"><label>個人年化保費 FYP</label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_fyp" value="3500000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="m_fyp" value="3500000" min="0" oninput="recalc()"></div><div class="field-desc"><strong>個人業績</strong>（不含組織業績），作為保經首年佣金的計算基礎。轉職後的增員獎金另計於C區。</div></div>
   <div class="field fm"><label>個人首年佣金率</label>
-    <div class="input-wrap"><input type="number" id="m_rate_trad" value="22" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="m_rate_trad" value="22" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">原公司給付的個人首年保費佣金率。<strong>傳統年收入 = 個人 FYP × 此比率 + 組織津貼</strong>，用於對照保經端的實際差距。</div></div>
   <div class="field fm"><label>年度組織津貼 ⊙ <span class="hint">最大沉沒成本</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_org_bonus" value="1200000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="m_org_bonus" value="1200000" min="0" oninput="recalc()"></div><div class="field-desc">每年從組織獲得的管理津貼與層級加給。<strong>轉職後此項歸零</strong>，是壽險主管最難跨越的心理關卡。試算顯示保經收入補足此缺口所需時間。</div></div>
   <div class="field fm"><label>現有組織人數</label>
-    <div class="input-wrap"><input type="number" id="m_team_size" value="15" min="0" class="no-prefix" oninput="recalc()"></div></div>
+    <div class="input-wrap"><input type="number" id="m_team_size" value="15" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">目前管理的業務員總人數。<strong>僅用於深度思維文案</strong>，強化「團隊跟的是您這個人」的核心論述，不直接影響財務試算。</div></div>
   <div class="field fm"><label>預估跟隨轉職人數 ⊙</label>
-    <div class="input-wrap"><input type="number" id="m_follow" value="6" min="0" class="no-prefix" oninput="recalc()"></div></div>
+    <div class="input-wrap"><input type="number" id="m_follow" value="6" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">預估會跟著您一起移轉到保經的核心夥伴數。<strong>影響保經端組織獎金計算</strong>（增員獎 = 跟隨人數 × 個人FYP×80% × 組織獎金率）。</div></div>
 
   <!-- 醫療通路 -->
   <div class="field fmd"><label>年度醫療相關收入</label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="md_income" value="1800000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="md_income" value="1800000" min="0" oninput="recalc()"></div><div class="field-desc">目前醫療本業的年度總收入（含薪資、診療費、轉介費用等）。<strong>作為傳統端對照基準</strong>，轉職後保經收入需超越此金額才算真正回本。</div></div>
   <div class="field fmd"><label>現有轉介客戶數 / 年</label>
-    <div class="input-wrap"><input type="number" id="md_clients" value="80" min="0" class="no-prefix" oninput="recalc()"></div></div>
+    <div class="input-wrap"><input type="number" id="md_clients" value="80" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">每年透過醫療關係可轉介的潛在保險客戶數。<strong>FYP = 此數字 × 平均客戶保費</strong>，醫療通路信任感高，轉換率通常遠高於一般通路。</div></div>
   <div class="field fmd"><label>平均客戶保費 <span class="hint">估計值</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="md_avg_premium" value="150000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="md_avg_premium" value="150000" min="0" oninput="recalc()"></div><div class="field-desc">每位轉介客戶的平均首年保費。醫療背景建立的信任感，通常帶來<strong>較高的客單價</strong>。與轉介客戶數相乘即為年度 FYP。</div></div>
   <div class="field fmd"><label>保險業務佣金率（現況）</label>
-    <div class="input-wrap"><input type="number" id="md_rate_trad" value="15" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="md_rate_trad" value="15" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">目前透過現有通路取得的保費佣金率。<strong>傳統年收入 = FYP × 此比率 + 醫療本業收入</strong>，與保經佣金率對比即可看出平台差距。</div></div>
 
   <!-- 新人培育 -->
   <div class="field fn"><label>預估第一年 FYP</label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="n_fyp" value="1200000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="n_fyp" value="1200000" min="0" oninput="recalc()"></div><div class="field-desc">估計入行第一年能達成的年化保費總額。<strong>後續每年以「成長率」複利累積</strong>，是整個新人試算的起始基礎。</div></div>
   <div class="field fn"><label>考慮加入的傳統公司佣金率</label>
-    <div class="input-wrap"><input type="number" id="n_rate_trad" value="18" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="n_rate_trad" value="18" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">若選擇加入傳統壽險公司，預期的首年佣金率。<strong>作為對照基準</strong>，與保經端佣金率相比，呈現5年的選擇差距。</div></div>
   <div class="field fn"><label>每年預估業績成長率</label>
-    <div class="input-wrap"><input type="number" id="n_growth" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="n_growth" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">預估每年業績成長的比率。<strong>影響5年複利試算</strong>：成長率越高，保經與傳統公司之間的差距累積越快越大。</div></div>
+  <div class="field fn"><label>FYB 制度係數 <span class="hint">首年保費計費基礎</span></label>
+    <div class="input-wrap"><input type="number" id="n_fyb" value="1" min="0.3" max="1" step="0.05" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">FYB</span></div>
+    <div class="field-desc">保單首年佣金的計費基礎比率。<strong>FYB 0.8 = 以 FYP × 0.8 作為佣金計算基礎</strong>，同時影響傳統端與保經端的首年佣金。若保單均為 FYB 1.0 則維持原始計算，不影響結果。</div></div>
 
   <div class="divider"></div>
   <div class="section-title gold">B &nbsp;轉職風險係數</div>
@@ -515,6 +634,7 @@ input[type="range"]::-webkit-slider-thumb{
       <div class="slider-value" id="l_display">15%</div>
     </div>
     <input type="range" id="i_loss" min="5" max="30" value="15" oninput="document.getElementById('l_display').textContent=this.value+'%';recalc()">
+  <div class="slider-desc">轉職後無法繼續跟隨的客戶比率。<strong>直接降低保經端 FYP × (1−L)</strong>，越保守（越高）代表假設帶走的客戶越少。建議誠實評估，即使最保守情境試算也應在3年內回本。</div>
   </div>
 
   <!-- 銀行理專：適應期 -->
@@ -524,10 +644,11 @@ input[type="range"]::-webkit-slider-thumb{
       <div class="slider-value" id="b_adapt_display">6個月</div>
     </div>
     <input type="range" id="b_adapt" min="3" max="18" value="6" oninput="document.getElementById('b_adapt_display').textContent=this.value+'個月';recalc()">
+  <div class="slider-desc">轉職後重新適應、建立客戶信任的估計時間。<strong>自動換算為客戶流失率 L = 月數 ÷ 24</strong>（6個月→L=25%；12個月→L=50%），影響保經端所有收入計算。</div>
   </div>
   <div class="field fb"><label>過渡期底薪補貼 <span class="hint">保經給予支援</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_subsidy" value="480000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="b_subsidy" value="480000" min="0" oninput="recalc()"></div><div class="field-desc">保經公司提供的第一年底薪支援，用於抵銷適應期的收入缺口。<strong>直接加入第1年保經收入</strong>，讓黃金交叉時間大幅提前。</div></div>
 
   <!-- 壽險主管：法律風險緩衝 -->
   <div class="slider-field fm">
@@ -536,10 +657,11 @@ input[type="range"]::-webkit-slider-thumb{
       <div class="slider-value" id="m_adapt_display">9個月</div>
     </div>
     <input type="range" id="m_adapt" min="3" max="24" value="9" oninput="document.getElementById('m_adapt_display').textContent=this.value+'個月';recalc()">
+  <div class="slider-desc">帶領組織重新整合、穩定的估計時間。<strong>自動換算為流失率 L = 月數 ÷ 36</strong>（9個月→L=25%；18個月→L=50%），反映組織整合期對保經收入的影響。</div>
   </div>
   <div class="field fm"><label>法律顧問/競業條款預備金 ⊙</label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_legal" value="200000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="m_legal" value="200000" min="0" oninput="recalc()"></div><div class="field-desc">因應競業禁止條款或法律諮詢的預估費用。<strong>從第1年保經收入中直接扣除</strong>，讓試算更貼近實際情況；若無此顧慮可設為0。</div></div>
 
   <!-- 醫療通路：診所合作緩衝 -->
   <div class="slider-field fmd">
@@ -548,6 +670,7 @@ input[type="range"]::-webkit-slider-thumb{
       <div class="slider-value" id="md_adapt_display">6個月</div>
     </div>
     <input type="range" id="md_adapt" min="2" max="12" value="6" oninput="document.getElementById('md_adapt_display').textContent=this.value+'個月';recalc()">
+  <div class="slider-desc">建立新診所或醫療合作轉介網絡的估計時間。<strong>自動換算為流失率 L = 月數 ÷ 18</strong>（6個月→L≈33%），反映建立期對保險業務展開速度的影響。</div>
   </div>
 
   <!-- 新人：學習成本 -->
@@ -557,22 +680,23 @@ input[type="range"]::-webkit-slider-thumb{
       <div class="slider-value" id="n_adapt_display">3個月</div>
     </div>
     <input type="range" id="n_adapt" min="1" max="9" value="3" oninput="document.getElementById('n_adapt_display').textContent=this.value+'個月';recalc()">
+  <div class="slider-desc">入職初期接受訓練、考照、建立人脈的空窗時間。<strong>自動換算為流失率 L = 月數 ÷ 12</strong>（3個月→L=25%），反映學習期對第一年實際業績的影響。</div>
   </div>
 
   <div class="divider"></div>
   <div class="section-title green">C &nbsp;保經公司優勢</div>
 
   <div class="field"><label>保經首年佣金率 Rate_broker</label>
-    <div class="input-wrap"><input type="number" id="i_rate_broker" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="i_rate_broker" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">保經公司給付的首年保費佣金率，<strong>通常為傳統公司的 1.5～2 倍</strong>。這是整個財務模組最關鍵的參數，直接決定保經端每年的主要收入。</div></div>
   <div class="field"><label>保經續期佣金率</label>
-    <div class="input-wrap"><input type="number" id="i_ry_rate" value="5" min="0" max="20" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="i_ry_rate" value="5" min="0" max="20" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">第2年起每年從既有保單獲得的續期佣金率。<strong>第N年續佣收入 = FYP × (1−L) × 此比率 × (N−1)</strong>，這是保經複利效應的核心來源。</div></div>
   <div class="field"><label>組織代數獎金率 OR</label>
-    <div class="input-wrap"><input type="number" id="i_or" value="3" min="0" max="15" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div></div>
+    <div class="input-wrap"><input type="number" id="i_or" value="3" min="0" max="15" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">從增員業績中獲取的組織獎金比率。<strong>組織獎收入 = 增員人數 × 增員平均FYP × 此比率</strong>（第1年以0.5計）。增員越多，複利效應越強。</div></div>
   <div class="field fi fm"><label>增員人數</label>
-    <div class="input-wrap"><input type="number" id="i_nrec" value="3" min="0" class="no-prefix" oninput="recalc()"></div></div>
+    <div class="input-wrap"><input type="number" id="i_nrec" value="3" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">加入保經後預估招募的新夥伴數量。<strong>搭配增員平均FYP與OR，直接計入保經端年度收入</strong>。增員是突破個人業績天花板的最快方式。</div></div>
   <div class="field fi fm"><label>增員平均 FYP</label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_rec_fyp" value="1500000" min="0" oninput="recalc()"></div></div>
+    <input type="number" id="i_rec_fyp" value="1500000" min="0" oninput="recalc()"></div><div class="field-desc">每位增員夥伴的預估年化保費。<strong>組織獎金 = 增員人數 × 此數字 × 組織獎金率</strong>。謹慎設定此值，建議以實際招募對象的業績能力估算。</div></div>
 
   <button class="calc-btn" onclick="switchTab('result')">查看財務推演結果 →</button>
   </div><!-- /input-cols -->
@@ -600,12 +724,7 @@ input[type="range"]::-webkit-slider-thumb{
     </div>
   </div>
   <div class="sep">年度收入對比</div>
-  <div class="chart-wrap"><div class="chart-title">逐年收入（藍=傳統 / 綠=保經）</div><div id="bar_chart"></div></div>
-  <div class="sep">收入明細表</div>
-  <div class="table-scroll"><table class="year-table">
-    <thead><tr><th>項目</th><th>Y1</th><th>Y2</th><th>Y3</th><th>Y4</th><th>Y5</th><th>累計</th></tr></thead>
-    <tbody id="detail_tbody"></tbody>
-  </table></div>
+  <div id="annual_comparison"></div>
 </div>
 
 <!-- ═══════════════════════ PANEL: SCENARIO ═══════════════════════ -->
@@ -689,13 +808,15 @@ function getInputs() {
   const or_  = (+g('i_or').value||0)/100;
   const nrec = +g('i_nrec').value||0;
   const rfyp = +g('i_rec_fyp').value||0;
+  // FYB 係數：僅新人培育使用，其他身份固定為 1
 
   if (CID==='insurance') {
     const FYP = +g('i_fyp').value||0;
     return { FYP, rate_trad:(+g('i_rate_trad').value||0)/100,
       ry_sunk:+g('i_ry_sunk').value||0,
+      ry_decay:+g('i_ry_decay').value||0.6,
       L:(+g('i_loss').value||0)/100,
-      rb, ryr, or_, nrec, rfyp };
+      rb, ryr, or_, nrec, rfyp, fyb:1 };
   }
   if (CID==='banker') {
     const rawFYP = +g('b_fyp').value||0;
@@ -705,7 +826,7 @@ function getInputs() {
       rate_trad:(+g('b_rate_trad').value||0)/100,
       ry_sunk:+g('b_salary').value||0,
       L:Math.min(adapt/24,.9),
-      rb, ryr, or_:0, nrec:0, rfyp:0,
+      rb, ryr, or_:0, nrec:0, rfyp:0, fyb:1,
       _rawFYP:rawFYP, _conv:conv, _aum:+g('b_aum').value||0,
       _subsidy:+g('b_subsidy').value||0, _adapt:adapt, _id:'banker' };
   }
@@ -719,7 +840,7 @@ function getInputs() {
     return { FYP, rate_trad:(+g('m_rate_trad').value||0)/100,
       ry_sunk: orgBonus,
       L: Math.min(adapt/36,.8),
-      rb, ryr, or_, nrec:follow, rfyp:FYP*.8,
+      rb, ryr, or_, nrec:follow, rfyp:FYP*.8, fyb:1,
       _legal:legal, _follow:follow, _teamSize:+g('m_team_size').value||0,
       _id:'manager' };
   }
@@ -732,17 +853,18 @@ function getInputs() {
       rate_trad:(+g('md_rate_trad').value||0)/100,
       ry_sunk:+g('md_income').value||0,
       L: Math.min(adapt/18,.7),
-      rb, ryr, or_:0, nrec:0, rfyp:0,
+      rb, ryr, or_:0, nrec:0, rfyp:0, fyb:1,
       _clients:clients, _avgP:avgP, _id:'medical' };
   }
   if (CID==='newbie') {
     const FYP     = +g('n_fyp').value||0;
     const growth  = (+g('n_growth').value||0)/100;
     const adapt   = +g('n_adapt').value||3;
+    const fyb     = Math.min(1, Math.max(0.1, +g('n_fyb').value||1)); // 新人專屬 FYB 係數
     return { FYP, rate_trad:(+g('n_rate_trad').value||0)/100,
       ry_sunk:0,
       L: Math.min(adapt/12,.5),
-      rb, ryr, or_:0, nrec:0, rfyp:0,
+      rb, ryr, or_:0, nrec:0, rfyp:0, fyb,
       _growth:growth, _id:'newbie' };
   }
   return {};
@@ -755,18 +877,24 @@ function compute5yr(p) {
 
   if (p._id==='newbie') {
     // Newbie: trad grows by growth rate; broker also grows but higher commission
-    trad   = yrs.map(y => p.FYP * Math.pow(1+p._growth, y-1) * p.rate_trad);
+    const fyb_n = p.fyb || 1;
+    trad   = yrs.map(y => p.FYP * Math.pow(1+p._growth, y-1) * fyb_n * p.rate_trad);
     broker = yrs.map(y => {
-      const base = p.FYP * Math.pow(1+p._growth, y-1);
+      const base = p.FYP * Math.pow(1+p._growth, y-1) * fyb_n;
       return base*(1-p.L)*p.rb + base*(1-p.L)*p.ryr*(y-1);
     });
   } else {
+    // 傳統端：每年 = 新單首佣 + 舊保單續佣（維持公司繼續出單，新舊相補，視為固定）
+    // 非新人身份 fyb 固定為 1（已在 getInputs 設定）
     trad   = yrs.map(() => p.FYP * p.rate_trad + p.ry_sunk);
+
     broker = yrs.map(y => {
-      const fyp_i = p.FYP*(1-p.L)*p.rb;
+      const fyp_i = p.FYP * (1-p.L)*p.rb;
       const ry_i  = p.FYP*(1-p.L)*p.ryr*(y-1);
       const or_i  = (p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
-      return fyp_i + ry_i + or_i;
+      // 舊保單續佣：離職即歸零（懸崖模型）
+      const old_ry_i = 0;
+      return fyp_i + ry_i + or_i + old_ry_i;
     });
   }
 
@@ -798,6 +926,111 @@ function compute5yr(p) {
     sum5trad:cumT[4], sum5broker:cumB[4], diff5:net[4] };
 }
 
+
+// ─── Annual Comparison Renderer ────────────────────────────────────────────────
+function renderAnnualComparison(p, r) {
+  const yrs = [1,2,3,4,5];
+  const cfg = ID_CONFIG[CID];
+  const tradLabel = cfg.tradLabel || '傳統公司';
+
+  // Build trad breakdown items
+  function tradItems(y) {
+    const items = [];
+    // 新人培育使用 fyb 係數，其他身份 fyb=1（直接用 FYP）
+    const fyb_eff = (p._id==='newbie') ? (p.fyb||1) : 1;
+    const fyc = p.FYP * fyb_eff * p.rate_trad;
+    if (fyc > 0) items.push({label:'首年佣金', val: fyc, cls:'trad'});
+    if (p.ry_sunk > 0) {
+      const lbl = CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':'續佣/津貼';
+      items.push({label: lbl, val: p.ry_sunk, cls:'trad'});
+    }
+    return items;
+  }
+
+  // Build broker breakdown items per year
+  function brokerItems(y) {
+    const items = [];
+    // 新人培育使用 fyb 係數，其他身份 fyb=1
+    const _fyb  = (p._id==='newbie') ? (p.fyb||1) : 1;
+    const fyp_i = p.FYP * _fyb *(1-p.L)*p.rb;
+    const ry_i  = p.FYP * _fyb *(1-p.L)*(p.ryr||0)*(y-1);
+    const or_i  = (p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
+    // 舊保單續佣：離職即歸零
+    if (fyp_i > 0)    items.push({label:'首年佣金', val: fyp_i, cls:'broker'});
+    if (ry_i  > 0)    items.push({label:`累積續佣×${y-1}`, val: ry_i, cls:'broker'});
+    if (or_i  > 0)    items.push({label:'組織獎金', val: or_i, cls:'broker'});
+    return items;
+  }
+
+  function itemsHtml(arr) {
+    if (!arr.length) return '';
+    return '<div class="ac-items">' +
+      arr.map(it => `<div class="ac-item"><span class="ac-item-dot ${it.cls}"></span><span>${it.label}</span><span style="font-family:'DM Mono',monospace;margin-left:auto;padding-left:6px">${fmtM(it.val)}萬</span></div>`).join('') +
+    '</div>';
+  }
+
+  function itemsHtmlR(arr) {
+    if (!arr.length) return '';
+    return '<div class="ac-items">' +
+      arr.map(it => `<div class="ac-item"><span style="font-family:'DM Mono',monospace;margin-right:auto;padding-right:6px">${fmtM(it.val)}萬</span><span>${it.label}</span><span class="ac-item-dot ${it.cls}" style="margin-left:3px"></span></div>`).join('') +
+    '</div>';
+  }
+
+  const rows = yrs.map((y, i) => {
+    const tVal = r.trad[i];
+    const bVal = r.broker[i];
+    const diff = bVal - tVal;
+    const diffCls = diff > 100 ? 'pos' : diff < -100 ? 'neg' : 'neu';
+    const diffIcon = diff >= 0 ? '▲' : '▼';
+    const diffStr = `${diffIcon} ${diff>=0?'+':''}${fmtM(diff)}萬`;
+
+    return `<div class="ac-row">
+      <div class="ac-trad-col">
+        <div class="ac-amount trad">${fmtM(tVal)}萬</div>
+        ${itemsHtml(tradItems(y))}
+      </div>
+      <div class="ac-mid-col">
+        <div class="ac-year-label">第${y}年</div>
+        <div class="ac-diff ${diffCls}">${diffStr}</div>
+      </div>
+      <div class="ac-broker-col">
+        <div class="ac-amount broker">${fmtM(bVal)}萬</div>
+        ${itemsHtmlR(brokerItems(y))}
+      </div>
+    </div>`;
+  });
+
+  const diff5 = r.diff5;
+  const diffCls5 = diff5 > 100 ? 'pos' : diff5 < -100 ? 'neg' : 'neu';
+  const diffStr5 = `${diff5>=0?'▲':'▼'} ${diff5>=0?'+':''}${fmtM(diff5)}萬`;
+
+  const totalRow = `<div class="ac-row ac-total">
+    <div class="ac-trad-col">
+      <div class="ac-amount trad">${fmtM(r.sum5trad)}萬</div>
+      <div class="ac-items"><div class="ac-item"><span class="ac-item-dot trad"></span>5年累計</div></div>
+    </div>
+    <div class="ac-mid-col">
+      <div class="ac-year-label">5年總計</div>
+      <div class="ac-diff ${diffCls5}">${diffStr5}</div>
+    </div>
+    <div class="ac-broker-col">
+      <div class="ac-amount broker">${fmtM(r.sum5broker)}萬</div>
+      <div class="ac-items"><div class="ac-item"><span class="ac-item-dot broker"></span>5年累計</div></div>
+    </div>
+  </div>`;
+
+  g('annual_comparison').innerHTML =
+    `<div class="ac-wrap">
+      <div class="ac-header">
+        <div class="ac-trad-h">← ${tradLabel}</div>
+        <div class="ac-mid-h">比較</div>
+        <div class="ac-broker-h">公勝保經 →</div>
+      </div>
+      ${rows.join('\n      ')}
+      ${totalRow}
+    </div>`;
+}
+
 // ─── Update result panel ──────────────────────────────────────────────────────
 function updateResult(p, r) {
   g('trad-label').textContent = (ID_CONFIG[CID]||{}).tradLabel||'傳統公司';
@@ -817,43 +1050,8 @@ function updateResult(p, r) {
   g('tl_label').style.left=bePct+'%';
   g('tl_label').textContent=r.beMonth?(r.beMonth<=1?'<1月':r.beMonth+'月'):'>36月';
 
-  // Bar chart
-  const maxV=Math.max(...r.trad,...r.broker)*1.1||1;
-  g('bar_chart').innerHTML=[1,2,3,4,5].map((y,i)=>{
-    const tp=(r.trad[i]/maxV*100).toFixed(1);
-    const bp=(r.broker[i]/maxV*100).toFixed(1);
-    return `<div class="bar-group">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-bottom:3px">
-        <span>第${y}年</span>
-        <span><span style="color:var(--trad)">${fmtM(r.trad[i])}萬</span>
-        <span style="color:var(--text-muted);margin:0 4px">vs</span>
-        <span style="color:var(--broker)">${fmtM(r.broker[i])}萬</span></span></div>
-      <div class="bar-track" style="margin-bottom:3px"><div class="bar-fill trad" style="width:${tp}%"></div></div>
-      <div class="bar-track"><div class="bar-fill broker" style="width:${bp}%"></div></div>
-    </div>`;
-  }).join('');
-
-  // Detail table
-  const rows=[
-    {label:'傳統收入（年）',vals:r.trad,cls:'trad'},
-    {label:'保經首年佣金',vals:[1,2,3,4,5].map(()=>p.FYP*(1-p.L)*p.rb),cls:'broker'},
-    {label:'保經累積續佣',vals:[1,2,3,4,5].map(y=>p.FYP*(1-p.L)*p.ryr*(y-1)),cls:'broker'},
-    {label:'組織/加給',vals:[1,2,3,4,5].map(y=>(p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1)),cls:'broker'},
-    {label:'保經收入（年）',vals:r.broker,cls:'total broker'},
-    {label:'保經累計',vals:r.cumB,cls:'broker'},
-    {label:'傳統累計',vals:r.cumT,cls:'trad'},
-    {label:'★ 淨利差距',vals:r.net,cls:''},
-  ];
-  g('detail_tbody').innerHTML=rows.map(row=>{
-    const isNet=row.label.includes('★');
-    const cells=row.vals.map(v=>{
-      const cs=isNet?(v>=0?'color:var(--broker)':'color:var(--danger)'):'';
-      return `<td style="${cs}">${fmtM(v)}<span style="font-size:9px;color:var(--text-muted)">萬</span></td>`;
-    });
-    const sum=row.vals.reduce((a,b)=>a+b,0);
-    const ss=isNet?(sum>=0?'color:var(--broker)':'color:var(--danger)'):'';
-    return `<tr class="${row.cls}"><td>${row.label}</td>${cells.join('')}<td style="${ss}"><strong>${fmtM(sum)}</strong><span style="font-size:9px;color:var(--text-muted)">萬</span></td></tr>`;
-  }).join('');
+  // Annual comparison side-by-side
+  renderAnnualComparison(p, r);
 }
 
 // ─── Scenarios ────────────────────────────────────────────────────────────────
