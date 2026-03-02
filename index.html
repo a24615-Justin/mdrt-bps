@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>公勝MDRT 財務推演模組</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --navy-2: #1a2d42;
+    --navy-3: #243d56;
+    --gold: #c9a227;
+    --gold-light: #e8c04a;
+    --gold-dim: rgba(201,162,39,0.15);
+    --trad: #3a7bd5;
+    --trad-light: rgba(58,123,213,0.12);
+    --broker: #27ae60;
+    --broker-light: rgba(39,174,96,0.12);
+    --danger: #e74c3c;
+    --surface: #111e2d;
+    --surface-2: #162639;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eef4;
+    --text-dim: #7a9ab8;
+    --text-muted: #4a6880;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Background texture ─────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(201,162,39,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(39,174,96,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 40% at 60% 30%, rgba(58,123,213,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 0 80px; }
+
+  /* ── Header ─────────────────────────────────────────────────── */
+  .header {
+    padding: 32px 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(to bottom, rgba(13,27,42,0.95), transparent);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,162,39,0.3);
+    color: var(--gold);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    padding: 4px 10px; border-radius: 20px;
+    margin-bottom: 10px; text-transform: uppercase;
+  }
+
+  .header h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 20px; font-weight: 700;
+    line-height: 1.3; letter-spacing: 0.02em;
+    color: #fff;
+  }
+
+  .header h1 span { color: var(--gold); }
+
+  /* ── Tab navigation ─────────────────────────────────────────── */
+  .tab-nav {
+    display: flex; gap: 4px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky; top: 88px; z-index: 99;
+  }
+
+  .tab-nav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    flex: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--navy-3);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .tab-btn.active.tab-input { border-color: rgba(58,123,213,0.4); color: #6aadff; }
+  .tab-btn.active.tab-result { border-color: rgba(201,162,39,0.4); color: var(--gold); }
+  .tab-btn.active.tab-scenario { border-color: rgba(39,174,96,0.4); color: #5dd990; }
+  .tab-btn.active.tab-script { border-color: rgba(231,76,60,0.3); color: #ff8a7a; }
+
+  /* ── Panels ──────────────────────────────────────────────────── */
+  .panel { display: none; padding: 20px 16px; animation: fadeIn 0.25s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Section titles ─────────────────────────────────────────── */
+  .section-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-title::before {
+    content: '';
+    display: block; width: 3px; height: 16px;
+    border-radius: 2px;
+  }
+
+  .section-title.blue::before { background: var(--trad); }
+  .section-title.gold::before { background: var(--gold); }
+  .section-title.green::before { background: var(--broker); }
+  .section-title.red::before { background: var(--danger); }
+
+  /* ── Input fields ───────────────────────────────────────────── */
+  .field { margin-bottom: 14px; }
+
+  .field label {
+    display: block;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .field label span.hint {
+    font-weight: 400; text-transform: none; letter-spacing: 0;
+    color: var(--text-muted); font-size: 10px;
+    margin-left: 6px;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-wrap .prefix {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 13px; font-family: 'DM Mono', monospace;
+    pointer-events: none;
+  }
+
+  .input-wrap .suffix {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 12px;
+    pointer-events: none;
+  }
+
+  input[type="number"], input[type="range"] {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px; font-weight: 500;
+    padding: 12px 14px 12px 30px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input[type="number"]:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-dim);
+  }
+
+  input[type="number"].has-suffix { padding-right: 36px; }
+  input[type="number"].no-prefix { padding-left: 14px; }
+
+  /* ── Slider ──────────────────────────────────────────────────── */
+  .slider-field { margin-bottom: 20px; }
+
+  .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+  .slider-header label {
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  .slider-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px; font-weight: 500;
+    color: var(--gold);
+    background: var(--gold-dim);
+    padding: 2px 10px; border-radius: 6px;
+  }
+
+  input[type="range"] {
+    padding: 0; height: 6px;
+    background: var(--surface-2);
+    border: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    background: var(--gold);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px var(--gold-dim);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    background: var(--gold);
+    border-radius: 50%; border: none;
+    box-shadow: 0 0 0 4px var(--gold-dim);
+  }
+
+  /* ── Cards ────────────────────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .card.gold { border-color: rgba(201,162,39,0.25); background: linear-gradient(135deg, var(--surface), rgba(201,162,39,0.04)); }
+  .card.blue { border-color: rgba(58,123,213,0.25); background: linear-gradient(135deg, var(--surface), rgba(58,123,213,0.04)); }
+  .card.green { border-color: rgba(39,174,96,0.25); background: linear-gradient(135deg, var(--surface), rgba(39,174,96,0.04)); }
+
+  /* ── KPI Grid ─────────────────────────────────────────────────── */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .kpi-full { grid-column: 1 / -1; }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    text-align: center;
+  }
+
+  .kpi-label { font-size: 10px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+  .kpi-value { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+  .kpi-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+  .kpi.trad .kpi-value { color: var(--trad); }
+  .kpi.broker .kpi-value { color: var(--broker); }
+  .kpi.diff .kpi-value { color: var(--gold); }
+  .kpi.be .kpi-value { color: var(--danger); font-size: 15px; }
+
+  /* ── Year table ───────────────────────────────────────────────── */
+  .year-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+  .year-table th {
+    background: var(--navy-3);
+    color: var(--text-dim);
+    font-weight: 600; font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 8px 10px; text-align: right;
+  }
+
+  .year-table th:first-child { text-align: left; }
+
+  .year-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+  }
+
+  .year-table td:first-child { text-align: left; font-family: 'Outfit', sans-serif; font-size: 11px; color: var(--text-dim); }
+
+  .year-table tr.total td { font-weight: 600; background: var(--surface-2); font-size: 12px; }
+  .year-table tr.trad td { color: var(--trad); }
+  .year-table tr.broker td { color: var(--broker); }
+  .year-table tr.net td { color: var(--gold); font-weight: 600; }
+  .year-table tr.net-pos td { color: var(--broker); }
+
+  /* ── Bar Chart ────────────────────────────────────────────────── */
+  .chart-wrap { margin: 16px 0; }
+  .chart-title { font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; }
+
+  .bar-group { margin-bottom: 10px; }
+  .bar-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .bar-label-text { font-size: 11px; color: var(--text-dim); }
+  .bar-label-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text); }
+
+  .bar-track { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
+  .bar-fill.trad { background: linear-gradient(90deg, #2d6ab3, var(--trad)); }
+  .bar-fill.broker { background: linear-gradient(90deg, #1e9950, var(--broker)); }
+
+  /* ── Scenario tabs ────────────────────────────────────────────── */
+  .scenario-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+
+  .sc-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    line-height: 1.3;
+  }
+
+  .sc-btn.active-c { border-color: rgba(231,76,60,0.4); color: #ff7a6a; background: rgba(231,76,60,0.08); }
+  .sc-btn.active-b { border-color: rgba(201,162,39,0.4); color: var(--gold); background: var(--gold-dim); }
+  .sc-btn.active-o { border-color: rgba(39,174,96,0.4); color: #5dd990; background: rgba(39,174,96,0.08); }
+
+  /* ── Scenario compare table ─────────────────────────────────── */
+  .sc-compare { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 16px; }
+  .sc-compare th { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 10px; text-align: center; }
+  .sc-compare td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; }
+  .sc-compare td:first-child { text-align: left; font-family: 'Outfit', sans-serif; color: var(--text-dim); }
+  .sc-compare .th-c { background: rgba(231,76,60,0.1); color: #ff7a6a; }
+  .sc-compare .th-b { background: var(--gold-dim); color: var(--gold); }
+  .sc-compare .th-o { background: rgba(39,174,96,0.1); color: #5dd990; }
+  .sc-compare .val-c { color: #ff7a6a; }
+  .sc-compare .val-b { color: var(--gold); }
+  .sc-compare .val-o { color: #5dd990; }
+  .sc-compare tr.highlight td { font-weight: 700; background: var(--surface-2); font-size: 12px; }
+
+  /* ── Script cards ─────────────────────────────────────────────── */
+  .script-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .script-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .script-card.s1::before { background: var(--danger); }
+  .script-card.s2::before { background: var(--gold); }
+  .script-card.s3::before { background: var(--broker); }
+
+  .script-tag {
+    display: inline-block;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
+    margin-bottom: 10px;
+  }
+
+  .s1 .script-tag { background: rgba(231,76,60,0.15); color: #ff7a6a; }
+  .s2 .script-tag { background: var(--gold-dim); color: var(--gold); }
+  .s3 .script-tag { background: rgba(39,174,96,0.12); color: #5dd990; }
+
+  .script-text {
+    font-size: 14px; line-height: 1.7; color: var(--text);
+    font-family: 'Noto Serif TC', serif; font-weight: 400;
+  }
+
+  .script-text strong {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .copy-btn {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 12px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted); font-size: 11px; font-family: 'Outfit', sans-serif;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    transition: all 0.2s; font-weight: 500;
+  }
+
+  .copy-btn:active { background: var(--surface-2); }
+
+  /* ── Recalc button ────────────────────────────────────────────── */
+  .calc-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #c9a227, #e8c04a);
+    color: var(--navy);
+    border: none; border-radius: var(--radius-sm);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px; font-weight: 700;
+    padding: 16px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    margin: 16px 0 4px;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 20px rgba(201,162,39,0.3);
+  }
+
+  .calc-btn:active { opacity: 0.9; transform: scale(0.99); }
+
+  /* ── Divider ──────────────────────────────────────────────────── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── Positive / negative badge ────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 5px;
+  }
+
+  .badge.pos { background: rgba(39,174,96,0.15); color: #5dd990; }
+  .badge.neg { background: rgba(231,76,60,0.12); color: #ff7a6a; }
+
+  /* ── Crossover timeline ───────────────────────────────────────── */
+  .timeline { position: relative; padding: 16px 0; margin: 12px 0; }
+  .timeline-track { height: 4px; background: var(--surface-2); border-radius: 2px; position: relative; }
+  .timeline-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--trad), var(--gold)); transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
+  .timeline-dot { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: var(--gold); border-radius: 50%; box-shadow: 0 0 0 4px var(--gold-dim); }
+  .timeline-label { position: absolute; top: 14px; transform: translateX(-50%); font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gold); white-space: nowrap; font-weight: 600; }
+
+  /* ── Scrollable table wrap ────────────────────────────────────── */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
+
+  /* ── Separator w/ label ────────────────────────────────────────── */
+  .sep { display: flex; align-items: center; gap: 10px; margin: 20px 0; color: var(--text-muted); font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .sep::before, .sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── Info box ──────────────────────────────────────────────────── */
+  .info-box {
+    background: rgba(58,123,213,0.07);
+    border: 1px solid rgba(58,123,213,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 12px; color: #89b4e0; line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  /* ── Number format helper ─────────────────────────────────────── */
+  .num { font-family: 'DM Mono', monospace; }
+
+  /* ── Pulse animation for CTA ─────────────────────────────────── */
+  @keyframes pulse { 0%,100%{box-shadow:0 4px 20px rgba(201,162,39,0.3)} 50%{box-shadow:0 4px 30px rgba(201,162,39,0.55)} }
+  .calc-btn { animation: pulse 2.5s ease-in-out infinite; }
+  .calc-btn:active { animation: none; }
+
+  /* ── Responsive: Tablet & Desktop ──────────────────────────────── */
+  @media (min-width: 640px) {
+    .header { padding: 28px 32px 22px; }
+    .header h1 { font-size: 24px; }
+    .header h1 br { display: none; }
+
+    .tab-nav { padding: 12px 24px; gap: 8px; }
+    .tab-btn { font-size: 13px; padding: 10px 20px; }
+
+    .panel { padding: 28px 24px; }
+
+    .kpi-grid { grid-template-columns: 1fr 1fr 1fr; }
+    .kpi.kpi-full { grid-column: auto; }
+    .kpi.be.kpi-full { grid-column: 1 / -1; }
+    .kpi-value { font-size: 22px; }
+    .kpi.be .kpi-value { font-size: 17px; }
+
+    .year-table th, .year-table td { padding: 11px 14px; font-size: 13px; }
+    .year-table td:first-child { font-size: 13px; }
+
+    .sc-compare th, .sc-compare td { padding: 11px 16px; font-size: 13px; }
+
+    .script-text { font-size: 15px; line-height: 1.8; }
+
+    .bar-track { height: 10px; }
+    .bar-group { margin-bottom: 14px; }
+
+    .card { padding: 22px 26px; }
+    .section-title { font-size: 14px; }
+    input[type="number"] { font-size: 16px; }
+    .calc-btn { font-size: 16px; padding: 18px; }
+
+    .section-title { padding-bottom: 10px; margin-bottom: 18px; }
+  }
+
+  @media (min-width: 800px) {
+    .panel { padding: 32px 32px; }
+
+    .input-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 32px;
+    }
+
+    .input-cols .divider { grid-column: 1 / -1; }
+    .input-cols .section-title { grid-column: 1 / -1; }
+    .input-cols .calc-btn { grid-column: 1 / -1; }
+    .input-cols .info-box { grid-column: 1 / -1; }
+
+    .bar-chart-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .year-table th, .year-table td { font-size: 14px; padding: 12px 16px; }
+    .kpi-value { font-size: 26px; }
+    .kpi-label { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── Header ──────────────────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-badge">⚡ 公勝保經 · Business Plan Simulation</div>
+    <h1><span>公勝</span>MDRT<br>財務推演模組</h1>
+  </div>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────── -->
+  <div class="tab-nav">
+    <button class="tab-btn tab-input active" onclick="switchTab('input')">📋 輸入參數</button>
+    <button class="tab-btn tab-result" onclick="switchTab('result')">📊 財務推演</button>
+    <button class="tab-btn tab-scenario" onclick="switchTab('scenario')">🔬 三情境</button>
+    <button class="tab-btn tab-script" onclick="switchTab('script')">💬 談判話術</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- PANEL 1: INPUT                                                -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div id="panel-input" class="panel active">
+
+    <div class="info-box">
+      📌 填入準增員對象的真實數據，所有結果將即時更新。帶 <span style="color:var(--gold)">⊙</span> 欄位為關鍵心理障礙參數。
+    </div>
+
+    <div class="input-cols">
+
+    <!-- Section A -->
+    <div class="section-title blue">A &nbsp;現狀盤點</div>
+
+    <div class="field">
+      <label>年化保費 FYP <span class="hint">過去3年平均</span></label>
+      <div class="input-wrap">
+        <span class="prefix">NT$</span>
+        <input type="number" id="i_fyp" value="3000000" min="0" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>傳統公司首年佣金率 Rate_trad</label>
+      <div class="input-wrap">
+        <input type="number" id="i_rate_trad" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()">
+        <span class="suffix">%</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>年度續期佣金 RY_sunk ⊙ <span class="hint">沉沒成本（核心）</span></label>
+      <div class="input-wrap">
+        <span class="prefix">NT$</span>
+        <input type="number" id="i_ry_sunk" value="500000" min="0" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section B -->
+    <div class="section-title gold">B &nbsp;轉職風險係數</div>
+
+    <div class="slider-field">
+      <div class="slider-header">
+        <label>客戶流失率 L ⊙ <span style="font-size:10px;color:var(--text-muted);font-weight:400;text-transform:none">越高越保守</span></label>
+        <div class="slider-value" id="l_display">15%</div>
+      </div>
+      <input type="range" id="i_loss" min="5" max="30" value="15" oninput="document.getElementById('l_display').textContent=this.value+'%'; recalc()">
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section C -->
+    <div class="section-title green">C &nbsp;保經公司優勢</div>
+
+    <div class="field">
+      <label>保經首年佣金率 Rate_broker</label>
+      <div class="input-wrap">
+        <input type="number" id="i_rate_broker" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()">
+        <span class="suffix">%</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>保經續期佣金率 RY_broker_rate</label>
+      <div class="input-wrap">
+        <input type="number" id="i_ry_rate" value="5" min="0" max="20" class="no-prefix has-suffix" oninput="recalc()">
+        <span class="suffix">%</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>組織代數獎金率 OR_broker</label>
+      <div class="input-wrap">
+        <input type="number" id="i_or" value="3" min="0" max="15" class="no-prefix has-suffix" oninput="recalc()">
+        <span class="suffix">%</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>增員人數 <span class="hint">帶入夥伴</span></label>
+      <div class="input-wrap">
+        <input type="number" id="i_nrec" value="3" min="0" max="20" class="no-prefix" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>增員平均 FYP <span class="hint">每位夥伴產能</span></label>
+      <div class="input-wrap">
+        <span class="prefix">NT$</span>
+        <input type="number" id="i_rec_fyp" value="1500000" min="0" oninput="recalc()">
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="switchTab('result')">查看財務推演結果 →</button>
+
+    </div><!-- /input-cols -->
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- PANEL 2: RESULT                                               -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div id="panel-result" class="panel">
+
+    <!-- KPI grid -->
+    <div class="kpi-grid">
+      <div class="kpi trad">
+        <div class="kpi-label">傳統 5年累計</div>
+        <div class="kpi-value" id="k_trad5"></div>
+        <div class="kpi-sub">萬元</div>
+      </div>
+      <div class="kpi broker">
+        <div class="kpi-label">保經 5年累計</div>
+        <div class="kpi-value" id="k_broker5"></div>
+        <div class="kpi-sub">萬元</div>
+      </div>
+      <div class="kpi diff kpi-full">
+        <div class="kpi-label">★ 5年淨利差距</div>
+        <div class="kpi-value" id="k_diff5"></div>
+        <div class="kpi-sub" id="k_diff_label"></div>
+      </div>
+      <div class="kpi be kpi-full">
+        <div class="kpi-label">📌 黃金交叉估算</div>
+        <div class="kpi-value" id="k_be"></div>
+      </div>
+    </div>
+
+    <!-- Break-even timeline -->
+    <div class="card gold">
+      <div class="chart-title">損益兩平時間軸</div>
+      <div class="timeline">
+        <div class="timeline-track">
+          <div class="timeline-fill" id="tl_fill" style="width:0%"></div>
+          <div class="timeline-dot" id="tl_dot" style="left:0%"></div>
+          <div class="timeline-label" id="tl_label" style="left:0%"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:22px;font-size:10px;color:var(--text-muted);">
+        <span>轉職後即時</span><span>12個月</span><span>24個月</span><span>36個月</span>
+      </div>
+    </div>
+
+    <div class="sep">逐年明細</div>
+
+    <!-- Year by year bar -->
+    <div class="chart-wrap">
+      <div class="chart-title">年度收入對比</div>
+      <div id="bar_chart"></div>
+    </div>
+
+    <div class="sep">收入明細表</div>
+
+    <!-- Year table -->
+    <div class="table-scroll">
+      <table class="year-table">
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>Y1</th><th>Y2</th><th>Y3</th><th>Y4</th><th>Y5</th><th>累計</th>
+          </tr>
+        </thead>
+        <tbody id="detail_tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- PANEL 3: SCENARIO                                             -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div id="panel-scenario" class="panel">
+
+    <div class="info-box">
+      三套假設讓準增員對象自選最貼近現實的情境，即使最保守情境也應在3年內回本。
+    </div>
+
+    <div class="scenario-tabs">
+      <button class="sc-btn active-c" onclick="showScenario('C', this)">😰<br>保守情境</button>
+      <button class="sc-btn active-b" onclick="showScenario('B', this)">📊<br>基準情境</button>
+      <button class="sc-btn active-o" onclick="showScenario('O', this)">🚀<br>樂觀情境</button>
+    </div>
+
+    <div id="sc_detail"></div>
+
+    <div class="sep">三情境並排比較</div>
+
+    <div class="table-scroll">
+      <table class="sc-compare">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="th-c">保守</th>
+            <th class="th-b">基準</th>
+            <th class="th-o">樂觀</th>
+          </tr>
+        </thead>
+        <tbody id="sc_compare_tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- PANEL 4: SCRIPT                                               -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div id="panel-script" class="panel">
+
+    <div class="info-box">
+      以下話術中的<span style="color:var(--gold)">金色數字</span>均根據您填入的真實數據自動計算，可直接在面談中使用。
+    </div>
+
+    <div class="script-card s1">
+      <div class="script-tag">沉沒成本 vs 機會成本</div>
+      <div class="script-text" id="script1"></div>
+      <button class="copy-btn" onclick="copyScript('script1', this)">📋 複製話術</button>
+    </div>
+
+    <div class="script-card s2">
+      <div class="script-tag">黃金交叉</div>
+      <div class="script-text" id="script2"></div>
+      <button class="copy-btn" onclick="copyScript('script2', this)">📋 複製話術</button>
+    </div>
+
+    <div class="script-card s3">
+      <div class="script-tag">組織倍增器</div>
+      <div class="script-text" id="script3"></div>
+      <button class="copy-btn" onclick="copyScript('script3', this)">📋 複製話術</button>
+    </div>
+
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─── Formatters ──────────────────────────────────────────────────────────────
+const fmtNT  = v => 'NT$' + Math.round(v).toLocaleString('zh-TW');
+const fmtM   = v => (v / 10000).toFixed(1);
+const fmtPct = v => (v * 100).toFixed(1) + '%';
+
+// ─── Get inputs ──────────────────────────────────────────────────────────────
+function getInputs() {
+  return {
+    FYP:         +document.getElementById('i_fyp').value         || 0,
+    rate_trad:  (+document.getElementById('i_rate_trad').value   || 0) / 100,
+    ry_sunk:     +document.getElementById('i_ry_sunk').value     || 0,
+    L:          (+document.getElementById('i_loss').value        || 0) / 100,
+    rate_broker:(+document.getElementById('i_rate_broker').value || 0) / 100,
+    ry_rate:    (+document.getElementById('i_ry_rate').value     || 0) / 100,
+    or_rate:    (+document.getElementById('i_or').value          || 0) / 100,
+    n_rec:       +document.getElementById('i_nrec').value        || 0,
+    rec_fyp:     +document.getElementById('i_rec_fyp').value     || 0,
+  };
+}
+
+// ─── Compute 5-year projection ───────────────────────────────────────────────
+function compute5yr(p) {
+  const years = [1,2,3,4,5];
+  const trad = years.map(() => p.FYP * p.rate_trad + p.ry_sunk);
+  const broker = years.map(y => {
+    const fyp_inc  = p.FYP * (1 - p.L) * p.rate_broker;
+    const ry_new   = p.FYP * (1 - p.L) * p.ry_rate * (y - 1);
+    const or_inc   = p.n_rec * p.rec_fyp * p.or_rate * (y === 1 ? 0.5 : 1);
+    return fyp_inc + ry_new + or_inc;
+  });
+
+  const cumTrad   = trad.reduce((acc, v, i)   => { acc.push((acc[i-1]||0)+v); return acc; }, []);
+  const cumBroker = broker.reduce((acc, v, i) => { acc.push((acc[i-1]||0)+v); return acc; }, []);
+  const net       = cumBroker.map((b, i) => b - cumTrad[i]);
+
+  // Break-even month estimate
+  let beMonth = null;
+  if (net[0] > 0) {
+    beMonth = 1;
+  } else {
+    for (let i = 1; i < 5; i++) {
+      if (net[i] > 0) {
+        const frac = Math.abs(net[i-1]) / (net[i] - net[i-1]);
+        beMonth = Math.round((i + frac) * 12);
+        break;
+      }
+    }
+  }
+
+  return { trad, broker, cumTrad, cumBroker, net, beMonth,
+    sum5trad: cumTrad[4], sum5broker: cumBroker[4], diff5: net[4] };
+}
+
+// ─── Scenario presets ────────────────────────────────────────────────────────
+const SCENARIOS = {
+  C: { name: '保守情境', emoji: '😰',
+       L: 0.20, rate_broker: 0.35, n_rec: 1,
+       color: '#ff7a6a', border: 'rgba(231,76,60,0.3)' },
+  B: { name: '基準情境', emoji: '📊',
+       L: 0.15, rate_broker: 0.40, n_rec: 3,
+       color: '#e8c04a', border: 'rgba(201,162,39,0.4)' },
+  O: { name: '樂觀情境', emoji: '🚀',
+       L: 0.10, rate_broker: 0.45, n_rec: 5,
+       color: '#5dd990', border: 'rgba(39,174,96,0.4)' },
+};
+
+function getScenarioParams(key) {
+  const base = getInputs();
+  const sc   = SCENARIOS[key];
+  return { ...base, L: sc.L, rate_broker: sc.rate_broker, n_rec: sc.n_rec };
+}
+
+// ─── Main recalc ─────────────────────────────────────────────────────────────
+let lastResult = null;
+let currentScenario = 'C';
+
+function recalc() {
+  const p = getInputs();
+  const r = compute5yr(p);
+  lastResult = { p, r };
+
+  updateResultPanel(p, r);
+  updateScenarioPanel();
+  updateScripts(p, r);
+}
+
+function updateResultPanel(p, r) {
+  // KPIs
+  document.getElementById('k_trad5').textContent   = fmtM(r.sum5trad);
+  document.getElementById('k_broker5').textContent = fmtM(r.sum5broker);
+  const diff = r.diff5;
+  document.getElementById('k_diff5').textContent   = (diff >= 0 ? '+' : '') + fmtM(diff);
+  document.getElementById('k_diff_label').textContent = diff >= 0
+    ? '✅ 保經 5年累計領先' : '⚠ 建議調整參數';
+
+  // Break-even
+  if (r.beMonth === null) {
+    document.getElementById('k_be').textContent = '3年以上';
+  } else if (r.beMonth <= 1) {
+    document.getElementById('k_be').textContent = '第1年內即回本';
+  } else {
+    document.getElementById('k_be').textContent = `約第 ${r.beMonth} 個月`;
+  }
+
+  // Timeline
+  const maxM = 36;
+  const bePct = r.beMonth ? Math.min(r.beMonth / maxM * 100, 100) : 100;
+  document.getElementById('tl_fill').style.width = bePct + '%';
+  document.getElementById('tl_dot').style.left   = bePct + '%';
+  document.getElementById('tl_label').style.left = bePct + '%';
+  document.getElementById('tl_label').textContent = r.beMonth
+    ? (r.beMonth <= 1 ? '<1月' : `${r.beMonth}月`)
+    : '>36月';
+
+  // Bar chart
+  const allVals = [...r.trad, ...r.broker];
+  const maxVal  = Math.max(...allVals) * 1.1 || 1;
+  let barsHtml = '';
+  for (let y = 0; y < 5; y++) {
+    const tp = (r.trad[y]   / maxVal * 100).toFixed(1);
+    const bp = (r.broker[y] / maxVal * 100).toFixed(1);
+    barsHtml += `
+      <div class="bar-group">
+        <div class="bar-label">
+          <span class="bar-label-text">第${y+1}年</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">
+            <span style="color:var(--trad)">${fmtM(r.trad[y])}萬</span>
+            <span style="color:var(--text-muted);margin:0 4px">vs</span>
+            <span style="color:var(--broker)">${fmtM(r.broker[y])}萬</span>
+          </span>
+        </div>
+        <div class="bar-track" style="margin-bottom:3px">
+          <div class="bar-fill trad" style="width:${tp}%"></div>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill broker" style="width:${bp}%"></div>
+        </div>
+      </div>`;
+  }
+  document.getElementById('bar_chart').innerHTML = barsHtml;
+
+  // Detail table
+  const tbody = document.getElementById('detail_tbody');
+  const rows = [
+    { label: '傳統首年佣金', vals: r.trad.map(() => p.FYP * p.rate_trad), cls: 'trad' },
+    { label: '傳統續期佣金', vals: r.trad.map(() => p.ry_sunk), cls: 'trad' },
+    { label: '傳統年度合計', vals: r.trad, cls: 'total trad' },
+    { label: '保經首年佣金', vals: r.trad.map(() => p.FYP*(1-p.L)*p.rate_broker), cls: 'broker' },
+    { label: '保經累積續佣', vals: [1,2,3,4,5].map(y => p.FYP*(1-p.L)*p.ry_rate*(y-1)), cls: 'broker' },
+    { label: '組織代數獎金', vals: [1,2,3,4,5].map(y => p.n_rec*p.rec_fyp*p.or_rate*(y===1?0.5:1)), cls: 'broker' },
+    { label: '保經年度合計', vals: r.broker, cls: 'total broker' },
+    { label: '保經累計收入', vals: r.cumBroker, cls: 'broker' },
+    { label: '傳統累計收入', vals: r.cumTrad,   cls: 'trad' },
+    { label: '★ 淨利差距',   vals: r.net, cls: '' },
+  ];
+
+  tbody.innerHTML = rows.map(row => {
+    const isNet = row.label.includes('★');
+    const cells = row.vals.map((v,i) => {
+      const cls = isNet ? (v >= 0 ? 'color:var(--broker)' : 'color:var(--danger)') : '';
+      return `<td style="${cls}">${fmtM(v)}<span style="font-size:9px;color:var(--text-muted)">萬</span></td>`;
+    });
+    const sum = row.vals.reduce((a,b)=>a+b,0);
+    const sumCls = isNet ? (sum>=0?'color:var(--broker)':'color:var(--danger)') : '';
+    return `<tr class="${row.cls}">
+      <td>${row.label}</td>
+      ${cells.join('')}
+      <td style="${sumCls}"><strong>${fmtM(sum)}</strong><span style="font-size:9px;color:var(--text-muted)">萬</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateScenarioPanel() {
+  showScenario(currentScenario, null);
+
+  // Compare table
+  const keys  = ['C','B','O'];
+  const items = [
+    { label: '流失率 L', fn: (sc) => fmtPct(SCENARIOS[sc].L) },
+    { label: '保經首佣率', fn: (sc) => fmtPct(SCENARIOS[sc].rate_broker) },
+    { label: '增員人數', fn: (sc) => SCENARIOS[sc].n_rec + ' 人' },
+    { label: '保經5年累計', fn: (sc) => { const r=compute5yr(getScenarioParams(sc)); return fmtM(r.sum5broker)+'萬'; } },
+    { label: '傳統5年累計', fn: (sc) => { const r=compute5yr(getScenarioParams(sc)); return fmtM(r.sum5trad)+'萬'; } },
+    { label: '★ 5年淨利差距', fn: (sc) => { const r=compute5yr(getScenarioParams(sc)); return (r.diff5>=0?'+':'')+fmtM(r.diff5)+'萬'; }, highlight: true },
+    { label: '黃金交叉', fn: (sc) => { const r=compute5yr(getScenarioParams(sc)); return r.beMonth?(r.beMonth<=1?'<1月':r.beMonth+'月'):'>36月'; } },
+  ];
+
+  document.getElementById('sc_compare_tbody').innerHTML = items.map(item => {
+    return `<tr class="${item.highlight?'highlight':''}">
+      <td>${item.label}</td>
+      ${keys.map(k => `<td class="val-${k.toLowerCase()}">${item.fn(k)}</td>`).join('')}
+    </tr>`;
+  }).join('');
+}
+
+function showScenario(key, btnEl) {
+  currentScenario = key;
+  const sc = SCENARIOS[key];
+  const sp = getScenarioParams(key);
+  const r  = compute5yr(sp);
+
+  // Update button styles
+  if (btnEl) {
+    document.querySelectorAll('.sc-btn').forEach(b => {
+      b.style.background = ''; b.style.borderColor = ''; b.style.color = '';
+    });
+    btnEl.style.background   = sc.key === 'C' ? 'rgba(231,76,60,0.15)' : (key==='B'?'rgba(201,162,39,0.15)':'rgba(39,174,96,0.12)');
+    btnEl.style.borderColor  = sc.border;
+    btnEl.style.color        = sc.color;
+  }
+
+  const html = `
+    <div class="card" style="border-color:${sc.border}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:${sc.color}">${sc.emoji} ${sc.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
+            流失率 ${fmtPct(sc.L)} · 保經首佣 ${fmtPct(sc.rate_broker)} · 增員 ${sc.n_rec} 人
+          </div>
+        </div>
+        <div class="badge ${r.diff5>=0?'pos':'neg'}">${r.diff5>=0?'保經勝出':'需調整'}</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi broker"><div class="kpi-label">保經5年</div><div class="kpi-value">${fmtM(r.sum5broker)}</div><div class="kpi-sub">萬元</div></div>
+        <div class="kpi trad"><div class="kpi-label">傳統5年</div><div class="kpi-value">${fmtM(r.sum5trad)}</div><div class="kpi-sub">萬元</div></div>
+        <div class="kpi diff kpi-full"><div class="kpi-label">5年淨利差距</div><div class="kpi-value" style="color:${sc.color}">${(r.diff5>=0?'+':'')+fmtM(r.diff5)}</div><div class="kpi-sub">萬元</div></div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">
+        📌 黃金交叉：<strong style="color:${sc.color}">${r.beMonth?(r.beMonth<=1?'第1年內即回本':r.beMonth+'個月內完全回本'):'>3年後回本'}</strong>
+      </div>
+      <div style="margin-top:14px">
+        ${[1,2,3,4,5].map(y=>{
+          const bpct = Math.min(r.broker[y-1]/Math.max(...r.broker)*100, 100).toFixed(1);
+          return `<div style="margin-bottom:7px">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:3px">
+              <span>第${y}年</span>
+              <span style="color:${sc.color}">${fmtM(r.broker[y-1])}萬</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill broker" style="width:${bpct}%;background:${sc.color}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  document.getElementById('sc_detail').innerHTML = html;
+}
+
+function updateScripts(p, r) {
+  const rySunk  = fmtNT(p.ry_sunk);
+  const diff    = fmtNT(Math.abs(r.diff5));
+  const beText  = r.beMonth ? (r.beMonth<=1 ? '第1個月' : `第 ${r.beMonth} 個月`) : '3年後';
+  const lPct    = fmtPct(p.L);
+  const nRec    = p.n_rec;
+  const orInc   = fmtNT(p.n_rec * p.rec_fyp * p.or_rate * 2); // yr2 × 2 as example
+
+  document.getElementById('script1').innerHTML =
+    `「經理，您一直放不下的是每年 <strong>${rySunk}</strong> 的續期佣金——這很正常，這是您多年心血的結晶。但模型告訴我們，正因為您只看這筆錢，反而讓您在未來5年的機會窗口裡損失了 <strong>${diff}</strong> 的潛在利潤。您是想保住小錢，還是賺取大錢？」`;
+
+  document.getElementById('script2').innerHTML =
+    `「根據您的真實產能，我們已經設定了 <strong>${lPct}</strong> 的客戶流失率——這是最保守的估計，您同意嗎？即使如此，模型顯示您只需 <strong>${beText}</strong> 就能完全補回離開時放棄的一切。<strong>第 ${(r.beMonth||37)+1} 個月開始，您創造的每一分錢，都永遠寫在您個人的合約裡。</strong>」`;
+
+  document.getElementById('script3').innerHTML =
+    `「${nRec > 0
+      ? `如果您帶 <strong>${nRec} 位夥伴</strong> 一起過來，單是組織代數獎金，第2年起每年額外就有 <strong>${orInc}</strong>。這些收益不在公司手裡，寫在您的名字底下，永久歸屬，子孫可繼承。`
+      : `若您未來在保經發展組織，組織代數獎金將成為指數級的被動收入，完全屬於您個人。`
+    } 這才是真正意義上的個人品牌資產。」`;
+}
+
+// ─── Tab switching ────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelector('.tab-' + name).classList.add('active');
+}
+
+// ─── Copy script ──────────────────────────────────────────────────────────────
+function copyScript(id, btn) {
+  const el   = document.getElementById(id);
+  const text = el.innerText;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✅ 已複製';
+      setTimeout(() => btn.textContent = '📋 複製話術', 2000);
+    });
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+recalc();
+
+</script>
+
+</style>
+</body>
+</html>
