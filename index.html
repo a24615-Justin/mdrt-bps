@@ -566,7 +566,7 @@ input[type="range"]::-webkit-slider-thumb{
     <div class="input-wrap"><input type="number" id="i_rate_trad" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">傳統壽險公司給付的首年保費佣金比率。<strong>傳統年收入 = FYP × 此比率 + 續期佣金。</strong></div></div>
   <div class="field fi"><label>年度續期佣金 ⊙ <span class="hint">沉沒成本核心</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_ry_sunk" value="500000" min="0" oninput="recalc()"></div><div class="field-desc">每年從舊保單獲得的續期佣金。轉職後此收入不會立刻歸零，而是依「年遞減係數」逐年遞減，<strong>直到被保經端新續佣取代。</strong></div></div>
+    <input type="number" id="i_ry_sunk" value="500000" min="0" oninput="recalc()"></div><div class="field-desc">每年從舊保單獲得的續期佣金。</div></div>
 
   <div class="field fi" style="display:none"><label>續期佣金年遞減係數 <span class="hint">單遞減模型</span></label>
     <div class="input-wrap"><input type="number" id="i_ry_decay" value="0.6" min="0.1" max="0.99" step="0.05" class="no-prefix" oninput="recalc()"></div><div class="field-desc">轉職後每年保留的舊保單續佣比率。<strong>0.6 = 每年遞減 40%</strong>（Year1：60%、Year2：36%、Year3：22%⋯）。係數越高表示舊客戶保留率越佳，轉職期間仍有部分續佣緩衝，不會斷崖式歸零。</div></div>
@@ -592,6 +592,9 @@ input[type="range"]::-webkit-slider-thumb{
     <input type="number" id="m_fyp" value="3500000" min="0" oninput="recalc()"></div><div class="field-desc"><strong>個人業績</strong>（不含組織業績），作為保經首年佣金的計算基礎。轉職後的增員獎金另計於C區。</div></div>
   <div class="field fm"><label>個人首年佣金率</label>
     <div class="input-wrap"><input type="number" id="m_rate_trad" value="22" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">原公司給付的個人首年保費佣金率。<strong>傳統年收入 = 個人 FYP × 此比率 + 組織津貼</strong>，用於對照保經端的實際差距。</div></div>
+  <div class="field fm"><label>個人年度續期佣金 <span class="hint">傳統端固定收入</span></label>
+    <div class="input-wrap"><span class="prefix">NT$</span>
+    <input type="number" id="m_ry_sunk" value="200000" min="0" oninput="recalc()"></div><div class="field-desc">每年從個人舊保單持續獲得的續期佣金。此收入在傳統端逐年累積，<strong>納入傳統端年收入對照</strong>；轉職保經後此來源自然中止，不計入保經端試算。</div></div>
   <div class="field fm"><label>年度組織津貼 ⊙ <span class="hint">最大沉沒成本</span></label>
     <div class="input-wrap"><span class="prefix">NT$</span>
     <input type="number" id="m_org_bonus" value="1200000" min="0" oninput="recalc()"></div><div class="field-desc">每年從組織獲得的管理津貼與層級加給。<strong>轉職後此項歸零</strong>，是壽險主管最難跨越的心理關卡。試算顯示保經收入補足此缺口所需時間。</div></div>
@@ -835,10 +838,11 @@ function getInputs() {
     const follow = +g('m_follow').value||0;
     const adapt  = +g('m_adapt').value||9;
     const legal  = +g('m_legal').value||0;
-    // sunk = org_bonus + implicit org income
     const orgBonus = +g('m_org_bonus').value||0;
+    const mRySunk  = +g('m_ry_sunk').value||0;
     return { FYP, rate_trad:(+g('m_rate_trad').value||0)/100,
-      ry_sunk: orgBonus,
+      ry_sunk: orgBonus,     // 組織津貼：轉職後歸零（沉沒成本）
+      _mRySunk: mRySunk,     // 個人續期佣金：傳統端固定收入，不納入保經端計算
       L: Math.min(adapt/36,.8),
       rb, ryr, or_, nrec:follow, rfyp:FYP*.8, fyb:1,
       _legal:legal, _follow:follow, _teamSize:+g('m_team_size').value||0,
@@ -884,17 +888,31 @@ function compute5yr(p) {
       return base*(1-p.L)*p.rb + base*(1-p.L)*p.ryr*(y-1);
     });
   } else {
-    // 傳統端：每年 = 新單首佣 + 舊保單續佣（維持公司繼續出單，新舊相補，視為固定）
-    // 非新人身份 fyb 固定為 1（已在 getInputs 設定）
-    trad   = yrs.map(() => p.FYP * p.rate_trad + p.ry_sunk);
+    // 續佣公式：傳統端與保經端相同邏輯，差異只在起始值與有效FYP
+    // 傳統端：從 ry_sunk 起步，FYP 全額（在職無流失）
+    // 保經端：從 0   起步，FYP×(1-L)（有客戶流失）
+    // renewal[y] = renewal[y-1] × 0.6 + 當期有效FYP × ryr
+    const decay = p.ry_decay || 0.6;
 
-    broker = yrs.map(y => {
+    let ry_t = p.ry_sunk + (p._mRySunk || 0);
+    const trad_ry = [ry_t];
+    for (let y = 2; y <= 5; y++) {
+      ry_t = ry_t * decay + p.FYP * (p.ryr || 0);
+      trad_ry.push(ry_t);
+    }
+    trad = yrs.map((_, i) => p.FYP * p.rate_trad + trad_ry[i]);
+
+    // 保經端：從0起步，逐年遞迴累積（自然建立新客戶續佣池）
+    let ry_b = 0;
+    const broker_ry = [0];
+    for (let y = 2; y <= 5; y++) {
+      ry_b = ry_b * decay + p.FYP * (1-p.L) * (p.ryr || 0);
+      broker_ry.push(ry_b);
+    }
+    broker = yrs.map((y, i) => {
       const fyp_i = p.FYP * (1-p.L)*p.rb;
-      const ry_i  = p.FYP*(1-p.L)*p.ryr*(y-1);
       const or_i  = (p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
-      // 舊保單續佣：離職即歸零（懸崖模型）
-      const old_ry_i = 0;
-      return fyp_i + ry_i + or_i + old_ry_i;
+      return fyp_i + broker_ry[i] + or_i;
     });
   }
 
@@ -940,9 +958,16 @@ function renderAnnualComparison(p, r) {
     const fyb_eff = (p._id==='newbie') ? (p.fyb||1) : 1;
     const fyc = p.FYP * fyb_eff * p.rate_trad;
     if (fyc > 0) items.push({label:'首年佣金', val: fyc, cls:'trad'});
-    if (p.ry_sunk > 0) {
-      const lbl = CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':'續佣/津貼';
-      items.push({label: lbl, val: p.ry_sunk, cls:'trad'});
+    // 遞迴續佣：計算第 y 年傳統端的續佣/津貼（Y1=基準，Y2+=遞迴累積）
+    {
+      const decay = p.ry_decay || 0.6;
+      const base  = (p.ry_sunk || 0) + (p._mRySunk || 0);
+      let ry = base;
+      for (let i = 2; i <= y; i++) ry = ry * decay + p.FYP * (p.ryr || 0);
+      if (ry > 0) {
+        const lbl = CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':CID==='manager'?'津貼＋續佣':'續期佣金';
+        items.push({label: lbl, val: ry, cls:'trad'});
+      }
     }
     return items;
   }
@@ -953,11 +978,13 @@ function renderAnnualComparison(p, r) {
     // 新人培育使用 fyb 係數，其他身份 fyb=1
     const _fyb  = (p._id==='newbie') ? (p.fyb||1) : 1;
     const fyp_i = p.FYP * _fyb *(1-p.L)*p.rb;
-    const ry_i  = p.FYP * _fyb *(1-p.L)*(p.ryr||0)*(y-1);
+    // 遞迴續佣：保經端從0起步，Y2+逐年累積
+    const decay = p.ry_decay || 0.6;
+    let ry_i = 0;
+    for (let i = 2; i <= y; i++) ry_i = ry_i * decay + p.FYP * _fyb * (1-p.L) * (p.ryr||0);
     const or_i  = (p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
-    // 舊保單續佣：離職即歸零
     if (fyp_i > 0)    items.push({label:'首年佣金', val: fyp_i, cls:'broker'});
-    if (ry_i  > 0)    items.push({label:`累積續佣×${y-1}`, val: ry_i, cls:'broker'});
+    if (ry_i  > 0)    items.push({label:`累積續佣(Y${y})`, val: ry_i, cls:'broker'});
     if (or_i  > 0)    items.push({label:'組織獎金', val: or_i, cls:'broker'});
     return items;
   }
