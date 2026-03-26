@@ -1,0 +1,181 @@
+/* ─── Company Selector ─────────────────────────────────────────────── */
+/* 放在原始 <style> 之後載入，繼承 --gold, --bg-card 等 CSS 變數 */
+
+.cs-container {
+  background: var(--bg-card, #1e2a3a);
+  border: 1px solid rgba(201,168,76,.25);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 0 0 20px 0;
+}
+
+.cs-title {
+  color: var(--gold, #C9A84C);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.cs-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.cs-group {
+  background: rgba(0,0,0,.15);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.cs-group-label {
+  font-size: 11px;
+  color: var(--text-muted, #95a5a6);
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.cs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cs-chip {
+  padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all .2s ease;
+  background: transparent;
+  color: var(--text, #ecf0f1);
+  font-family: inherit;
+  outline: none;
+}
+
+.cs-chip:hover {
+  border-color: rgba(201,168,76,.5);
+  background: rgba(201,168,76,.08);
+}
+
+.cs-chip.active {
+  border-color: #e94560;
+  background: rgba(233,69,96,.12);
+  color: #e94560;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(233,69,96,.15);
+}
+
+.cs-chip.cs-broker:hover {
+  border-color: rgba(46,204,113,.5);
+  background: rgba(46,204,113,.08);
+}
+
+.cs-chip.cs-broker.active {
+  border-color: #2ecc71;
+  background: rgba(46,204,113,.12);
+  color: #2ecc71;
+  box-shadow: 0 0 12px rgba(46,204,113,.15);
+}
+
+/* ─── Notice ────────────────────────────────────────────────────── */
+.cs-notice {
+  background: rgba(201,168,76,.08);
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+.cs-notice-main {
+  font-size: 13px;
+  color: var(--gold, #C9A84C);
+  line-height: 1.5;
+}
+
+.cs-notice-warn {
+  font-size: 11px;
+  color: var(--text-muted, #95a5a6);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ─── Comparison Table ────────────────────────────────────────── */
+.cs-comparison {
+  margin-top: 4px;
+}
+
+.cs-compare-title {
+  color: var(--gold, #C9A84C);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.cs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cs-table th,
+.cs-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.cs-table thead th {
+  background: rgba(0,0,0,.2);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  color: var(--text-muted, #95a5a6);
+}
+
+.cs-th-trad { color: #e94560 !important; }
+.cs-th-broker { color: #2ecc71 !important; }
+
+.cs-label {
+  color: var(--text-muted, #95a5a6);
+  font-weight: 500;
+}
+
+.cs-val-trad {
+  color: rgba(255,255,255,.6);
+}
+
+.cs-val-broker {
+  color: #2ecc71;
+  font-weight: 500;
+}
+
+.cs-table tbody tr:hover {
+  background: rgba(255,255,255,.02);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .cs-groups {
+    grid-template-columns: 1fr;
+  }
+  .cs-chip {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .cs-table {
+    font-size: 11px;
+  }
+  .cs-table th,
+  .cs-table td {
+    padding: 8px 10px;
+  }
+}
