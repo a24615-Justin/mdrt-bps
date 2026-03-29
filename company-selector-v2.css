@@ -1,0 +1,407 @@
+/* ─── Company Selector v2 — Glassmorphism Light Card ─────────────────────── */
+/* 參考 21st.dev Pricing Section 設計：亮色卡片 + 玻璃質感 + 清晰排版 */
+
+.cs-container {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  margin: 0 0 20px 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  color: #1a1a2e;
+}
+
+.cs-title {
+  color: #1a1a2e;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Header Row (Title + Export) ────────────────────────────────────────── */
+.cs-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cs-header-row .cs-title {
+  margin-bottom: 0;
+}
+
+/* ─── Export Button ─────────────────────────────────────────────────────── */
+.cs-export-btn {
+  padding: 6px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 20px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s ease;
+  font-family: inherit;
+  outline: none;
+}
+
+.cs-export-btn:hover {
+  border-color: #6366f1;
+  color: #4f46e5;
+  background: #eef2ff;
+}
+
+.cs-export-btn.cs-export-success {
+  border-color: #10b981;
+  color: #059669;
+  background: #ecfdf5;
+}
+
+/* ─── Onboarding Tooltip ────────────────────────────────────────────────── */
+.cs-onboarding {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  animation: cs-pulse 2s ease-in-out infinite;
+}
+
+@keyframes cs-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.15); }
+  50% { box-shadow: 0 0 0 6px rgba(99,102,241,0); }
+}
+
+.cs-onboarding-text {
+  font-size: 12.5px;
+  color: #4338ca;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.cs-onboarding-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(99,102,241,0.1);
+  border-radius: 50%;
+  color: #6366f1;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+
+.cs-onboarding-close:hover {
+  background: rgba(99,102,241,0.2);
+}
+
+/* ─── Groups (Life vs Broker) ────────────────────────────────────────────── */
+.cs-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.cs-group {
+  background: #f7f8fa;
+  border: 1px solid #e8eaed;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.cs-group-label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8eaed;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+/* ─── Chips ──────────────────────────────────────────────────────────────── */
+.cs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cs-chip {
+  padding: 8px 18px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .2s cubic-bezier(.4,0,.2,1);
+  background: #fff;
+  color: #374151;
+  font-family: inherit;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Life insurance chips — slate blue accent */
+.cs-chip:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.12);
+  transform: translateY(-1px);
+}
+
+.cs-chip.active {
+  border-color: #6366f1;
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+  transform: translateY(-1px);
+}
+
+/* Broker chips — neutral gray accent */
+.cs-chip.cs-broker:hover {
+  border-color: #64748b;
+  background: #f1f5f9;
+  color: #475569;
+  box-shadow: 0 2px 8px rgba(100,116,139,0.12);
+}
+
+.cs-chip.cs-broker.active {
+  border-color: #475569;
+  background: #475569;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(71,85,105,0.3);
+}
+
+/* ─── Notice ─────────────────────────────────────────────────────────────── */
+.cs-notice {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  display: none;
+}
+
+.cs-notice-main {
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.cs-notice-main strong {
+  color: #78350f;
+}
+
+.cs-notice-warn {
+  font-size: 11.5px;
+  color: #a16207;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ─── Comparison Table ───────────────────────────────────────────────────── */
+.cs-comparison {
+  margin-top: 4px;
+}
+
+.cs-compare-title {
+  color: #1a1a2e;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+.cs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cs-table th,
+.cs-table td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.cs-table thead th {
+  background: #f9fafb;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: #6b7280;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.cs-th-trad {
+  color: #4f46e5 !important;
+}
+
+.cs-th-broker {
+  color: #475569 !important;
+}
+
+.cs-label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+.cs-val-trad {
+  color: #374151;
+  font-weight: 400;
+}
+
+.cs-val-broker {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* ─── Disclaimer Footer ────────────────────────────────────────────────── */
+.cs-disclaimer {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  line-height: 1.5;
+}
+
+.cs-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background .15s;
+}
+
+.cs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cs-table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.cs-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* ─── Responsive: Tablet ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cs-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Responsive: Mobile — Card Layout ───────────────────────────────────── */
+@media (max-width: 640px) {
+  .cs-container {
+    padding: 16px 14px;
+    border-radius: 14px;
+    margin: 0 0 14px 0;
+  }
+  .cs-title {
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .cs-groups {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .cs-group {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  .cs-chips {
+    gap: 6px;
+  }
+  .cs-chip {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 20px;
+    flex: 1 1 auto;
+    text-align: center;
+    min-width: 0;
+  }
+
+  /* 對照表改為卡片堆疊 */
+  .cs-table {
+    display: block;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+  }
+  .cs-table thead {
+    display: none;
+  }
+  .cs-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cs-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    background: #f7f8fa;
+    border: 1px solid #e8eaed;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .cs-table tbody tr:hover {
+    background: #f0f1f3;
+  }
+  .cs-table td {
+    padding: 2px 0;
+    border-bottom: none !important;
+  }
+  .cs-table td.cs-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    margin-bottom: 4px;
+  }
+  .cs-table td.cs-val-trad::before {
+    content: '對方 ▸ ';
+    font-size: 10px;
+    color: #9ca3af;
+  }
+  .cs-table td.cs-val-broker::before {
+    content: '公勝 ▸ ';
+    font-size: 10px;
+    color: #9ca3af;
+  }
+  .cs-table td.cs-val-trad,
+  .cs-table td.cs-val-broker {
+    font-size: 13px;
+    padding-left: 4px;
+  }
+
+  .cs-compare-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .cs-notice {
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+}

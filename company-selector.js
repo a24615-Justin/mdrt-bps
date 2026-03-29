@@ -1,4 +1,4 @@
-// ─── Company Selector Module ─────────────────────────────────────────
+// ─── Company Selector Module ─────────────────────────────────────────────────
 // 依賴：companies.js（COMPANY_DB, GONGSHENG_COMPARE）
 // 依賴：原 index.html 中的 CID, g(), recalc(), ID_CONFIG
 // 載入順序：companies.js → company-selector.css → company-selector.js（在原 <script> 之後）
@@ -8,7 +8,7 @@
 
   let selectedCompanyId = 'cathay-life'; // 預設選擇國泰
 
-  // ─── ID_CONFIG 到 COMPANY_DB persona key 的映射 ─────────────────────
+  // ─── ID_CONFIG 到 COMPANY_DB persona key 的映射 ─────────────────────────────
   const PERSONA_MAP = {
     insurance: 'insurance',
     banker:    'banker',
@@ -17,7 +17,7 @@
     newbie:    'newbie',
   };
 
-  // ─── 原 index.html 的 input ID 對照表 ──────────────────────────────
+  // ─── 原 index.html 的 input ID 對照表 ──────────────────────────────────────
   // 選擇公司後，自動填入這些欄位
   const FIELD_MAP = {
     insurance: {
@@ -41,23 +41,31 @@
     },
   };
 
-  // ─── 注入 HTML ──────────────────────────────────────────────────
+  // ─── 注入 HTML ──────────────────────────────────────────────────────────────
   function injectSelectorHTML() {
     const lifeCompanies = Object.entries(COMPANY_DB)
       .filter(([_, c]) => c.type === 'life')
-      .map(([id, c]) => `<button class="cs-chip${id === selectedCompanyId ? ' active' : ''}" data-company="${id}">${c.short}</button>`)
+      .map(([id, c]) => `<button class="cs-chip${id === selectedCompanyId ? ' active' : ''}" data-company="${id}">${c.icon || ''} ${c.short}</button>`)
       .join('');
 
     const brokerCompanies = Object.entries(COMPANY_DB)
       .filter(([_, c]) => c.type === 'broker')
-      .map(([id, c]) => `<button class="cs-chip cs-broker${id === selectedCompanyId ? ' active' : ''}" data-company="${id}">${c.short}</button>`)
+      .map(([id, c]) => `<button class="cs-chip cs-broker${id === selectedCompanyId ? ' active' : ''}" data-company="${id}">${c.icon || ''} ${c.short}</button>`)
       .join('');
 
-    const customChip = `<button class="cs-chip${selectedCompanyId === 'custom' ? ' active' : ''}" data-company="custom">自訂</button>`;
+    const customEntry = COMPANY_DB['custom'];
+    const customChip = `<button class="cs-chip${selectedCompanyId === 'custom' ? ' active' : ''}" data-company="custom">${customEntry?.icon || '✏️'} 自訂</button>`;
 
     const html = `
     <div id="company-selector" class="cs-container">
-      <div class="cs-title">📍 對方目前服務公司</div>
+      <div class="cs-header-row">
+        <div class="cs-title">📍 對方目前服務公司</div>
+        <button id="cs-export-btn" class="cs-export-btn" title="匯出對照表為圖片">📤 匯出</button>
+      </div>
+      <div id="cs-onboarding" class="cs-onboarding">
+        <div class="cs-onboarding-text">👆 選擇對方目前服務的公司，系統會自動帶入預設參數並產生制度對照表</div>
+        <button class="cs-onboarding-close" id="cs-onboarding-close">✕</button>
+      </div>
       <div class="cs-groups">
         <div class="cs-group">
           <div class="cs-group-label">壽險公司</div>
@@ -95,7 +103,7 @@
     return div.firstChild;
   }
 
-  // ─── 更新通知與對照表 ──────────────────────────────────────────
+  // ─── 更新通知與對照表 ──────────────────────────────────────────────────────
   function updateNotice() {
     const c = COMPANY_DB[selectedCompanyId];
     if (!c) return;
@@ -108,14 +116,19 @@
     const commKey = Object.keys(defs)[0] || '';
     const commVal = defs[commKey] || '—';
 
+    const sources = c.dataSources
+      ? Object.entries(c.dataSources).map(([k, v]) => `${k}: ${v}`).join('；')
+      : '業界公開資訊估計';
+
     notice.innerHTML = `
       <div class="cs-notice-main">
         ⚙️ 已套用「<strong>${c.name}</strong>」預設參數
         ｜ ${c.contract} ｜ ${c.benefits}
       </div>
       <div class="cs-notice-warn">
-        ⚠️ 數值為業界估計中位數，請依對方實際職階與年資調整
+        ⚠️ 數值僅供參考，請依對方實際職階與年資調整
         ${c.note ? `<br>💡 ${c.note}` : ''}
+        <br>📎 資料來源：${sources}
       </div>`;
     notice.style.display = 'block';
   }
@@ -132,6 +145,7 @@
       ['收入天花板', c.comparison.ceiling, gs.ceiling],
       ['勞健保', c.benefits, gs.benefits],
       ['培訓體系', c.comparison.training, gs.training],
+      ['組織發展支援', c.comparison.orgDev || '—', gs.orgDev],
       ['品牌特色', c.comparison.brand || '—', gs.brand],
     ];
 
@@ -146,14 +160,21 @@
       rows.splice(1, 0, ['首年佣金率', `~${defs.altComm}%`, `~${document.getElementById('i_rate_broker')?.value || 40}%`]);
     }
 
+    const disclaimerText = typeof DATA_DISCLAIMER !== 'undefined'
+      ? DATA_DISCLAIMER.disclaimer
+      : '數值僅供參考，實際依各公司最新公告為準。';
+    const lastUpdated = typeof DATA_DISCLAIMER !== 'undefined'
+      ? DATA_DISCLAIMER.lastUpdated
+      : '';
+
     container.innerHTML = `
       <div class="cs-compare-title">📊 制度對照一覽</div>
       <table class="cs-table">
         <thead>
           <tr>
             <th>比較項目</th>
-            <th class="cs-th-trad">🔴 ${c.name}</th>
-            <th class="cs-th-broker">🟢 公勝保經</th>
+            <th class="cs-th-trad">🏢 ${c.name}</th>
+            <th class="cs-th-broker">🏢 公勝保經</th>
           </tr>
         </thead>
         <tbody>
@@ -164,10 +185,13 @@
               <td class="cs-val-broker">${broker}</td>
             </tr>`).join('')}
         </tbody>
-      </table>`;
+      </table>
+      <div class="cs-disclaimer">
+        ⚖️ ${disclaimerText}${lastUpdated ? ` ｜ 資料更新：${lastUpdated}` : ''}
+      </div>`;
   }
 
-  // ─── 套用預設參數到表單 ────────────────────────────────────────
+  // ─── 套用預設參數到表單 ────────────────────────────────────────────────────
   function applyDefaults() {
     const c = COMPANY_DB[selectedCompanyId];
     if (!c) return;
@@ -196,13 +220,105 @@
     }
   }
 
-  // ─── 事件綁定 ──────────────────────────────────────────────────
+  // ─── 匯出對照表（複製純文字到剪貼簿）──────────────────────────────────
+  function exportComparison() {
+    const c = COMPANY_DB[selectedCompanyId];
+    const gs = GONGSHENG_COMPARE;
+    if (!c) return;
+
+    const persona = PERSONA_MAP[typeof CID !== 'undefined' ? CID : 'insurance'];
+    const defs = c.defaults[persona] || c.defaults.insurance || {};
+    const commRate = defs.commRate || defs.personalComm || defs.altComm || '—';
+    const brokerRate = document.getElementById('i_rate_broker')?.value || 40;
+
+    const lines = [
+      '══ MDRT-BPS 制度對照表 ══',
+      `對照：${c.name} vs 公勝保經`, '',
+      `合約制度　│ ${c.contract} │ ${gs.contract}`,
+      `首年佣金率│ ~${commRate}%  │ ~${brokerRate}%`,
+      `產品選擇　│ ${c.comparison.productChoice} │ ${gs.productChoice}`,
+      `收入天花板│ ${c.comparison.ceiling} │ ${gs.ceiling}`,
+      `勞健保　　│ ${c.benefits} │ ${gs.benefits}`,
+      `培訓體系　│ ${c.comparison.training} │ ${gs.training}`,
+      `組織發展　│ ${c.comparison.orgDev || '—'} │ ${gs.orgDev}`,
+      `品牌特色　│ ${c.comparison.brand || '—'} │ ${gs.brand}`,
+      '',
+      `📎 ${c.dataSources ? Object.values(c.dataSources).join('、') : '業界公開資訊'}`,
+      `⚠️ 僅供參考，實際依各公司最新公告為準`,
+    ];
+    const text = lines.join('\n');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showExportFeedback('✅ 已複製！');
+      }).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showExportFeedback('✅ 已複製！');
+    } catch(e) {
+      showExportFeedback('⚠️ 請手動截圖');
+    }
+    document.body.removeChild(ta);
+  }
+
+  function showExportFeedback(msg) {
+    const btn = document.getElementById('cs-export-btn');
+    if (!btn) return;
+    const original = btn.innerHTML;
+    btn.textContent = msg;
+    btn.classList.add('cs-export-success');
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('cs-export-success');
+    }, 2000);
+  }
+
+  // ─── 首次使用引導 ──────────────────────────────────────────────────────────
+  function initOnboarding() {
+    const onboarding = document.getElementById('cs-onboarding');
+    const closeBtn = document.getElementById('cs-onboarding-close');
+    if (!onboarding) return;
+
+    let seen = false;
+    try { seen = localStorage.getItem('cs_onboarding_seen') === '1'; } catch(e) {}
+
+    if (seen) { onboarding.style.display = 'none'; return; }
+    onboarding.style.display = 'flex';
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        onboarding.style.display = 'none';
+        try { localStorage.setItem('cs_onboarding_seen', '1'); } catch(e) {}
+      });
+    }
+
+    // 點擊任一 chip 也自動關閉
+    document.addEventListener('click', function hideOnChip(e) {
+      if (e.target.closest('.cs-chip')) {
+        onboarding.style.display = 'none';
+        try { localStorage.setItem('cs_onboarding_seen', '1'); } catch(e2) {}
+        document.removeEventListener('click', hideOnChip);
+      }
+    });
+  }
+
+  // ─── 事件綁定 ──────────────────────────────────────────────────────────────
   function bindEvents() {
     document.addEventListener('click', (e) => {
       const chip = e.target.closest('.cs-chip');
       if (!chip) return;
 
-      // 取消所有 active
       document.querySelectorAll('.cs-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
 
@@ -211,14 +327,12 @@
       updateNotice();
       updateComparisonTable();
 
-      // 觸發原始的 recalc
       if (typeof recalc === 'function') recalc();
     });
 
     // 監聽身份切換，重新套用
     document.querySelectorAll('.id-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        // 等原始 setId 執行完
         setTimeout(() => {
           applyDefaults();
           updateNotice();
@@ -226,9 +340,13 @@
         }, 50);
       });
     });
+
+    // 匯出按鈕
+    const exportBtn = document.getElementById('cs-export-btn');
+    if (exportBtn) exportBtn.addEventListener('click', exportComparison);
   }
 
-  // ─── 初始化 ────────────────────────────────────────────────────
+  // ─── 初始化 ────────────────────────────────────────────────────────────────
   function init() {
     // 確保 DOM 和原始腳本已載入
     if (typeof COMPANY_DB === 'undefined') {
@@ -239,6 +357,7 @@
     updateNotice();
     updateComparisonTable();
     bindEvents();
+    initOnboarding();
     // 首次套用預設
     applyDefaults();
     if (typeof recalc === 'function') recalc();
