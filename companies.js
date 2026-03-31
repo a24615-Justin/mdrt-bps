@@ -198,6 +198,35 @@ const COMPANY_DB = {
     note: '獨立經營壽險，NWLB首佣15-55%、TLA首佣35-55%、集繳件折扣-2~-5%',
   },
 
+  // ═══ 公勝保經（教材主角）═══
+  'gongsheng': {
+    name: '公勝保經', short: '公勝', icon: '🏅', type: 'broker',
+    contract: '承攬制（純C計佣）', benefits: '自行投保（職業工會）',
+    marketShare: '保經業第一',
+    dataSources: {
+      marketShare: '連續七年保經業第一',
+      commRate: '公勝保經 2026 制度架構圖',
+      contract: '公勝保經官方制度說明',
+    },
+    defaults: {
+      // 以「專員」為預設起點，使用者可依實際職級調整
+      insurance: { commRate: 50, renewalRate: 5, renewalDecay: 0.85, orgAllowance: 0 },
+      banker:    { bankComm: 50, fixedSalary: 0 },
+      manager:   { personalComm: 68, orgAllowance: 0, personalRenewal: 0 },
+      medical:   { currentComm: 50 },
+      newbie:    { altComm: 50 },
+    },
+    brokerDefaults: { brokerComm: 50, renewalRate: 5, orgRate: 5 },
+    comparison: {
+      productChoice: '多家保司產品，各家來佣100%FYC',
+      ceiling: '無上限（累積晉升，永不歸零）',
+      training: 'MDRT 系統培訓 + Legacy Grid 輔銷武器庫',
+      brand: '連續七年保經業第一',
+      orgDev: '六職級（專員50%→事業部經理82%+）+ 三代加發8% + 績效獎金4%',
+    },
+    note: '專員50% → 主任60% → 襄理68% → 副理74% → 經理78% → 事業部經理82%+，最高94%',
+  },
+
   // ═══ 保經公司（競品）═══
   'yongda': {
     name: '永達保經', short: '永達', icon: '🏛️', type: 'broker',
@@ -335,14 +364,34 @@ const COMPANY_DB = {
 };
 
 // 公勝保經固定參數（右側對照）
+// 資料來源：公勝保經 2026 制度架構圖（Justin 提供）
+// 職級佣金：專員50% → 主任60% → 襄理68% → 副理74% → 經理78% → 事業部經理82%+
+// 最高發放：82% + 8%(三代) + 4%(績效) = 94%
 const GONGSHENG_COMPARE = {
-  contract: '承攬制',
+  contract: '承攬制（純C計佣）',
   benefits: '自行投保（職業工會）',
-  productChoice: '多家保司產品',
-  ceiling: '無上限',
-  training: 'MDRT 系統培訓',
+  productChoice: '多家保司產品，各家來佣100%FYC',
+  ceiling: '無上限（累積晉升，永不歸零）',
+  training: 'MDRT 系統培訓 + Legacy Grid 輔銷武器庫',
   brand: '連續七年保經業第一',
-  orgDev: '組織津貼 + 增員獎金 + 團隊培訓支援',
+  orgDev: '六職級晉升（專員→事業部經理）+ 三代加發最高8% + 月績效獎金最高4%',
+  // 職級晉升門檻（整組累計FYC）
+  ranks: [
+    { title: '專員',     commRate: 50, fycThreshold: 0,       orgAllowance: 5 },
+    { title: '主任',     commRate: 60, fycThreshold: 150000,  orgAllowance: 5 },
+    { title: '襄理',     commRate: 68, fycThreshold: 400000,  orgAllowance: 4 },
+    { title: '副理',     commRate: 74, fycThreshold: 1000000, orgAllowance: 2 },
+    { title: '經理',     commRate: 78, fycThreshold: 1800000, orgAllowance: 1.5 },
+    { title: '事業部經理', commRate: 82, fycThreshold: 3000000, orgAllowance: 0, perfBonus: '1-4%', threeGen: '5%+2%+1%=8%' },
+  ],
+  // 事業部月績效獎金
+  perfBonusTiers: [
+    { fycMin: 300000,  bonus: 1 },
+    { fycMin: 600000,  bonus: 2 },
+    { fycMin: 1500000, bonus: 3 },
+    { fycMin: 2000000, bonus: 4 },
+  ],
+  maxComm: 94, // 82% + 8%(三代) + 4%(績效)
 };
 
 // 全站數據免責聲明與來源總表

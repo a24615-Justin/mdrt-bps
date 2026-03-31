@@ -173,7 +173,7 @@
 
     const tooltipHTML = `<span class="cs-info-icon" tabindex="0">ℹ<span class="cs-tooltip">${c.name} 數據來源：${commSource}${rangeText}<br>更新日期：${updatedDate}${verifyText}</span></span>`;
 
-    const brokerRate = document.getElementById('i_rate_broker')?.value || 40;
+    const brokerRate = document.getElementById('i_rate_broker')?.value || 50;
 
     if (defs.commRate) {
       rows.splice(1, 0, ['簽新保單時的佣金<br><span class="cs-term-hint">（首年佣金率）</span>', `基礎 ${defs.commRate}% ${tooltipHTML}`, `基礎 ${brokerRate}%`]);
@@ -197,7 +197,7 @@
       const tradComm = Math.max(0, Math.min(1, (Number(insDefs.commRate) || 0) / 100));
       const tradRenewal = Math.max(0, Math.min(1, (Number(insDefs.renewalRate) || 0) / 100));
       const tradDecay = Math.max(0, Math.min(1, Number(insDefs.renewalDecay) || 0));
-      const gsComm = Math.max(0, Math.min(1, (Number(brokerRate) || 40) / 100));
+      const gsComm = Math.max(0, Math.min(1, (Number(brokerRate) || 50) / 100));
       const gsRenewal = 0.05;
       const gsDecay = 0.85;
 
@@ -304,7 +304,7 @@
     const persona = PERSONA_MAP[typeof CID !== 'undefined' ? CID : 'insurance'];
     const defs = c.defaults[persona] || c.defaults.insurance || {};
     const commRate = defs.commRate || defs.personalComm || defs.altComm || '—';
-    const brokerRate = document.getElementById('i_rate_broker')?.value || 40;
+    const brokerRate = document.getElementById('i_rate_broker')?.value || 50;
 
     // 計算 10 年累積（與對照表同邏輯）
     const insDefs = c.defaults.insurance;
@@ -315,7 +315,7 @@
       const _commR = Math.max(0, Math.min(100, Number(insDefs.commRate) || 0));
       const _renewR = Math.max(0, Math.min(100, Number(insDefs.renewalRate) || 0));
       const _decay = Math.max(0, Math.min(1, Number(insDefs.renewalDecay) || 0));
-      const _brRate = Math.max(0, Math.min(100, Number(brokerRate) || 40));
+      const _brRate = Math.max(0, Math.min(100, Number(brokerRate) || 50));
       let tradT = 0, gsT = 0;
       for (let y = 1; y <= 10; y++) {
         tradT += baseFYP * (_commR / 100);
