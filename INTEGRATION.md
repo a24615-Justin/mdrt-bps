@@ -133,7 +133,21 @@ v2 亮色主題不依賴 CSS 變數。Income Chart 自動偵測 `data-theme="dar
 
 ---
 
+## 安全建議
+
+在 `index.html` 的 `<head>` 中加入 CSP（Content Security Policy）meta tag：
+
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+```
+
+---
+
 ## 更新日誌
 
+- **2026-03-30 P0**: 輸入邊界值驗證（commRate/renewalDecay clamp）
+- **2026-03-30 P1**: 共用 calcIncomeShared() 函式、deploy.sh 安全化
+- **2026-03-30 P2**: XSS 防護 _esc()、Tooltip tap-to-toggle、推演錨點連結
+- **2026-03-30 P3**: .gitignore、JSDoc typedef、CSP 建議、WCAG 對比度
 - **2026-03-29 P0**: 數據來源標註、配色中立化（藍/灰）、手機卡片佈局、離線 PDF
 - **2026-03-29 P1**: 十年收入差距圖表、組織發展支援維度、免責聲明 footer

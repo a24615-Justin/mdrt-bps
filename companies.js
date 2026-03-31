@@ -1,8 +1,49 @@
 // ─── Company Data Model ──────────────────────────────────────────────────────
 // 公司制度資料庫 — 所有預設數值均標註來源，供使用者查核
 // 新增公司：複製任一物件，修改 id/name/defaults 即可
-// lastUpdated: 2026-03-29
+// lastUpdated: 2026-03-30
 // dataDisclaimer: 數值為公開資訊整理，實際依個人職階與年資有所不同
+
+/**
+ * @typedef {Object} PersonaDefaults
+ * @property {number} [commRate]        - 首年佣金率 (%)
+ * @property {number} [renewalRate]     - 續期佣金率 (%)
+ * @property {number} [renewalDecay]    - 續佣年遞減係數 (0-1)
+ * @property {number} [orgAllowance]    - 組織津貼 (NT$)
+ * @property {number} [bankComm]        - 銀行佣金率 (%)
+ * @property {number} [fixedSalary]     - 固定薪資 (NT$)
+ * @property {number} [personalComm]    - 個人首佣率 (%)
+ * @property {number} [personalRenewal] - 個人續佣 (NT$)
+ * @property {number} [currentComm]     - 現有佣金率 (%)
+ * @property {number} [altComm]         - 新人佣金率 (%)
+ */
+
+/**
+ * @typedef {Object} CompanyEntry
+ * @property {string} name              - 公司全名
+ * @property {string} short             - 簡稱（Chip 顯示）
+ * @property {string} [icon]            - Emoji 圖標
+ * @property {'life'|'broker'|'custom'} type - 公司類別
+ * @property {string} contract          - 合約制度
+ * @property {string} benefits          - 勞健保說明
+ * @property {string} marketShare       - 市占率
+ * @property {Object} [dataSources]     - 各欄位資料來源
+ * @property {string} [dataSources.marketShare]
+ * @property {string} [dataSources.commRate]
+ * @property {string} [dataSources.bonusTable]
+ * @property {string} [dataSources.contract]
+ * @property {Object.<string, PersonaDefaults>} defaults - 各身份別預設值
+ * @property {Object} [brokerDefaults]  - 保經端預設（僅 broker 類型）
+ * @property {Object} comparison        - 制度對照文字
+ * @property {string} comparison.productChoice
+ * @property {string} comparison.ceiling
+ * @property {string} comparison.training
+ * @property {string} [comparison.orgDev]
+ * @property {string} [comparison.brand]
+ * @property {string} [note]            - 備註
+ */
+
+/** @type {Object.<string, CompanyEntry>} */
 
 const COMPANY_DB = {
   // ═══ 壽險公司 ═══
@@ -12,7 +53,7 @@ const COMPANY_DB = {
     marketShare: '21.3%',
     dataSources: {
       marketShare: '2024 壽險公會年報',
-      commRate: '2024 業界公開徵才資訊中位數',
+      commRate: '業務員支給暨管理辦法 11313V2（業績津貼率2-32%）',
       contract: '國泰人壽官網業務合作專區',
     },
     defaults: {
@@ -37,7 +78,8 @@ const COMPANY_DB = {
     marketShare: '14.8%',
     dataSources: {
       marketShare: '2024 壽險公會年報',
-      commRate: '2024 業界公開徵才資訊中位數',
+      commRate: '同仁手冊(菁英版-行銷專員CA) 1120630修改版',
+      bonusTable: '同仁手冊(菁英版-通則) 1131212修訂',
       contract: '富邦人壽官網業務招募專區',
     },
     defaults: {
@@ -105,6 +147,55 @@ const COMPANY_DB = {
       orgDev: '固定晉升階梯，需達組織人力門檻',
     },
     note: '雙合約制，新人財務補助計畫',
+  },
+  'allianz-life': {
+    name: '安聯人壽', short: '安聯', icon: '🛡️', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '3.2%',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '安聯人壽業務規則 2022/12/21修訂',
+      bonusTable: '安聯佣金表',
+    },
+    defaults: {
+      insurance: { commRate: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      banker:    { bankComm: 10, fixedSalary: 700000 },
+      manager:   { personalComm: 27, orgAllowance: 600000, personalRenewal: 220000 },
+      medical:   { currentComm: 18 },
+      newbie:    { altComm: 22 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓體系',
+      brand: '外商品牌、投資型商品強',
+      orgDev: '固定晉升階梯，業績獎金月FYP>10K→FYC 10%',
+    },
+    note: '雙合約制（僱傭+承攬），WL1N首佣20-39%、ND10首佣38%、年終3-15%',
+  },
+  'taishin-life': {
+    name: '台新人壽', short: '台新', icon: '🌟', type: 'life',
+    contract: '承攬制', benefits: '自行投保',
+    marketShare: '1.8%',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '台新佣金表 113年11月04日修訂',
+    },
+    defaults: {
+      insurance: { commRate: 30, renewalRate: 4, renewalDecay: 0.7, orgAllowance: 0 },
+      banker:    { bankComm: 0, fixedSalary: 0 },
+      manager:   { personalComm: 30, orgAllowance: 400000, personalRenewal: 250000 },
+      medical:   { currentComm: 20 },
+      newbie:    { altComm: 28 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '依個人能力',
+      training: '自主學習為主',
+      brand: '獨立經營、佣金率較高',
+      orgDev: '無組織負擔，個人導向',
+    },
+    note: '獨立經營壽險，NWLB首佣15-55%、TLA首佣35-55%、集繳件折扣-2~-5%',
   },
 
   // ═══ 保經公司（競品）═══
@@ -255,13 +346,44 @@ const GONGSHENG_COMPARE = {
 };
 
 // 全站數據免責聲明與來源總表
+// ═══ 共用收入計算函式 ═══
+// company-selector.js 和 income-chart.js 都會呼叫，避免公式分散兩處
+// params: { commRate(%), renewalRate(%), renewalDecay(0-1), baseFYP(NT$), years(int), orgAllowance(NT$, optional) }
+// 回傳: [{ year, annual, cumulative }]
+function calcIncomeShared(params) {
+  const commRate = Math.max(0, Math.min(100, Number(params.commRate) || 0));
+  const renewalRate = Math.max(0, Math.min(100, Number(params.renewalRate) || 0));
+  const renewalDecay = Math.max(0, Math.min(1, Number(params.renewalDecay) || 0));
+  const baseFYP = Math.max(0, Number(params.baseFYP) || 1000000);
+  const years = Math.max(1, Math.min(30, Number(params.years) || 10));
+  const orgAllowance = Math.max(0, Number(params.orgAllowance) || 0);
+
+  const result = [];
+  let cumulative = 0;
+  for (let y = 1; y <= years; y++) {
+    let annual = baseFYP * (commRate / 100);
+    for (let prev = 1; prev < y; prev++) {
+      annual += baseFYP * (renewalRate / 100) * Math.pow(renewalDecay, y - prev - 1);
+    }
+    if (orgAllowance > 0) annual += orgAllowance;
+    cumulative += annual;
+    result.push({ year: y, annual: Math.round(annual), cumulative: Math.round(cumulative) });
+  }
+  return result;
+}
+
 const DATA_DISCLAIMER = {
-  lastUpdated: '2026-03-29',
-  disclaimer: '本站數值均來自公開資訊整理，僅供參考比較用途，不構成任何承諾或保證。實際制度依各公司最新公告為準。',
+  lastUpdated: '2026-03-30',
+  disclaimer: '本站數值均來自公開資訊整理，為代表性中位數估計值，僅供參考比較用途，不構成任何承諾或保證。實際佣金因商品類別、繳費年期、職級等因素有巨大差異，請依各公司最新公告為準。',
   primarySources: [
     '壽險公會 2024 年度統計年報',
     '保險經紀人公會 2024 年度統計',
+    '國泰人壽業務員支給暨管理辦法 11313V2',
+    '富邦人壽同仁手冊(菁英版-行銷專員CA) 1120630修改版',
+    '富邦人壽同仁手冊(菁英版-通則) 1131212修訂',
+    '安聯人壽業務規則 2022/12/21修訂',
+    '安聯佣金表',
+    '台新佣金表 113年11月04日修訂',
     '各公司官網公開招募/增員資訊（2024–2025）',
-    '公開增員說明會簡報資料',
   ],
 };

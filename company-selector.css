@@ -235,7 +235,7 @@
 }
 
 .cs-val-trad {
-  color: rgba(255,255,255,.6);
+  color: rgba(255,255,255,.78); /* WCAG AA 4.5:1 on dark bg */
 }
 
 .cs-val-broker {
@@ -243,14 +243,148 @@
   font-weight: 500;
 }
 
-/* ─── Disclaimer Footer ────────────────────────────────────────────────────── */
-.cs-disclaimer {
+/* ─── Info Icon + Tooltip ──────────────────────────────────────────────────── */
+.cs-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 觸控友善：視覺 16px，觸控區域 44px（透過 padding） */
+  width: 16px;
+  height: 16px;
+  padding: 14px;
+  border-radius: 50%;
+  background: rgba(129,140,248,.15);
+  color: #818cf8;
+  font-size: 10px;
+  font-style: normal;
+  cursor: help;
+  position: relative;
+  vertical-align: middle;
+  margin-left: 4px;
+  transition: background .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cs-info-icon:hover,
+.cs-info-icon:focus {
+  background: rgba(129,140,248,.3);
+}
+
+.cs-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1f2e;
+  border: 1px solid rgba(129,140,248,.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.5;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  pointer-events: none;
+}
+
+.cs-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(129,140,248,.3);
+}
+
+/* Desktop: hover 顯示 */
+.cs-info-icon:hover .cs-tooltip,
+.cs-info-icon:focus .cs-tooltip {
+  display: block;
+}
+
+/* Tap-to-toggle: JS 加 .cs-tooltip-active class */
+.cs-info-icon.cs-tooltip-active .cs-tooltip {
+  display: block;
+  pointer-events: auto;
+}
+
+/* Mobile: tooltip 左對齊避免溢出 */
+@media (max-width: 640px) {
+  .cs-tooltip {
+    left: 0;
+    transform: none;
+    white-space: normal;
+    min-width: 200px;
+    max-width: 260px;
+  }
+  .cs-tooltip::after {
+    left: 8px;
+    transform: none;
+  }
+}
+
+/* ─── Term Hint (白話解釋) ─────────────────────────────────────────────────── */
+.cs-term-hint {
   font-size: 10px;
   color: var(--text-muted, #95a5a6);
+  font-weight: 400;
+}
+
+/* ─── Diff Highlight (收入差距) ────────────────────────────────────────────── */
+.cs-diff-highlight {
+  display: inline-block;
+  background: rgba(46,204,113,.12);
+  color: #2ecc71;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+/* ─── Disclaimer: Brief Warning ───────────────────────────────────────────── */
+.cs-disclaimer-brief {
+  background: rgba(231,76,60,.08);
+  border: 1px solid rgba(231,76,60,.2);
+  border-radius: 8px;
+  padding: 8px 12px;
   margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,.06);
+  font-size: 12px;
+  font-weight: 500;
+  color: #e67e73;
   line-height: 1.5;
+}
+
+/* ─── Disclaimer: Collapsible Detail ──────────────────────────────────────── */
+.cs-disclaimer-detail {
+  margin-top: 6px;
+}
+
+.cs-disclaimer-detail summary {
+  font-size: 11px;
+  color: var(--text-muted, #95a5a6);
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+  transition: color .2s;
+}
+
+.cs-disclaimer-detail summary:hover {
+  color: #a5b4fc;
+}
+
+.cs-disclaimer-body {
+  font-size: 10px;
+  color: var(--text-muted, #95a5a6);
+  padding: 8px 12px;
+  margin-top: 4px;
+  background: rgba(0,0,0,.15);
+  border-radius: 8px;
+  line-height: 1.6;
+  border-top: 1px solid rgba(255,255,255,.06);
 }
 
 .cs-table tbody tr:hover {

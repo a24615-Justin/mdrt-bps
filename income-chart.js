@@ -18,6 +18,12 @@
 
   // ─── 計算 10 年累計收入 ─────────────────────────────────────────────────────
   function calc10YearIncome(commRate, renewalRate, renewalDecay, hasOrg, orgAllowance) {
+    // 邊界值防護：避免異常輸入導致荒謬結果
+    commRate = Math.max(0, Math.min(100, Number(commRate) || 0));
+    renewalRate = Math.max(0, Math.min(100, Number(renewalRate) || 0));
+    renewalDecay = Math.max(0, Math.min(1, Number(renewalDecay) || 0));
+    orgAllowance = Math.max(0, Number(orgAllowance) || 0);
+
     const years = [];
     let cumulative = 0;
 
