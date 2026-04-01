@@ -421,6 +421,13 @@ input[type="range"]::-moz-range-thumb {
 .ac-item-dot.trad   { background: var(--trad); }
 .ac-item-dot.broker { background: var(--broker); }
 
+/* ─── Script Disclaimer (v3.0.2) ────────────────────────────────────────── */
+.script-disclaimer {
+  margin-top: 12px; padding: 8px 10px; font-size: 10px; color: var(--text-muted);
+  background: var(--surface-2); border-radius: 6px; border-left: 3px solid var(--gold);
+  line-height: 1.5;
+}
+
 /* ─── Bar Chart (inline) ─────────────────────────────────────────────────── */
 .chart-wrap  { margin: 14px 0; }
 .chart-title {
@@ -525,8 +532,11 @@ input[type="range"]::-moz-range-thumb {
   .kpi { padding: 10px; }
   .kpi-value { font-size: 14px; }
   .kpi-label { font-size: 9px; }
-  .ac-header, .ac-row { grid-template-columns: 1fr 40px 1fr; font-size: 10px; }
-  .ac-amount { font-size: 11px; }
+  .ac-header, .ac-row { grid-template-columns: 1fr 46px 1fr; font-size: 10px; }
+  .ac-amount { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ac-diff { font-size: 9px; padding: 1px 3px; white-space: nowrap; }
+  .ac-year-label { font-size: 9px; }
+  .ac-items { display: none; } /* 375px 隱藏明細，避免擠壓 */
   .company-chip { padding: 5px 8px; font-size: 10px; }
   input[type="number"] { font-size: 13px; padding: 9px 10px 9px 24px; }
 }

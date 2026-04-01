@@ -85,7 +85,7 @@
       <div class="kpi-ref">僅供參考</div>
     </div>
     <div class="kpi be">
-      <div class="kpi-label">黃金交叉</div>
+      <div class="kpi-label">收入超越點</div>
       <div class="kpi-value"><span id="k_be">—</span></div>
       <div class="kpi-sub">保經累計超越傳統</div>
       <div class="kpi-ref">僅供參考</div>
@@ -157,7 +157,7 @@
 
 <!-- ═══ Footer ═══ -->
 <div class="footer">
-  <div>公勝 MDRT 財務推演模組 v3.0</div>
+  <div>公勝 MDRT 財務推演模組 v3.0.2</div>
   <div class="disclaimer" id="footer-disclaimer">
     本工具所有數據僅供趨勢參考，不構成任何形式之收入承諾或轉職建議。
     實際收入因個人業績、公司政策、市場環境而異，請自行評估。
@@ -336,9 +336,9 @@ function showScenario(key,btnEl){
   if(btnEl)btnEl.classList.add('active-'+key.toLowerCase());
   else document.querySelector(`.sc-btn:nth-child(${key==='C'?1:key==='B'?2:3})`).classList.add('active-'+key.toLowerCase());
 
-  g('sc_detail').innerHTML=`<div class="card" style="border-color:${bo}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div><div style="font-size:14px;font-weight:700;color:${cl}">${{C:'😰 保守情境',B:'📊 基準情境',O:'🚀 樂觀情境'}[key]}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px">${cfg.scRiskFn(sc)} · 保經首佣 ${fmtPct(sc.rb)} · 增員 ${{C:1,B:3,O:5}[key]} 人</div></div><div class="badge ${r.diff5>=0?'pos':'neg'}">${r.diff5>=0?'保經勝出':'需調整'}</div></div><div class="kpi-grid"><div class="kpi broker"><div class="kpi-label">保經5年</div><div class="kpi-value">${fmtM(r.sum5broker)}</div><div class="kpi-sub">萬元</div></div><div class="kpi trad"><div class="kpi-label">傳統5年</div><div class="kpi-value">${fmtM(r.sum5trad)}</div><div class="kpi-sub">萬元</div></div><div class="kpi diff kpi-full"><div class="kpi-label">5年淨利差距</div><div class="kpi-value" style="color:${cl}">${(r.diff5>=0?'+':'')+fmtM(r.diff5)}</div><div class="kpi-sub">萬元 <span class="kpi-ref">僅供參考</span></div></div></div><div style="margin-top:10px;font-size:11px;color:var(--text-muted)">📌 黃金交叉：<strong style="color:${cl}">${r.beMonth?(r.beMonth<=1?'第1年內即回本':r.beMonth+'個月內回本'):'>3年後回本'}</strong></div></div>`;
+  g('sc_detail').innerHTML=`<div class="card" style="border-color:${bo}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div><div style="font-size:14px;font-weight:700;color:${cl}">${{C:'😰 保守情境',B:'📊 基準情境',O:'🚀 樂觀情境'}[key]}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px">${cfg.scRiskFn(sc)} · 保經首佣 ${fmtPct(sc.rb)} · 增員 ${{C:1,B:3,O:5}[key]} 人</div></div><div class="badge ${r.diff5>=0?'pos':'neg'}">${r.diff5>=0?'保經勝出':'需調整'}</div></div><div class="kpi-grid"><div class="kpi broker"><div class="kpi-label">保經5年</div><div class="kpi-value">${fmtM(r.sum5broker)}</div><div class="kpi-sub">萬元</div></div><div class="kpi trad"><div class="kpi-label">傳統5年</div><div class="kpi-value">${fmtM(r.sum5trad)}</div><div class="kpi-sub">萬元</div></div><div class="kpi diff kpi-full"><div class="kpi-label">5年淨利差距</div><div class="kpi-value" style="color:${cl}">${(r.diff5>=0?'+':'')+fmtM(r.diff5)}</div><div class="kpi-sub">萬元 <span class="kpi-ref">僅供參考</span></div></div></div><div style="margin-top:10px;font-size:11px;color:var(--text-muted)">📌 收入超越點：<strong style="color:${cl}">${r.beMonth?(r.beMonth<=1?'第1年內即回本':r.beMonth+'個月內回本'):'>3年後回本'}</strong></div></div>`;
   // Compare table
-  const items=[{label:cfg.scRiskLabel,fn:k=>cfg.scRiskFn(cfg.sc[k])},{label:'保經首佣率',fn:k=>fmtPct(cfg.sc[k].rb)},{label:'增員人數',fn:k=>({C:1,B:3,O:5}[k])+'人'},{label:'保經5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5broker)+'萬'},{label:'傳統5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5trad)+'萬'},{label:'★ 5年淨利差距',fn:k=>{const d2=compute5yr(getScParams(k)).diff5;return(d2>=0?'+':'')+fmtM(d2)+'萬';},hl:true},{label:'黃金交叉',fn:k=>{const bm=compute5yr(getScParams(k)).beMonth;return bm?(bm<=1?'<1月':bm+'月'):'>36月';}}];
+  const items=[{label:cfg.scRiskLabel,fn:k=>cfg.scRiskFn(cfg.sc[k])},{label:'保經首佣率',fn:k=>fmtPct(cfg.sc[k].rb)},{label:'增員人數',fn:k=>({C:1,B:3,O:5}[k])+'人'},{label:'保經5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5broker)+'萬'},{label:'傳統5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5trad)+'萬'},{label:'★ 5年淨利差距',fn:k=>{const d2=compute5yr(getScParams(k)).diff5;return(d2>=0?'+':'')+fmtM(d2)+'萬';},hl:true},{label:'收入超越點',fn:k=>{const bm=compute5yr(getScParams(k)).beMonth;return bm?(bm<=1?'<1月':bm+'月'):'>36月';}}];
   g('sc_compare_tbody').innerHTML=items.map(it=>`<tr class="${it.hl?'highlight':''}"><td style="text-align:left">${it.label}</td>${['C','B','O'].map(k=>`<td>${it.fn(k)}</td>`).join('')}</tr>`).join('');
 }
 
@@ -372,7 +372,8 @@ const SCRIPTS={
 };
 function updateScripts(p,r){
   const scripts=SCRIPTS[CID]||SCRIPTS.insurance;
-  scripts.forEach(([tag,fn],i)=>{const idx=i+1;g('tag'+idx).textContent=tag;g('script'+idx).innerHTML=fn(p,r);});
+  const disclaimer='<div class="script-disclaimer">⚠️ 以上為趨勢推演，非收入保證。實際收入因個人業績、公司政策、市場環境而異。</div>';
+  scripts.forEach(([tag,fn],i)=>{const idx=i+1;g('tag'+idx).textContent=tag;g('script'+idx).innerHTML=fn(p,r)+disclaimer;});
 }
 
 // ─── Company Chips (auto-rendered from COMPANY_DB) ──────────────────────────

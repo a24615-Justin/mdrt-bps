@@ -249,6 +249,33 @@ const PARAM_SCHEMA = [
     description: '每位增員夥伴的預估年化保費。組織獎金 = 增員人數 × 此數字 × 獎金率。',
   },
 
+  // ═══ v3.0.2 新增：離職後續佣年數 ═══
+  {
+    key: 'postResignRenewalYrs', label: '離職後續佣年數', section: 'current',
+    type: 'number', default: 0, min: 0, max: 5, step: 1,
+    personas: ['ins', 'mgr'], visibility: 'advanced',
+    companyOverride: true, requiresVerification: true,
+    description: '離職後仍可領取續佣的年數（0-5年）。部分公司會在離職後繼續發放 2-5 年的續佣。設為 0 表示離職即歸零。',
+  },
+
+  // ═══ v3.0.1 新增：可信度強化欄位 ═══
+  {
+    key: 'tradGrowthRate', label: '傳統端年成長率', section: 'current',
+    type: 'percent', default: 0, suffix: '%',
+    min: 0, max: 30, step: 1,
+    personas: ['ins', 'banker', 'mgr', 'med'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '在傳統公司每年 FYP 的預估成長率。設為 0 表示維持不變（保守估計）。',
+  },
+  {
+    key: 'fypShrink', label: '保費轉移係數', section: 'risk',
+    type: 'slider', default: 80, suffix: '%',
+    min: 50, max: 100, step: 5,
+    personas: ['banker'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '客戶跟隨轉職後，實際轉移的保費占原保費的比例。80% 表示每 100 萬只帶走 80 萬。',
+  },
+
   // ═══ 預留擴充（visibility: 'hidden'，v3.0 暫不渲染） ═══
   {
     key: 'performanceBonus', label: '年度績效獎金', section: 'current',
@@ -450,6 +477,7 @@ function collectInputs(personaId) {
 
 // ─── Convert collectInputs output → compute5yr params ───
 // Bridges the schema keys to the compute5yr(p) parameter format
+// v3.0.1: 新增 broker_ry_decay / tradGrowth / attrition / fypShrink
 function schemaToComputeParams(values, personaId) {
   const personaShort = PERSONA_IDS[personaId];
   const rb = (values.brokerCommRate ?? 40) / 100;
@@ -460,12 +488,19 @@ function schemaToComputeParams(values, personaId) {
   const adaptParam = PARAM_SCHEMA.find(p => p.key === 'adaptMonths');
   const adaptConfig = adaptParam?.personaConfig?.[personaShort] || {};
 
+  // v3.0.1: 保經端續佣遞減從 COMPANY_DB['gongsheng'] 動態讀取
+  const gsBrokerDecay = (typeof COMPANY_DB !== 'undefined' && COMPANY_DB['gongsheng'])
+    ? (COMPANY_DB['gongsheng'].renewalDecay ?? 0.85) : 0.85;
+
   if (personaId === 'insurance') {
     return {
       FYP: values.fyp ?? 3000000,
       rate_trad: (values.commRateTrad ?? 20) / 100,
       ry_sunk: values.renewalIncome ?? 500000,
       ry_decay: values.renewalDecay ?? 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      postResignYrs: values.postResignRenewalYrs ?? 0,
       L: (values.lossRate ?? 15) / 100,
       rb, ryr, or_,
       nrec: values.recruitCount ?? 0,
@@ -483,6 +518,10 @@ function schemaToComputeParams(values, personaId) {
       FYP: rawFYP * conv,
       rate_trad: (values.commRateTrad ?? 8) / 100,
       ry_sunk: values.fixedSalary ?? 800000,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      fypShrink: (values.fypShrink ?? 80) / 100,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb: 1,
       _rawFYP: rawFYP, _conv: conv, _aum: values.clientAum ?? 0,
@@ -501,10 +540,14 @@ function schemaToComputeParams(values, personaId) {
       rate_trad: (values.commRateTrad ?? 20) / 100,
       ry_sunk: values.orgAllowance ?? 0,
       _mRySunk: values.renewalIncome ?? 0,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      postResignYrs: values.postResignRenewalYrs ?? 0,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_,
       nrec: follow,
-      rfyp: FYP * 0.8,
+      rfyp: values.recruitAvgFyp ?? (FYP * 0.8),
       fyb: 1,
       _legal: values.legalReserve ?? 0,
       _follow: follow,
@@ -523,6 +566,9 @@ function schemaToComputeParams(values, personaId) {
       FYP,
       rate_trad: (values.commRateTrad ?? 15) / 100,
       ry_sunk: values.medIncome ?? 1800000,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb: 1,
       _clients: clients, _avgP: avgP, _id: 'medical',
@@ -539,6 +585,8 @@ function schemaToComputeParams(values, personaId) {
       FYP,
       rate_trad: (values.commRateTrad ?? 18) / 100,
       ry_sunk: 0,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb,
       _growth: growth, _id: 'newbie',
@@ -651,6 +699,7 @@ function validateField(key, value, inputEl) {
 
 // ─── Apply company defaults ───
 // v3.0: COMPANY_DB defaults key 已統一為 PARAM_SCHEMA schemaKey，不需 keyMap 轉換
+// v3.0.1: 保經類公司的 brokerDefaults 自動填入 Section C 保經優勢欄位
 function applyCompanyDefaults(companyId, personaId) {
   if (typeof COMPANY_DB === 'undefined' || !COMPANY_DB[companyId]) return;
 
@@ -665,6 +714,26 @@ function applyCompanyDefaults(companyId, personaId) {
     if (inputEl) {
       inputEl.value = value;
       setCurrentValue(schemaKey, value, personaId);
+    }
+  }
+
+  // 保經類公司：brokerDefaults → Section C 保經優勢欄位
+  // 讓選擇「永達」時自動帶入永達的佣金率，而非預設的公勝 40%
+  if (company.brokerDefaults) {
+    const bdMap = {
+      brokerComm:  'brokerCommRate',
+      renewalRate: 'brokerRenewalRate',
+      orgRate:     'orgBonusRate',
+    };
+    for (const [bdKey, schemaKey] of Object.entries(bdMap)) {
+      if (isUserModified(schemaKey)) continue;
+      const val = company.brokerDefaults[bdKey];
+      if (val == null) continue;
+      const inputEl = document.getElementById(`param_${schemaKey}`);
+      if (inputEl) {
+        inputEl.value = val;
+        setCurrentValue(schemaKey, val, personaId);
+      }
     }
   }
 }

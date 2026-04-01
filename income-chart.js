@@ -176,42 +176,37 @@
     });
   }
 
-  // ─── 注入圖表容器到 DOM ─────────────────────────────────────────────────
-  function injectChartContainer() {
-    const comparison = document.getElementById('cs-comparison');
-    if (!comparison) return;
-
-    const chartDiv = document.createElement('div');
-    chartDiv.id = 'cs-income-chart';
-    comparison.parentNode.insertBefore(chartDiv, comparison.nextSibling);
-  }
+  // ─── v3.0: 直接使用 index.html 中的 #income-chart-container ─────────────
+  // 不再需要 injectChartContainer()，容器已寫在 HTML 中
 
   // ─── 防止重複初始化 ──────────────────────────────────────────────────────
   let initialized = false;
 
   // ─── 初始化 ────────────────────────────────────────────────────────────────
+  const CHART_CONTAINER_ID = 'income-chart-container';
+
+  // v3.0.2: loading skeleton
+  function showSkeleton() {
+    const container = document.getElementById(CHART_CONTAINER_ID);
+    if (!container || container.querySelector('.ic-skeleton')) return;
+    container.innerHTML = `
+      <div class="ic-skeleton">
+        <div class="ic-sk-title"></div>
+        <div class="ic-sk-bar" style="width:60%"></div>
+        <div class="ic-sk-bar" style="width:80%"></div>
+        <div class="ic-sk-bar" style="width:45%"></div>
+        <div class="ic-sk-bar" style="width:90%"></div>
+      </div>`;
+  }
+
   function initChart() {
     if (initialized) return;
-    if (typeof COMPANY_DB === 'undefined') return;
+    if (typeof COMPANY_DB === 'undefined') { showSkeleton(); return; }
     initialized = true;
 
-    injectChartContainer();
-    renderChart('cs-income-chart');
+    renderChart(CHART_CONTAINER_ID);
 
-    // 監聽 chip 點擊（用 document 委派，只綁一次）
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.cs-chip')) {
-        setTimeout(() => renderChart('cs-income-chart'), 60);
-      }
-    });
-
-    // 監聽身份切換（用 document 委派，避免對每個按鈕重複綁定）
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.id-btn')) {
-        setTimeout(() => renderChart('cs-income-chart'), 120);
-      }
-    });
-
+    // v3.0: recalc() 已統一呼叫 IncomeChart.render()，不需額外監聽
     console.log('[Income Chart] ✅ 初始化完成');
   }
 
@@ -222,9 +217,10 @@
     setTimeout(initChart, 200);
   }
 
-  // 匯出
+  // 匯出（v3.0: render + refresh 均指向同一函式，相容新舊呼叫）
   window.IncomeChart = {
-    refresh: () => renderChart('cs-income-chart'),
+    render:  (id) => renderChart(id || CHART_CONTAINER_ID),
+    refresh: ()   => renderChart(CHART_CONTAINER_ID),
   };
 
 })();
