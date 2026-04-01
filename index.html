@@ -7,523 +7,29 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --navy:#f0f4f9;--navy-2:#e2eaf4;--navy-3:#d0dbec;
-  --gold:#9a6e00;--gold-light:#b8860b;--gold-dim:rgba(154,110,0,0.12);
-  --trad:#1a56b8;--trad-light:rgba(26,86,184,0.10);
-  --broker:#0f7a3a;--broker-light:rgba(15,122,58,0.10);
-  --danger:#b52a1e;
-  --surface:#ffffff;--surface-2:#f0f4f9;
-  --border:rgba(0,0,0,0.10);
-  --text:#1a2d42;--text-dim:#3a5878;--text-muted:#6a8ea8;
-  --radius:16px;--radius-sm:10px;
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{font-size:16px;scroll-behavior:smooth}
-body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(154,110,0,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(15,122,58,0.06) 0%,transparent 50%),radial-gradient(ellipse 50% 40% at 60% 30%,rgba(26,86,184,0.06) 0%,transparent 50%);pointer-events:none}
-.container{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 0 80px}
-
-/* Header */
-.header{padding:20px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,rgba(240,244,249,0.98),rgba(240,244,249,0.0));box-shadow:0 1px 0 var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
-.header-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.header-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold-dim);border:1px solid rgba(201,162,39,0.3);color:var(--gold);font-size:9px;font-weight:600;letter-spacing:.12em;padding:3px 8px;border-radius:20px;text-transform:uppercase;white-space:nowrap}
-.header h1{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;line-height:1.2;color:var(--text)}
-.header h1 span{color:var(--gold)}
-.id-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 8px;border-radius:10px;margin-left:6px;vertical-align:middle;transition:all .3s;white-space:nowrap}
-.id-badge.insurance{background:rgba(201,162,39,0.15);color:var(--gold)}
-.id-badge.banker{background:rgba(26,86,184,0.12);color:var(--trad)}
-.id-badge.manager{background:rgba(142,68,173,0.12);color:#7b2d8b}
-.id-badge.medical{background:rgba(15,122,58,0.12);color:var(--broker)}
-.id-badge.newbie{background:rgba(181,42,30,0.12);color:var(--danger)}
-
-/* Identity switcher */
-.identity-bar{padding:10px 16px;background:var(--navy-2);border-bottom:1px solid var(--border);position:relative;z-index:1}
-.identity-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px}
-.identity-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-.identity-tabs::-webkit-scrollbar{display:none}
-.id-btn{flex:none;padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;white-space:nowrap;line-height:1.3}
-.id-btn.active-insurance{border-color:rgba(201,162,39,.5);background:rgba(201,162,39,.1);color:var(--gold)}
-.id-btn.active-banker{border-color:rgba(26,86,184,.45);background:rgba(26,86,184,.08);color:var(--trad)}
-.id-btn.active-manager{border-color:rgba(142,68,173,.45);background:rgba(142,68,173,.08);color:#7b2d8b}
-.id-btn.active-medical{border-color:rgba(15,122,58,.45);background:rgba(15,122,58,.08);color:var(--broker)}
-.id-btn.active-newbie{border-color:rgba(181,42,30,.45);background:rgba(181,42,30,.08);color:var(--danger)}
-
-/* Field visibility by identity */
-.fi,.fb,.fm,.fmd,.fn{display:none}
-body.insurance .fi{display:block}
-body.banker    .fb{display:block}
-body.manager   .fm{display:block}
-body.medical   .fmd{display:block}
-body.newbie    .fn{display:block}
-/* Info boxes */
-.ib-fi,.ib-fb,.ib-fm,.ib-fmd,.ib-fn{display:none}
-body.insurance .ib-fi{display:block}
-body.banker    .ib-fb{display:block}
-body.manager   .ib-fm{display:block}
-body.medical   .ib-fmd{display:block}
-body.newbie    .ib-fn{display:block}
-
-/* Tabs */
-.tab-nav{display:flex;gap:4px;padding:10px 16px;background:var(--navy-2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:100px;z-index:99}
-.tab-nav::-webkit-scrollbar{display:none}
-.tab-btn{flex:none;padding:7px 13px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s}
-.tab-btn.active{background:var(--surface);border-color:var(--border);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
-.tab-btn.active.tab-input{border-color:rgba(26,86,184,.4);color:var(--trad)}
-.tab-btn.active.tab-result{border-color:rgba(201,162,39,.4);color:var(--gold)}
-.tab-btn.active.tab-scenario{border-color:rgba(15,122,58,.4);color:var(--broker)}
-.tab-btn.active.tab-script{border-color:rgba(142,68,173,.35);color:#7b2d8b}
-
-/* Panels */
-.panel{display:none;padding:18px 16px;animation:fadeIn .25s ease}
-.panel.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* Section titles */
-.section-title{font-family:'Noto Serif TC',serif;font-size:12px;font-weight:600;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.section-title::before{content:'';display:block;width:3px;height:14px;border-radius:2px}
-.section-title.blue::before{background:var(--trad)}
-.section-title.gold::before{background:var(--gold)}
-.section-title.green::before{background:var(--broker)}
-.section-title.purple::before{background:#8e44ad}
-.section-title.red::before{background:var(--danger)}
-
-/* Inputs */
-.field{margin-bottom:13px}
-.field label{display:block;font-size:10px;font-weight:600;color:var(--text-dim);letter-spacing:.06em;margin-bottom:5px;text-transform:uppercase}
-.field label span.hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:10px;margin-left:5px}
-.input-wrap{position:relative}
-.input-wrap .prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;font-family:'DM Mono',monospace;pointer-events:none}
-.input-wrap .suffix{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:11px;pointer-events:none}
-input[type="number"]{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:14px;font-weight:500;padding:11px 12px 11px 28px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
-input[type="number"]:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
-input[type="number"].no-prefix{padding-left:12px}
-input[type="number"].has-suffix{padding-right:32px}
-
-/* Slider */
-.slider-field{margin-bottom:18px}
-.slider-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.slider-header label{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em}
-.slider-value{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--gold);background:var(--gold-dim);padding:2px 9px;border-radius:6px}
-input[type="range"]{width:100%;height:6px;background:var(--surface-2);border:none;border-radius:3px;cursor:pointer;-webkit-appearance:none;outline:none}
-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--gold);border-radius:50%;box-shadow:0 0 0 4px var(--gold-dim);cursor:pointer}
-input[type="range"]::-moz-range-thumb{width:20px;height:20px;background:var(--gold);border-radius:50%;border:none;box-shadow:0 0 0 4px var(--gold-dim)}
-
-/* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
-.card.gold{border-color:rgba(201,162,39,.25);background:linear-gradient(135deg,var(--surface),rgba(201,162,39,.04))}
-.card.blue{border-color:rgba(58,123,213,.25);background:linear-gradient(135deg,var(--surface),rgba(58,123,213,.04))}
-.card.green{border-color:rgba(39,174,96,.25);background:linear-gradient(135deg,var(--surface),rgba(39,174,96,.04))}
-
-/* KPI */
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
-.kpi-full{grid-column:1/-1}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;text-align:center}
-.kpi-label{font-size:10px;color:var(--text-muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
-.kpi-value{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;line-height:1}
-.kpi-sub{font-size:10px;color:var(--text-muted);margin-top:3px}
-.kpi.trad .kpi-value{color:var(--trad)}
-.kpi.broker .kpi-value{color:var(--broker)}
-.kpi.diff .kpi-value{color:var(--gold)}
-.kpi.be .kpi-value{color:var(--danger);font-size:14px}
-
-/* Bar chart */
-.chart-wrap{margin:14px 0}
-.chart-title{font-size:10px;color:var(--text-muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
-.bar-group{margin-bottom:9px}
-.bar-track{height:7px;background:var(--surface-2);border-radius:4px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.22,1,.36,1)}
-.bar-fill.trad{background:linear-gradient(90deg,#2d6ab3,var(--trad))}
-.bar-fill.broker{background:linear-gradient(90deg,#1e9950,var(--broker))}
-
-/* Year table */
-.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius-sm)}
-.year-table{width:100%;border-collapse:collapse;font-size:11px}
-.year-table th{background:var(--navy-3);color:var(--text-dim);font-weight:600;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:7px 9px;text-align:right}
-.year-table th:first-child{text-align:left}
-.year-table td{padding:8px 9px;border-bottom:1px solid var(--border);text-align:right;font-family:'DM Mono',monospace;font-size:11px}
-.year-table td:first-child{text-align:left;font-family:'Outfit',sans-serif;font-size:10px;color:var(--text-dim)}
-.year-table tr.total td{font-weight:600;background:var(--navy-2);font-size:11px}
-.year-table tr.trad td{color:var(--trad)}
-.year-table tr.broker td{color:var(--broker)}
-
-/* Scenario */
-.scenario-tabs{display:flex;gap:6px;margin-bottom:14px}
-.sc-btn{flex:1;padding:9px 5px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:11px;font-weight:500;cursor:pointer;text-align:center;transition:all .2s;line-height:1.3}
-.sc-btn.active-c{border-color:rgba(181,42,30,.4);color:var(--danger);background:rgba(181,42,30,.07)}
-.sc-btn.active-b{border-color:rgba(201,162,39,.4);color:var(--gold);background:var(--gold-dim)}
-.sc-btn.active-o{border-color:rgba(15,122,58,.4);color:var(--broker);background:rgba(15,122,58,.07)}
-.sc-compare{width:100%;border-collapse:collapse;font-size:11px;margin-top:14px}
-.sc-compare th{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px 9px;text-align:center}
-.sc-compare td{padding:8px 9px;border-bottom:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-size:11px}
-.sc-compare td:first-child{text-align:left;font-family:'Outfit',sans-serif;color:var(--text-dim);font-size:10px}
-.sc-compare .th-c{background:rgba(181,42,30,.08);color:var(--danger)}
-.sc-compare .th-b{background:var(--gold-dim);color:var(--gold)}
-.sc-compare .th-o{background:rgba(15,122,58,.08);color:var(--broker)}
-.sc-compare .val-c{color:var(--danger)}
-.sc-compare .val-b{color:var(--gold)}
-.sc-compare .val-o{color:var(--broker)}
-.sc-compare tr.highlight td{font-weight:700;background:var(--navy-2);font-size:12px}
-
-/* Script cards */
-.script-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:13px;position:relative;overflow:hidden}
-.script-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.script-card.s1::before{background:var(--danger)}
-.script-card.s2::before{background:var(--gold)}
-.script-card.s3::before{background:var(--broker)}
-.script-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-bottom:9px}
-.s1 .script-tag{background:rgba(181,42,30,.10);color:var(--danger)}
-.s2 .script-tag{background:var(--gold-dim);color:var(--gold)}
-.s3 .script-tag{background:rgba(15,122,58,.10);color:var(--broker)}
-.script-text{font-size:13px;line-height:1.75;color:var(--text);font-family:'Noto Serif TC',serif;font-weight:400}
-.script-text strong{color:var(--gold);font-weight:600}
-
-/* Misc */
-.calc-btn{width:100%;background:linear-gradient(135deg,#c9a227,#e8c04a);color:#1a1a00;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;padding:15px;cursor:pointer;letter-spacing:.04em;margin:14px 0 4px;transition:opacity .2s,transform .1s;box-shadow:0 4px 20px rgba(154,110,0,.25)}
-.calc-btn:active{opacity:.9;transform:scale(.99)}
-.divider{height:1px;background:var(--border);margin:18px 0}
-.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:5px}
-.badge.pos{background:rgba(15,122,58,.12);color:var(--broker)}
-.badge.neg{background:rgba(181,42,30,.10);color:var(--danger)}
-.info-box{background:rgba(26,86,184,.06);border:1px solid rgba(26,86,184,.18);border-radius:var(--radius-sm);padding:11px 13px;font-size:11px;color:var(--trad);line-height:1.6;margin-bottom:13px}
-.sep{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--text-muted);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
-.sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--border)}
-.timeline{position:relative;padding:14px 0;margin:10px 0}
-.timeline-track{height:4px;background:var(--surface-2);border-radius:2px;position:relative}
-.timeline-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--trad),var(--gold));transition:width .8s cubic-bezier(.22,1,.36,1)}
-.timeline-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;background:var(--gold);border-radius:50%;box-shadow:0 0 0 4px var(--gold-dim)}
-.timeline-label{position:absolute;top:13px;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);white-space:nowrap;font-weight:600}
-@keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(201,162,39,.3)}50%{box-shadow:0 4px 30px rgba(201,162,39,.55)}}
-.calc-btn{animation:pulse 2.5s ease-in-out infinite}
-.calc-btn:active{animation:none}
-.input-cols{display:block}
-
-/* Responsive */
-@media(min-width:640px){
-  .header{padding:24px 28px 18px}
-  .header h1{font-size:22px}
-  .identity-bar{padding:12px 28px}
-  .tab-nav{padding:10px 24px;gap:8px;top:96px}
-  .tab-btn{font-size:13px;padding:9px 18px}
-  .panel{padding:24px 24px}
-  .kpi-grid{grid-template-columns:1fr 1fr 1fr}
-  .kpi.kpi-full{grid-column:auto}
-  .kpi.be.kpi-full{grid-column:1/-1}
-  .kpi-value{font-size:20px}
-  .year-table th,.year-table td{padding:10px 13px;font-size:12px}
-  .year-table td:first-child{font-size:11px}
-  .sc-compare th,.sc-compare td{padding:10px 14px;font-size:12px}
-  .script-text{font-size:14px}
-  .bar-track{height:9px}
-  .id-btn{font-size:12px;padding:9px 14px}
-}
-@media(min-width:800px){
-  .panel{padding:28px 32px}
-  .input-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
-  .input-cols .divider{grid-column:1/-1}
-  .input-cols .section-title{grid-column:1/-1}
-  .input-cols .calc-btn{grid-column:1/-1}
-  .input-cols .ib-fi,.input-cols .ib-fb,.input-cols .ib-fm,.input-cols .ib-fmd,.input-cols .ib-fn{grid-column:1/-1}
-  .input-cols .slider-field{grid-column:1/-1}
-  .year-table th,.year-table td{font-size:13px;padding:11px 15px}
-  .kpi-value{font-size:24px}
-}
-
-/* ═══════════════════════════════════════════════════════
-   亮色主題增強：可讀性 & 響應式自適應補丁
-   ═══════════════════════════════════════════════════════ */
-
-/* 輸入欄位：加大字體、加強邊框、更明顯聚焦 */
-input[type="number"]{
-  font-size:15px;
-  padding:13px 12px 13px 30px;
-  background:#ffffff;
-  border:1.5px solid var(--border);
-  color:var(--text);
-  box-shadow:inset 0 1px 3px rgba(0,0,0,0.06);
-}
-input[type="number"]:focus{
-  border-color:var(--trad);
-  box-shadow:0 0 0 3px rgba(26,86,184,0.12), inset 0 1px 3px rgba(0,0,0,0.04);
-}
-input[type="number"].no-prefix{padding-left:12px}
-
-/* 欄位標籤：加大、加深 */
-.field label{
-  font-size:11.5px;
-  color:var(--text-dim);
-  font-weight:700;
-  margin-bottom:6px;
-}
-.field label span.hint{
-  font-size:10.5px;
-  color:var(--text-muted);
-}
-
-/* 區段標題增強 */
-.section-title{
-  font-size:13px;
-  color:var(--text);
-  margin-bottom:16px;
-  padding-bottom:9px;
-}
-
-/* KPI 卡片：加強對比 */
-.kpi{
-  background:#ffffff;
-  border:1.5px solid var(--border);
-  box-shadow:0 2px 8px rgba(0,0,0,0.05);
-  padding:16px;
-}
-.kpi-label{
-  font-size:11px;
-  color:var(--text-dim);
-  font-weight:700;
-  letter-spacing:0.04em;
-}
-.kpi-value{font-size:20px}
-.kpi-sub{font-size:11px;color:var(--text-muted)}
-
-/* 卡片：增加陰影讓層次更明顯 */
-.card{
-  background:#ffffff;
-  border:1.5px solid var(--border);
-  box-shadow:0 2px 12px rgba(0,0,0,0.06);
-}
-
-/* 輸入前綴/後綴顏色調整 */
-.input-wrap .prefix,.input-wrap .suffix{
-  color:var(--text-muted);
-  font-weight:600;
-}
-
-/* Slider 軌道：亮色模式 */
-input[type="range"]{background:var(--navy-3)}
-input[type="range"]::-webkit-slider-thumb{
-  background:var(--gold);
-  box-shadow:0 0 0 4px var(--gold-dim), 0 2px 6px rgba(0,0,0,0.15);
-}
-.slider-value{
-  background:var(--gold-dim);
-  color:var(--gold);
-  border:1px solid rgba(154,110,0,0.2);
-  font-weight:700;
-}
-
-/* 年度表格增強 */
-.year-table th{
-  background:var(--navy-3);
-  color:var(--text-dim);
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:.05em;
-}
-.year-table td{
-  color:var(--text);
-  font-size:12px;
-}
-.year-table td:first-child{color:var(--text-dim)}
-.year-table tr:hover td{background:var(--navy-2)}
-
-/* 三情境比較表 */
-.sc-compare td{color:var(--text)}
-.sc-compare td:first-child{color:var(--text-dim)}
-.sc-compare .th-b{background:var(--gold-dim);color:var(--gold)}
-
-/* 深度思維腳本 */
-.script-card{
-  background:#ffffff;
-  border:1.5px solid var(--border);
-  box-shadow:0 2px 12px rgba(0,0,0,0.06);
-}
-.script-text{color:var(--text);font-size:13.5px;line-height:1.85}
-.script-text strong{color:var(--gold);font-weight:700}
-
-/* 計算按鈕優化 */
-.calc-btn{
-  font-size:16px;
-  padding:16px;
-  border-radius:var(--radius-sm);
-  box-shadow:0 4px 16px rgba(154,110,0,0.3);
-}
-
-/* Header badge 亮色優化 */
-.header-badge{
-  background:var(--gold-dim);
-  border:1px solid rgba(154,110,0,0.25);
-  color:var(--gold);
-  font-weight:700;
-}
-
-/* 響應式：超小螢幕 (< 360px) */
-@media(max-width:360px){
-  html{font-size:14px}
-  .header h1{font-size:16px}
-  .identity-tabs{gap:4px}
-  .id-btn{font-size:10px;padding:6px 9px}
-  .tab-btn{font-size:11px;padding:6px 10px}
-  .kpi-value{font-size:17px}
-  input[type="number"]{font-size:14px}
-}
-
-/* 響應式：中等螢幕 (640–800px) */
-@media(min-width:640px){
-  .field label{font-size:12px}
-  input[type="number"]{font-size:15px;padding:14px 14px 14px 32px}
-  input[type="number"].no-prefix{padding-left:14px}
-  .kpi-label{font-size:11.5px}
-  .kpi-value{font-size:22px}
-  .script-text{font-size:15px;line-height:1.9}
-  .section-title{font-size:14px}
-}
-
-/* 響應式：大螢幕 (≥ 800px) */
-@media(min-width:800px){
-  .field label{font-size:12.5px}
-  input[type="number"]{font-size:16px;padding:14px 14px 14px 34px}
-  .kpi-value{font-size:26px}
-  .kpi-label{font-size:12px}
-  .section-title{font-size:15px}
-  .script-text{font-size:15.5px}
-  .year-table th,.year-table td{font-size:13px}
-  .info-box{font-size:12.5px;padding:13px 16px}
-}
-
-/* 響應式：超大螢幕 (≥ 1100px) */
-@media(min-width:1100px){
-  .container{max-width:1280px}
-  .kpi-grid{grid-template-columns:repeat(4,1fr)}
-  .kpi.be.kpi-full{grid-column:1/-1}
-}
-
-/* ═══════════════════════════════════════════════════
-   寬螢幕自適應：導覽列全寬 + 內容對齊容器
-   ═══════════════════════════════════════════════════ */
-
-/* 導覽列與 identity bar：全寬背景，內容對齊容器 */
-.header{width:100%}
-.identity-bar{width:100%}
-.tab-nav{width:100%}
-
-/* 1100px 以上：導覽列內距對齊容器左右邊 */
-@media(min-width:1100px){
-  .header{
-    padding-left: max(32px, calc((100vw - 1280px) / 2 + 32px));
-    padding-right: max(32px, calc((100vw - 1280px) / 2 + 32px));
-  }
-  .identity-bar{
-    padding-left: max(20px, calc((100vw - 1280px) / 2 + 20px));
-    padding-right: max(20px, calc((100vw - 1280px) / 2 + 20px));
-  }
-  .tab-nav{
-    padding-left: max(28px, calc((100vw - 1280px) / 2 + 28px));
-    padding-right: max(28px, calc((100vw - 1280px) / 2 + 28px));
-    top:88px;
-  }
-  .header{padding-top:20px;padding-bottom:16px}
-  .tab-btn{font-size:13px;padding:9px 18px}
-}
-
-/* 1400px 以上：更寬版面，三欄輸入 + KPI 四欄 */
-@media(min-width:1400px){
-  .container{max-width:1400px}
-  .header{
-    padding-left: max(36px, calc((100vw - 1400px) / 2 + 36px));
-    padding-right: max(36px, calc((100vw - 1400px) / 2 + 36px));
-  }
-  .identity-bar{
-    padding-left: max(20px, calc((100vw - 1400px) / 2 + 20px));
-    padding-right: max(20px, calc((100vw - 1400px) / 2 + 20px));
-  }
-  .tab-nav{
-    padding-left: max(32px, calc((100vw - 1400px) / 2 + 32px));
-    padding-right: max(32px, calc((100vw - 1400px) / 2 + 32px));
-  }
-  .input-cols{grid-template-columns:1fr 1fr 1fr}
-  .kpi-grid{grid-template-columns:repeat(4,1fr)}
-  .kpi.kpi-full,.kpi.be.kpi-full{grid-column:auto}
-  .kpi.be.kpi-full{grid-column:1/-1}
-  .panel{padding:32px 40px}
-  .kpi-value{font-size:28px}
-}
-
-/* 1600px 以上：超大螢幕，更寬容器 */
-@media(min-width:1600px){
-  .container{max-width:1560px}
-  .header{
-    padding-left: max(40px, calc((100vw - 1560px) / 2 + 40px));
-    padding-right: max(40px, calc((100vw - 1560px) / 2 + 40px));
-  }
-  .identity-bar{
-    padding-left: max(20px, calc((100vw - 1560px) / 2 + 20px));
-    padding-right: max(20px, calc((100vw - 1560px) / 2 + 20px));
-  }
-  .tab-nav{
-    padding-left: max(36px, calc((100vw - 1560px) / 2 + 36px));
-    padding-right: max(36px, calc((100vw - 1560px) / 2 + 36px));
-  }
-  .input-cols{grid-template-columns:1fr 1fr 1fr}
-  .header h1{font-size:26px}
-}
-
-/* 參數說明文字 */
-.field-desc{font-size:10.5px;color:var(--text-muted);margin-top:5px;line-height:1.5;padding-left:2px}
-.field-desc strong{color:var(--text-dim);font-weight:600}
-.slider-desc{font-size:10.5px;color:var(--text-muted);margin-top:4px;line-height:1.5;padding-left:2px}
-.slider-desc strong{color:var(--text-dim);font-weight:600}
-@media(min-width:640px){
-  .field-desc,.slider-desc{font-size:11px}
-}
-
-/* ─── Annual Comparison Layout ──────────────────────────────────────────────── */
-.ac-wrap{display:flex;flex-direction:column;gap:8px;margin-top:4px}
-.ac-header{display:grid;grid-template-columns:1fr 88px 1fr;gap:8px;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
-.ac-trad-h{color:var(--trad)}
-.ac-broker-h{color:var(--broker);text-align:right}
-.ac-mid-h{text-align:center}
-.ac-row{display:grid;grid-template-columns:1fr 88px 1fr;gap:8px;align-items:stretch;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;transition:box-shadow .2s}
-.ac-row:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08)}
-.ac-row.ac-total{background:linear-gradient(135deg,var(--trad-light),var(--broker-light));border-color:var(--gold);margin-top:4px}
-.ac-trad-col{display:flex;flex-direction:column;gap:3px}
-.ac-broker-col{display:flex;flex-direction:column;gap:3px;align-items:flex-end;text-align:right}
-.ac-mid-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-left:1px solid var(--border);border-right:1px solid var(--border);padding:0 6px;margin:-12px 0;padding-top:12px;padding-bottom:12px}
-.ac-year-label{font-size:10px;font-weight:700;color:var(--text-dim);letter-spacing:.04em;white-space:nowrap}
-.ac-amount{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;line-height:1}
-.ac-amount.trad{color:var(--trad)}
-.ac-amount.broker{color:var(--broker)}
-.ac-items{display:flex;flex-direction:column;gap:2px;margin-top:5px}
-.ac-item{font-size:9.5px;color:var(--text-muted);display:flex;align-items:center;gap:3px;line-height:1.4}
-.ac-item-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.ac-item-dot.trad{background:var(--trad);opacity:.5}
-.ac-item-dot.broker{background:var(--broker);opacity:.5}
-.ac-broker-col .ac-item{flex-direction:row-reverse}
-.ac-diff{font-size:11px;font-weight:700;padding:4px 7px;border-radius:7px;text-align:center;white-space:nowrap;line-height:1.3}
-.ac-diff.pos{background:rgba(15,122,58,0.12);color:var(--broker)}
-.ac-diff.neg{background:rgba(26,86,184,0.12);color:var(--trad)}
-.ac-diff.neu{background:var(--gold-dim);color:var(--gold)}
-@media(max-width:480px){
-  .ac-row{grid-template-columns:1fr 72px 1fr;padding:10px 10px;gap:6px}
-  .ac-amount{font-size:12px}
-  .ac-diff{font-size:10px;padding:3px 5px}
-  .ac-item{font-size:9px}
-  .ac-mid-col{padding:0 4px;padding-top:10px;padding-bottom:10px;margin:-10px 0}
-}
-</style>
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
+
 <body class="insurance">
 
-<!-- Header -->
+<!-- ═══ Sticky Header ═══ -->
 <div class="header">
-  <div class="header-top">
-    <div class="header-badge">⚡ 公勝保經 · BPS</div>
+  <div>
+    <div class="header-top">
+      <div class="header-badge">⚡ 公勝保經 · BPS</div>
+    </div>
+    <h1><span>公勝</span>MDRT 財務推演
+      <span id="id-badge" class="id-badge insurance">🛡️ 保險同業</span>
+    </h1>
   </div>
-  <h1><span>公勝</span>MDRT 財務推演模組
-    <span id="id-badge" class="id-badge insurance">🛡️ 保險同業</span>
-  </h1>
+  <nav class="section-nav" id="section-nav">
+    <a href="#section-1" class="active" data-section="1">① 現況</a>
+    <a href="#section-2" data-section="2">② 數字</a>
+    <a href="#section-3" data-section="3">③ 進階</a>
+  </nav>
 </div>
 
-<!-- Identity Switcher -->
+<!-- ═══ Identity Switcher ═══ -->
 <div class="identity-bar">
   <div class="identity-label">準增員身份別 — 選擇後參數與深度思維自動切換</div>
   <div class="identity-tabs">
@@ -535,747 +41,468 @@ input[type="range"]::-webkit-slider-thumb{
   </div>
 </div>
 
-<!-- Tab Nav -->
-<div class="tab-nav">
-  <button class="tab-btn tab-input active" onclick="switchTab('input')">📋 輸入參數</button>
-  <button class="tab-btn tab-result" onclick="switchTab('result')">📊 財務推演</button>
-  <button class="tab-btn tab-scenario" onclick="switchTab('scenario')">🔬 三情境</button>
-  <button class="tab-btn tab-script" onclick="switchTab('script')">🧠 深度思維</button>
-</div>
-
 <div class="container">
-<!-- ═══════════════════════ PANEL: INPUT ═══════════════════════ -->
-<div id="panel-input" class="panel active">
 
-  <!-- Info boxes per identity -->
-  <div class="info-box ib-fi">📌 填入保險業務員真實數據。帶 <span style="color:var(--gold)">⊙</span> 為核心心理障礙參數，請引導對方誠實填寫。</div>
-  <div class="info-box ib-fb" style="border-color:rgba(26,86,184,.25);background:rgba(26,86,184,.06);color:var(--trad)">🏦 理專核心論點：<span style="color:var(--trad)">客戶認識的是「你這個人」，而非銀行招牌。</span>帶 ⊙ 為關鍵參數。</div>
-  <div class="info-box ib-fm" style="border-color:rgba(142,68,173,.25);background:rgba(142,68,173,.06);color:#7b2d8b">👑 壽險主管最大障礙：組織津貼與管理職頭銜。核心問句：<span style="color:#7b2d8b">「您的團隊，是跟著公司還是跟著您？」</span></div>
-  <div class="info-box ib-fmd" style="border-color:rgba(15,122,58,.25);background:rgba(15,122,58,.06);color:var(--broker)">🩺 醫療通路核心優勢：醫療背景帶來的信任感，在保經能創造更高客單價。</div>
-  <div class="info-box ib-fn" style="border-color:rgba(181,42,30,.25);background:rgba(181,42,30,.06);color:var(--danger)">🌱 新人沉沒成本低，最大障礙是「方向選擇」。保經 vs 單一公司，第一步就決定未來十年的天花板。</div>
+<!-- ═══════════════════════ SECTION ①: 你的現況 ═══════════════════════ -->
+<div class="section" id="section-1">
+  <div class="section-title blue">① 你的現況</div>
 
-  <div class="input-cols">
+  <!-- Company Chips (auto-rendered from COMPANY_DB) -->
+  <div id="company-chips-container"></div>
 
-  <div class="section-title blue">A &nbsp;現狀盤點</div>
+  <!-- Company Notice -->
+  <div id="company-notice" class="company-notice" style="display:none"></div>
 
-  <!-- 保險同業 -->
-  <div class="field fi"><label>年化保費 FYP <span class="hint">過去3年平均</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_fyp" value="3000000" min="0" oninput="recalc()"></div><div class="field-desc">您過去3年的平均年化保費，作為傳統收入與保經端 FYP 的計算基礎。<strong>數字越大，兩邊的差距也越明顯。</strong></div></div>
-  <div class="field fi"><label>傳統公司首年佣金率</label>
-    <div class="input-wrap"><input type="number" id="i_rate_trad" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">傳統壽險公司給付的首年保費佣金比率。<strong>傳統年收入 = FYP × 此比率 + 續期佣金。</strong></div></div>
-  <div class="field fi"><label>年度續期佣金 ⊙ <span class="hint">沉沒成本核心</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_ry_sunk" value="500000" min="0" oninput="recalc()"></div><div class="field-desc">每年從舊保單獲得的續期佣金。</div></div>
+  <!-- Comparison Table (P0-7: dual-value display) -->
+  <div id="comparison-table-container"></div>
 
-  <div class="field fi" style="display:none"><label>續期佣金年遞減係數 <span class="hint">單遞減模型</span></label>
-    <div class="input-wrap"><input type="number" id="i_ry_decay" value="0.6" min="0.1" max="0.99" step="0.05" class="no-prefix" oninput="recalc()"></div><div class="field-desc">轉職後每年保留的舊保單續佣比率。<strong>0.6 = 每年遞減 40%</strong>（Year1：60%、Year2：36%、Year3：22%⋯）。係數越高表示舊客戶保留率越佳，轉職期間仍有部分續佣緩衝，不會斷崖式歸零。</div></div>
-
-  <!-- 銀行理專 -->
-  <div class="field fb"><label>年度銷售保費 <span class="hint">過去3年平均</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_fyp" value="5000000" min="0" oninput="recalc()"></div><div class="field-desc">您在銀行通路每年銷售的保費總額。搭配「客戶轉換率」換算出可帶走的保經端 FYP，<strong>是整個試算的起點。</strong></div></div>
-  <div class="field fb"><label>銀行保險佣金率</label>
-    <div class="input-wrap"><input type="number" id="b_rate_trad" value="8" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">銀行給付的保費佣金比率，<strong>通常僅有保經公司的 1/4 ~ 1/5</strong>，這是轉職後佣金收入大幅提升的主因。</div></div>
-  <div class="field fb"><label>年度固定薪資 ⊙ <span class="hint">底薪＋獎金</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_salary" value="800000" min="0" oninput="recalc()"></div><div class="field-desc">底薪加上年度績效獎金的總和。<strong>轉職後此項完全歸零</strong>，是理專最大的沉沒成本。試算顯示補回這個缺口所需的時間。</div></div>
-  <div class="field fb"><label>客戶 AUM 規模</label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_aum" value="50000000" min="0" oninput="recalc()"></div><div class="field-desc">您目前管理的客戶資產總規模。<strong>僅用於深度思維文案中呈現</strong>，強化「客戶跟的是您這個人」的核心論述，不影響財務試算。</div></div>
-  <div class="field fb"><label>客戶轉換率 ⊙ <span class="hint">可帶走並轉為保險客戶</span></label>
-    <div class="input-wrap"><input type="number" id="b_conv" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">預估能跟隨您轉職、並轉為保險客戶的比率。<strong>保經端 FYP = 銀行銷售保費 × 此比率。</strong>這是最關鍵的心理障礙參數，建議誠實評估。</div></div>
-
-  <!-- 壽險主管 -->
-  <div class="field fm"><label>個人年化保費 FYP</label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_fyp" value="3500000" min="0" oninput="recalc()"></div><div class="field-desc"><strong>個人業績</strong>（不含組織業績），作為保經首年佣金的計算基礎。轉職後的增員獎金另計於C區。</div></div>
-  <div class="field fm"><label>個人首年佣金率</label>
-    <div class="input-wrap"><input type="number" id="m_rate_trad" value="22" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">原公司給付的個人首年保費佣金率。<strong>傳統年收入 = 個人 FYP × 此比率 + 組織津貼</strong>，用於對照保經端的實際差距。</div></div>
-  <div class="field fm"><label>個人年度續期佣金 <span class="hint">傳統端固定收入</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_ry_sunk" value="200000" min="0" oninput="recalc()"></div><div class="field-desc">每年從個人舊保單持續獲得的續期佣金。此收入在傳統端逐年累積，<strong>納入傳統端年收入對照</strong>；轉職保經後此來源自然中止，不計入保經端試算。</div></div>
-  <div class="field fm"><label>年度組織津貼 ⊙ <span class="hint">最大沉沒成本</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_org_bonus" value="1200000" min="0" oninput="recalc()"></div><div class="field-desc">每年從組織獲得的管理津貼與層級加給。<strong>轉職後此項歸零</strong>，是壽險主管最難跨越的心理關卡。試算顯示保經收入補足此缺口所需時間。</div></div>
-  <div class="field fm"><label>現有組織人數</label>
-    <div class="input-wrap"><input type="number" id="m_team_size" value="15" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">目前管理的業務員總人數。<strong>僅用於深度思維文案</strong>，強化「團隊跟的是您這個人」的核心論述，不直接影響財務試算。</div></div>
-  <div class="field fm"><label>預估跟隨轉職人數 ⊙</label>
-    <div class="input-wrap"><input type="number" id="m_follow" value="6" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">預估會跟著您一起移轉到保經的核心夥伴數。<strong>影響保經端組織獎金計算</strong>（增員獎 = 跟隨人數 × 個人FYP×80% × 組織獎金率）。</div></div>
-
-  <!-- 醫療通路 -->
-  <div class="field fmd"><label>年度醫療相關收入</label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="md_income" value="1800000" min="0" oninput="recalc()"></div><div class="field-desc">目前醫療本業的年度總收入（含薪資、診療費、轉介費用等）。<strong>作為傳統端對照基準</strong>，轉職後保經收入需超越此金額才算真正回本。</div></div>
-  <div class="field fmd"><label>現有轉介客戶數 / 年</label>
-    <div class="input-wrap"><input type="number" id="md_clients" value="80" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">每年透過醫療關係可轉介的潛在保險客戶數。<strong>FYP = 此數字 × 平均客戶保費</strong>，醫療通路信任感高，轉換率通常遠高於一般通路。</div></div>
-  <div class="field fmd"><label>平均客戶保費 <span class="hint">估計值</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="md_avg_premium" value="150000" min="0" oninput="recalc()"></div><div class="field-desc">每位轉介客戶的平均首年保費。醫療背景建立的信任感，通常帶來<strong>較高的客單價</strong>。與轉介客戶數相乘即為年度 FYP。</div></div>
-  <div class="field fmd"><label>保險業務佣金率（現況）</label>
-    <div class="input-wrap"><input type="number" id="md_rate_trad" value="15" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">目前透過現有通路取得的保費佣金率。<strong>傳統年收入 = FYP × 此比率 + 醫療本業收入</strong>，與保經佣金率對比即可看出平台差距。</div></div>
-
-  <!-- 新人培育 -->
-  <div class="field fn"><label>預估第一年 FYP</label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="n_fyp" value="1200000" min="0" oninput="recalc()"></div><div class="field-desc">估計入行第一年能達成的年化保費總額。<strong>後續每年以「成長率」複利累積</strong>，是整個新人試算的起始基礎。</div></div>
-  <div class="field fn"><label>考慮加入的傳統公司佣金率</label>
-    <div class="input-wrap"><input type="number" id="n_rate_trad" value="18" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">若選擇加入傳統壽險公司，預期的首年佣金率。<strong>作為對照基準</strong>，與保經端佣金率相比，呈現5年的選擇差距。</div></div>
-  <div class="field fn"><label>每年預估業績成長率</label>
-    <div class="input-wrap"><input type="number" id="n_growth" value="20" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">預估每年業績成長的比率。<strong>影響5年複利試算</strong>：成長率越高，保經與傳統公司之間的差距累積越快越大。</div></div>
-  <div class="field fn"><label>FYB 制度係數 <span class="hint">首年保費計費基礎</span></label>
-    <div class="input-wrap"><input type="number" id="n_fyb" value="1" min="0.3" max="1" step="0.05" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">FYB</span></div>
-    <div class="field-desc">保單首年佣金的計費基礎比率。<strong>FYB 0.8 = 以 FYP × 0.8 作為佣金計算基礎</strong>，同時影響傳統端與保經端的首年佣金。若保單均為 FYB 1.0 則維持原始計算，不影響結果。</div></div>
-
-  <div class="divider"></div>
-  <div class="section-title gold">B &nbsp;轉職風險係數</div>
-
-  <!-- 保險同業：流失率 -->
-  <div class="slider-field fi">
-    <div class="slider-header">
-      <label>客戶流失率 L ⊙ <span style="font-size:9px;color:var(--text-muted);font-weight:400;text-transform:none">越高越保守</span></label>
-      <div class="slider-value" id="l_display">15%</div>
-    </div>
-    <input type="range" id="i_loss" min="5" max="30" value="15" oninput="document.getElementById('l_display').textContent=this.value+'%';recalc()">
-  <div class="slider-desc">轉職後無法繼續跟隨的客戶比率。<strong>直接降低保經端 FYP × (1−L)</strong>，越保守（越高）代表假設帶走的客戶越少。建議誠實評估，即使最保守情境試算也應在3年內回本。</div>
-  </div>
-
-  <!-- 銀行理專：適應期 -->
-  <div class="slider-field fb">
-    <div class="slider-header">
-      <label>適應期月數 ⊙</label>
-      <div class="slider-value" id="b_adapt_display">6個月</div>
-    </div>
-    <input type="range" id="b_adapt" min="3" max="18" value="6" oninput="document.getElementById('b_adapt_display').textContent=this.value+'個月';recalc()">
-  <div class="slider-desc">轉職後重新適應、建立客戶信任的估計時間。<strong>自動換算為客戶流失率 L = 月數 ÷ 24</strong>（6個月→L=25%；12個月→L=50%），影響保經端所有收入計算。</div>
-  </div>
-  <div class="field fb"><label>過渡期底薪補貼 <span class="hint">保經給予支援</span></label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="b_subsidy" value="480000" min="0" oninput="recalc()"></div><div class="field-desc">保經公司提供的第一年底薪支援，用於抵銷適應期的收入缺口。<strong>直接加入第1年保經收入</strong>，讓黃金交叉時間大幅提前。</div></div>
-
-  <!-- 壽險主管：法律風險緩衝 -->
-  <div class="slider-field fm">
-    <div class="slider-header">
-      <label>組織陣痛期（月）⊙</label>
-      <div class="slider-value" id="m_adapt_display">9個月</div>
-    </div>
-    <input type="range" id="m_adapt" min="3" max="24" value="9" oninput="document.getElementById('m_adapt_display').textContent=this.value+'個月';recalc()">
-  <div class="slider-desc">帶領組織重新整合、穩定的估計時間。<strong>自動換算為流失率 L = 月數 ÷ 36</strong>（9個月→L=25%；18個月→L=50%），反映組織整合期對保經收入的影響。</div>
-  </div>
-  <div class="field fm"><label>法律顧問/競業條款預備金 ⊙</label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="m_legal" value="200000" min="0" oninput="recalc()"></div><div class="field-desc">因應競業禁止條款或法律諮詢的預估費用。<strong>從第1年保經收入中直接扣除</strong>，讓試算更貼近實際情況；若無此顧慮可設為0。</div></div>
-
-  <!-- 醫療通路：診所合作緩衝 -->
-  <div class="slider-field fmd">
-    <div class="slider-header">
-      <label>診所合作建立期（月）</label>
-      <div class="slider-value" id="md_adapt_display">6個月</div>
-    </div>
-    <input type="range" id="md_adapt" min="2" max="12" value="6" oninput="document.getElementById('md_adapt_display').textContent=this.value+'個月';recalc()">
-  <div class="slider-desc">建立新診所或醫療合作轉介網絡的估計時間。<strong>自動換算為流失率 L = 月數 ÷ 18</strong>（6個月→L≈33%），反映建立期對保險業務展開速度的影響。</div>
-  </div>
-
-  <!-- 新人：學習成本 -->
-  <div class="slider-field fn">
-    <div class="slider-header">
-      <label>前期學習空窗期（月）</label>
-      <div class="slider-value" id="n_adapt_display">3個月</div>
-    </div>
-    <input type="range" id="n_adapt" min="1" max="9" value="3" oninput="document.getElementById('n_adapt_display').textContent=this.value+'個月';recalc()">
-  <div class="slider-desc">入職初期接受訓練、考照、建立人脈的空窗時間。<strong>自動換算為流失率 L = 月數 ÷ 12</strong>（3個月→L=25%），反映學習期對第一年實際業績的影響。</div>
-  </div>
-
-  <div class="divider"></div>
-  <div class="section-title green">C &nbsp;保經公司優勢</div>
-
-  <div class="field"><label>保經首年佣金率 Rate_broker</label>
-    <div class="input-wrap"><input type="number" id="i_rate_broker" value="40" min="0" max="100" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">保經公司給付的首年保費佣金率，<strong>通常為傳統公司的 1.5～2 倍</strong>。這是整個財務模組最關鍵的參數，直接決定保經端每年的主要收入。</div></div>
-  <div class="field"><label>保經續期佣金率</label>
-    <div class="input-wrap"><input type="number" id="i_ry_rate" value="5" min="0" max="20" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">第2年起每年從既有保單獲得的續期佣金率。<strong>第N年續佣收入 = FYP × (1−L) × 此比率 × (N−1)</strong>，這是保經複利效應的核心來源。</div></div>
-  <div class="field"><label>組織代數獎金率 OR</label>
-    <div class="input-wrap"><input type="number" id="i_or" value="3" min="0" max="15" class="no-prefix has-suffix" oninput="recalc()"><span class="suffix">%</span></div><div class="field-desc">從增員業績中獲取的組織獎金比率。<strong>組織獎收入 = 增員人數 × 增員平均FYP × 此比率</strong>（第1年以0.5計）。增員越多，複利效應越強。</div></div>
-  <div class="field fi fm"><label>增員人數</label>
-    <div class="input-wrap"><input type="number" id="i_nrec" value="3" min="0" class="no-prefix" oninput="recalc()"></div><div class="field-desc">加入保經後預估招募的新夥伴數量。<strong>搭配增員平均FYP與OR，直接計入保經端年度收入</strong>。增員是突破個人業績天花板的最快方式。</div></div>
-  <div class="field fi fm"><label>增員平均 FYP</label>
-    <div class="input-wrap"><span class="prefix">NT$</span>
-    <input type="number" id="i_rec_fyp" value="1500000" min="0" oninput="recalc()"></div><div class="field-desc">每位增員夥伴的預估年化保費。<strong>組織獎金 = 增員人數 × 此數字 × 組織獎金率</strong>。謹慎設定此值，建議以實際招募對象的業績能力估算。</div></div>
-
-  <button class="calc-btn" onclick="switchTab('result')">查看財務推演結果 →</button>
-  </div><!-- /input-cols -->
+  <!-- PARAM_SCHEMA-driven inputs -->
+  <div id="inputs-container"></div>
 </div>
 
-<!-- ═══════════════════════ PANEL: RESULT ═══════════════════════ -->
-<div id="panel-result" class="panel">
+<!-- ═══════════════════════ SECTION ②: 數字說話 ═══════════════════════ -->
+<div class="section" id="section-2">
+  <div class="section-title gold">② 數字說話</div>
+
+  <!-- KPI 四格 -->
   <div class="kpi-grid">
-    <div class="kpi trad"><div class="kpi-label" id="trad-label">傳統 5年累計</div><div class="kpi-value" id="k_trad5">—</div><div class="kpi-sub">萬元</div></div>
-    <div class="kpi broker"><div class="kpi-label">保經 5年累計</div><div class="kpi-value" id="k_broker5">—</div><div class="kpi-sub">萬元</div></div>
-    <div class="kpi diff kpi-full"><div class="kpi-label">★ 5年淨利差距</div><div class="kpi-value" id="k_diff5">—</div><div class="kpi-sub" id="k_diff_label"></div></div>
-    <div class="kpi be kpi-full"><div class="kpi-label">📌 黃金交叉估算</div><div class="kpi-value" id="k_be">—</div></div>
+    <div class="kpi trad">
+      <div class="kpi-label" id="trad-label">傳統公司</div>
+      <div class="kpi-value"><span id="k_trad5">0</span></div>
+      <div class="kpi-sub">萬元（5年累計）</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+    <div class="kpi broker">
+      <div class="kpi-label">公勝保經</div>
+      <div class="kpi-value"><span id="k_broker5">0</span></div>
+      <div class="kpi-sub">萬元（5年累計）</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+    <div class="kpi diff">
+      <div class="kpi-label">5年淨利差距</div>
+      <div class="kpi-value"><span id="k_diff5">0</span></div>
+      <div class="kpi-sub" id="k_diff_label">萬元</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+    <div class="kpi be">
+      <div class="kpi-label">黃金交叉</div>
+      <div class="kpi-value"><span id="k_be">—</span></div>
+      <div class="kpi-sub">保經累計超越傳統</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
   </div>
-  <div class="card gold">
+
+  <!-- 損益兩平時間軸 -->
+  <div class="card">
     <div class="chart-title">損益兩平時間軸</div>
-    <div class="timeline">
-      <div class="timeline-track">
-        <div class="timeline-fill" id="tl_fill" style="width:0%"></div>
-        <div class="timeline-dot" id="tl_dot" style="left:0%"></div>
-        <div class="timeline-label" id="tl_label" style="left:0%"></div>
+    <div class="tl-wrap">
+      <div class="tl-track"><div class="tl-fill" id="tl_fill" style="width:0"></div></div>
+      <div class="tl-dot" id="tl_dot" style="left:0"></div>
+      <div class="tl-label" id="tl_label" style="left:0">—</div>
+    </div>
+    <div class="tl-endpoints"><span>0 月</span><span>36 月</span></div>
+  </div>
+
+  <!-- 5 年逐年對比 -->
+  <div id="annual_comparison"></div>
+
+  <!-- 十年收入差距圖（P0-8: income-chart integration） -->
+  <div id="income-chart-container"></div>
+</div>
+
+<!-- ═══════════════════════ SECTION ③: 進階探討 ═══════════════════════ -->
+<div class="section scenario-section" id="section-3">
+  <div class="section-title purple">③ 進階探討</div>
+
+  <!-- 三情境比較 (Accordion) -->
+  <details>
+    <summary>🔬 三情境比較（保守 / 基準 / 樂觀）</summary>
+    <div class="detail-body">
+      <div class="scenario-tabs">
+        <button class="sc-btn active-c" onclick="showScenario('C',this)">😰 保守</button>
+        <button class="sc-btn" onclick="showScenario('B',this)">📊 基準</button>
+        <button class="sc-btn" onclick="showScenario('O',this)">🚀 樂觀</button>
+      </div>
+      <div id="sc_detail"></div>
+      <table class="sc-compare">
+        <thead><tr>
+          <th style="text-align:left">指標</th><th>😰 保守</th><th>📊 基準</th><th>🚀 樂觀</th>
+        </tr></thead>
+        <tbody id="sc_compare_tbody"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- 面談備忘（深度思維腳本） -->
+  <details>
+    <summary>🧠 面談備忘（三層思維腳本）</summary>
+    <div class="detail-body">
+      <div class="script-card" onclick="this.classList.toggle('open')">
+        <div class="tag" id="tag1">第一層思維</div>
+        <div class="body" id="script1"></div>
+      </div>
+      <div class="script-card" onclick="this.classList.toggle('open')">
+        <div class="tag" id="tag2">第二層思維</div>
+        <div class="body" id="script2"></div>
+      </div>
+      <div class="script-card" onclick="this.classList.toggle('open')">
+        <div class="tag" id="tag3">第三層思維</div>
+        <div class="body" id="script3"></div>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:10px;color:var(--text-muted)">
-      <span>即時</span><span>12月</span><span>24月</span><span>36月</span>
-    </div>
+  </details>
+</div>
+
+</div><!-- /.container -->
+
+<!-- ═══ Footer ═══ -->
+<div class="footer">
+  <div>公勝 MDRT 財務推演模組 v3.0</div>
+  <div class="disclaimer" id="footer-disclaimer">
+    本工具所有數據僅供趨勢參考，不構成任何形式之收入承諾或轉職建議。
+    實際收入因個人業績、公司政策、市場環境而異，請自行評估。
   </div>
-  <div class="sep">年度收入對比</div>
-  <div id="annual_comparison"></div>
+  <div class="sources" id="footer-sources"></div>
 </div>
 
-<!-- ═══════════════════════ PANEL: SCENARIO ═══════════════════════ -->
-<div id="panel-scenario" class="panel">
-  <div class="info-box">三套假設並排比較，讓對方自選最接近現實的情境。即使最保守情境，也應在3年內回本。</div>
-  <div class="scenario-tabs">
-    <button class="sc-btn active-c" onclick="showScenario('C',this)">😰<br>保守</button>
-    <button class="sc-btn active-b" onclick="showScenario('B',this)">📊<br>基準</button>
-    <button class="sc-btn active-o" onclick="showScenario('O',this)">🚀<br>樂觀</button>
-  </div>
-  <div id="sc_detail"></div>
-  <div class="sep">三情境並排</div>
-  <div class="table-scroll"><table class="sc-compare">
-    <thead><tr><th></th><th class="th-c">保守</th><th class="th-b">基準</th><th class="th-o">樂觀</th></tr></thead>
-    <tbody id="sc_compare_tbody"></tbody>
-  </table></div>
-</div>
-
-<!-- ═══════════════════════ PANEL: SCRIPT ═══════════════════════ -->
-<div id="panel-script" class="panel">
-  <div class="info-box">以下三個思維框架，引導被增員者從<span style="color:var(--gold)">內心真正釐清</span>這個決定的本質——不是被說服，而是自己看清楚。</div>
-  <div class="script-card s1"><div class="script-tag" id="tag1">第一層思維</div><div class="script-text" id="script1"></div></div>
-  <div class="script-card s2"><div class="script-tag" id="tag2">第二層思維</div><div class="script-text" id="script2"></div></div>
-  <div class="script-card s3"><div class="script-tag" id="tag3">第三層思維</div><div class="script-text" id="script3"></div></div>
-</div>
-
-</div><!-- /container -->
+<!-- ═══ External Scripts ═══ -->
+<script src="companies.js?v=3"></script>
+<script src="param-schema.js?v=3"></script>
+<script src="calculator.js?v=3"></script>
 
 <script>
-// ─── Formatters ───────────────────────────────────────────────────────────────
-const fmtNT  = v => 'NT$' + Math.round(v).toLocaleString('zh-TW');
-const fmtM   = v => (v/10000).toFixed(1);
-const fmtPct = v => (v*100).toFixed(1)+'%';
-const g      = id => document.getElementById(id);
+// ─── Global State ─────────────────────────────────────────────────────────────
+var CID = 'insurance';              // current persona
+var selectedCompanyId = 'cathay-life';
+var currentPersonaId = 'insurance';  // for param-schema.js
 
-// ─── Identity config ──────────────────────────────────────────────────────────
-let CID = 'insurance'; // current identity
+// ─── Persona Config ──────────────────────────────────────────────────────────
+const PERSONA_MAP = { insurance:'insurance', banker:'banker', manager:'manager', medical:'medical', newbie:'newbie' };
 
 const ID_CONFIG = {
-  insurance: {
-    label:'🛡️ 保險同業', tradLabel:'傳統公司',
-    badge:'insurance',
-    sc: { C:{L:.20,rb:.35,adapt:null}, B:{L:.15,rb:.40,adapt:null}, O:{L:.10,rb:.45,adapt:null} },
-    scRiskLabel: '流失率 L',
-    scRiskFn: (sc) => fmtPct(sc.L),
-  },
-  banker: {
-    label:'🏦 銀行理專', tradLabel:'銀行通路',
-    badge:'banker',
-    sc: { C:{L:.50,rb:.35,adapt:12}, B:{L:.25,rb:.40,adapt:6}, O:{L:.10,rb:.45,adapt:3} },
-    scRiskLabel: '適應期',
-    scRiskFn: (sc) => sc.adapt+'個月',
-  },
-  manager: {
-    label:'👑 壽險主管', tradLabel:'原公司+組織津貼',
-    badge:'manager',
-    sc: { C:{L:.30,rb:.35,adapt:18}, B:{L:.20,rb:.40,adapt:9}, O:{L:.10,rb:.45,adapt:4} },
-    scRiskLabel: '陣痛期',
-    scRiskFn: (sc) => sc.adapt+'個月',
-  },
-  medical: {
-    label:'🩺 醫療通路', tradLabel:'現有醫療收入',
-    badge:'medical',
-    sc: { C:{L:.40,rb:.35,adapt:12}, B:{L:.25,rb:.40,adapt:6}, O:{L:.10,rb:.45,adapt:3} },
-    scRiskLabel: '建立期',
-    scRiskFn: (sc) => sc.adapt+'個月',
-  },
-  newbie: {
-    label:'🌱 新人培育', tradLabel:'傳統公司',
-    badge:'newbie',
-    sc: { C:{L:.20,rb:.35,adapt:5}, B:{L:.10,rb:.40,adapt:3}, O:{L:.05,rb:.45,adapt:1} },
-    scRiskLabel: '空窗期',
-    scRiskFn: (sc) => sc.adapt+'個月',
-  },
+  insurance: { label:'🛡️ 保險同業', badge:'insurance', tradLabel:'傳統壽險',
+    scRiskLabel:'客戶流失率', scRiskFn: sc=>'流失率 '+(sc.L*100).toFixed(0)+'%',
+    sc:{ C:{L:.20,rb:.35}, B:{L:.15,rb:.40}, O:{L:.10,rb:.45} }},
+  banker: { label:'🏦 銀行理專', badge:'banker', tradLabel:'銀行通路',
+    scRiskLabel:'適應期（月）', scRiskFn: sc=>'適應期 '+Math.round(sc.L*24)+'月',
+    sc:{ C:{L:.50,rb:.40}, B:{L:.25,rb:.45}, O:{L:.15,rb:.50} }},
+  manager: { label:'👑 壽險主管', badge:'manager', tradLabel:'傳統壽險',
+    scRiskLabel:'陣痛期（月）', scRiskFn: sc=>'陣痛期 '+Math.round(sc.L*36)+'月',
+    sc:{ C:{L:.40,rb:.55}, B:{L:.25,rb:.60}, O:{L:.15,rb:.65} }},
+  medical: { label:'🩺 醫療通路', badge:'medical', tradLabel:'醫療通路',
+    scRiskLabel:'建立期（月）', scRiskFn: sc=>'建立期 '+Math.round(sc.L*18)+'月',
+    sc:{ C:{L:.45,rb:.40}, B:{L:.33,rb:.45}, O:{L:.20,rb:.50} }},
+  newbie: { label:'🌱 新人培育', badge:'newbie', tradLabel:'傳統壽險',
+    scRiskLabel:'空窗期（月）', scRiskFn: sc=>'空窗期 '+Math.round(sc.L*12)+'月',
+    sc:{ C:{L:.35,rb:.35}, B:{L:.25,rb:.40}, O:{L:.15,rb:.45} }},
 };
 
-// ─── Get inputs per identity ──────────────────────────────────────────────────
-function getInputs() {
-  const rb   = (+g('i_rate_broker').value||0)/100;
-  const ryr  = (+g('i_ry_rate').value||0)/100;
-  const or_  = (+g('i_or').value||0)/100;
-  const nrec = +g('i_nrec').value||0;
-  const rfyp = +g('i_rec_fyp').value||0;
-  // FYB 係數：僅新人培育使用，其他身份固定為 1
+// COMM_RANGES for boundary validation
+const COMM_RANGES = {
+  'cathay-life': [15,55], 'fubon-life': [15,55], 'nanshan-life': [18,50],
+  'shin-kong-life': [15,45], 'allianz-life': [10,39], 'taishin-life': [15,55],
+};
 
-  if (CID==='insurance') {
-    const FYP = +g('i_fyp').value||0;
-    return { FYP, rate_trad:(+g('i_rate_trad').value||0)/100,
-      ry_sunk:+g('i_ry_sunk').value||0,
-      ry_decay:+g('i_ry_decay').value||0.6,
-      L:(+g('i_loss').value||0)/100,
-      rb, ryr, or_, nrec, rfyp, fyb:1 };
-  }
-  if (CID==='banker') {
-    const rawFYP = +g('b_fyp').value||0;
-    const conv   = (+g('b_conv').value||0)/100;
-    const adapt  = +g('b_adapt').value||6;
-    return { FYP:rawFYP*conv,
-      rate_trad:(+g('b_rate_trad').value||0)/100,
-      ry_sunk:+g('b_salary').value||0,
-      L:Math.min(adapt/24,.9),
-      rb, ryr, or_:0, nrec:0, rfyp:0, fyb:1,
-      _rawFYP:rawFYP, _conv:conv, _aum:+g('b_aum').value||0,
-      _subsidy:+g('b_subsidy').value||0, _adapt:adapt, _id:'banker' };
-  }
-  if (CID==='manager') {
-    const FYP    = +g('m_fyp').value||0;
-    const follow = +g('m_follow').value||0;
-    const adapt  = +g('m_adapt').value||9;
-    const legal  = +g('m_legal').value||0;
-    const orgBonus = +g('m_org_bonus').value||0;
-    const mRySunk  = +g('m_ry_sunk').value||0;
-    return { FYP, rate_trad:(+g('m_rate_trad').value||0)/100,
-      ry_sunk: orgBonus,     // 組織津貼：轉職後歸零（沉沒成本）
-      _mRySunk: mRySunk,     // 個人續期佣金：傳統端固定收入，不納入保經端計算
-      L: Math.min(adapt/36,.8),
-      rb, ryr, or_, nrec:follow, rfyp:FYP*.8, fyb:1,
-      _legal:legal, _follow:follow, _teamSize:+g('m_team_size').value||0,
-      _id:'manager' };
-  }
-  if (CID==='medical') {
-    const clients = +g('md_clients').value||0;
-    const avgP    = +g('md_avg_premium').value||0;
-    const FYP     = clients * avgP;
-    const adapt   = +g('md_adapt').value||6;
-    return { FYP,
-      rate_trad:(+g('md_rate_trad').value||0)/100,
-      ry_sunk:+g('md_income').value||0,
-      L: Math.min(adapt/18,.7),
-      rb, ryr, or_:0, nrec:0, rfyp:0, fyb:1,
-      _clients:clients, _avgP:avgP, _id:'medical' };
-  }
-  if (CID==='newbie') {
-    const FYP     = +g('n_fyp').value||0;
-    const growth  = (+g('n_growth').value||0)/100;
-    const adapt   = +g('n_adapt').value||3;
-    const fyb     = Math.min(1, Math.max(0.1, +g('n_fyb').value||1)); // 新人專屬 FYB 係數
-    return { FYP, rate_trad:(+g('n_rate_trad').value||0)/100,
-      ry_sunk:0,
-      L: Math.min(adapt/12,.5),
-      rb, ryr, or_:0, nrec:0, rfyp:0, fyb,
-      _growth:growth, _id:'newbie' };
-  }
-  return {};
-}
+// ─── Helpers (fmtM/fmtNT/fmtPct/compute5yr from calculator.js) ──────────────
+const g = id => document.getElementById(id);
 
-// ─── Compute 5-year projection ────────────────────────────────────────────────
-function compute5yr(p) {
-  const yrs = [1,2,3,4,5];
-  let trad, broker;
+// ─── COMPARISON_DIMS（制度對照表資料驅動定義）──────────────────────────────
+// AC-031: 新增維度只需加一條，不需改 updateComparisonTable()
+const COMPARISON_DIMS = [
+  { key:'commRateTrad', label:'首年佣金率', personas:['insurance','banker','manager','medical','newbie'],
+    tradFn:(c,p,defs)=> defs.commRateTrad!=null ? defs.commRateTrad+'%' : '—',
+    gsFn:()=>'40%+', schemaKey:'commRateTrad' },
+  { key:'renewalRate', label:'續期佣金率', personas:['insurance'],
+    tradFn:(c,p,defs)=> (defs.renewalRate||'—')+'%'+(defs.renewalDecay?` (×${defs.renewalDecay})`:''),
+    gsFn:()=>'5% (×0.85)' },
+  { key:'contract', label:'合約制度',
+    tradFn:(c)=>c.contract, gsFn:(c,p,defs,gs)=>gs.contract },
+  { key:'productChoice', label:'產品選擇',
+    tradFn:(c)=>c.comparison?.productChoice||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.productChoice||'20+家自由選' },
+  { key:'ceiling', label:'收入天花板',
+    tradFn:(c)=>c.comparison?.ceiling||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.ceiling||'無天花板' },
+  { key:'benefits', label:'勞健保',
+    tradFn:(c)=>c.benefits, gsFn:(c,p,defs,gs)=>gs.benefits },
+  { key:'training', label:'培訓體系',
+    tradFn:(c)=>c.comparison?.training||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.training||'—' },
+  { key:'orgDev', label:'組織發展支援',
+    tradFn:(c)=>c.comparison?.orgDev||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.orgDev||'—' },
+  { key:'brand', label:'品牌特色',
+    tradFn:(c)=>c.comparison?.brand||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.brand||'—' },
+];
 
-  if (p._id==='newbie') {
-    // Newbie: trad grows by growth rate; broker also grows but higher commission
-    const fyb_n = p.fyb || 1;
-    trad   = yrs.map(y => p.FYP * Math.pow(1+p._growth, y-1) * fyb_n * p.rate_trad);
-    broker = yrs.map(y => {
-      const base = p.FYP * Math.pow(1+p._growth, y-1) * fyb_n;
-      return base*(1-p.L)*p.rb + base*(1-p.L)*p.ryr*(y-1);
-    });
-  } else {
-    // 續佣公式：傳統端與保經端相同邏輯，差異只在起始值與有效FYP
-    // 傳統端：從 ry_sunk 起步，FYP 全額（在職無流失）
-    // 保經端：從 0   起步，FYP×(1-L)（有客戶流失）
-    // renewal[y] = renewal[y-1] × 0.6 + 當期有效FYP × ryr
-    const decay = p.ry_decay || 0.6;
+// ─── 制度對照表渲染（AC-030: 雙行值顯示）───────────────────────────────────
+function updateComparisonTable(){
+  const container=g('comparison-table-container');if(!container)return;
+  const c=COMPANY_DB[selectedCompanyId];const gs=COMPANY_DB['gongsheng'];
+  if(!c||!gs){container.innerHTML='';return;}
+  const persona=CID;const defs=c.defaults[persona]||c.defaults.insurance||{};
 
-    let ry_t = p.ry_sunk + (p._mRySunk || 0);
-    const trad_ry = [ry_t];
-    for (let y = 2; y <= 5; y++) {
-      ry_t = ry_t * decay + p.FYP * (p.ryr || 0);
-      trad_ry.push(ry_t);
-    }
-    trad = yrs.map((_, i) => p.FYP * p.rate_trad + trad_ry[i]);
+  // 篩選適用當前身份的維度
+  const dims=COMPARISON_DIMS.filter(d=>!d.personas||d.personas.includes(persona));
 
-    // 保經端：從0起步，逐年遞迴累積（自然建立新客戶續佣池）
-    let ry_b = 0;
-    const broker_ry = [0];
-    for (let y = 2; y <= 5; y++) {
-      ry_b = ry_b * decay + p.FYP * (1-p.L) * (p.ryr || 0);
-      broker_ry.push(ry_b);
-    }
-    broker = yrs.map((y, i) => {
-      const fyp_i = p.FYP * (1-p.L)*p.rb;
-      const or_i  = (p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
-      return fyp_i + broker_ry[i] + or_i;
-    });
-  }
+  const rows=dims.map(d=>{
+    let tradVal=d.tradFn(c,persona,defs);
+    let gsVal=d.gsFn(c,persona,defs,gs);
 
-  // Manager: add legal cost deduction in Y1
-  if (p._id==='manager' && p._legal) {
-    broker[0] = Math.max(0, broker[0] - p._legal);
-  }
-  // Banker: add subsidy in adapt period (Y1)
-  if (p._id==='banker' && p._subsidy) {
-    broker[0] += p._subsidy;
-  }
-
-  const cumT = trad.reduce((a,v,i)=>{a.push((a[i-1]||0)+v);return a;},[]);
-  const cumB = broker.reduce((a,v,i)=>{a.push((a[i-1]||0)+v);return a;},[]);
-  const net  = cumB.map((b,i)=>b-cumT[i]);
-
-  let beMonth = null;
-  if (net[0]>0) { beMonth=1; }
-  else {
-    for (let i=1;i<5;i++) {
-      if (net[i]>0) {
-        const frac=Math.abs(net[i-1])/(net[i]-net[i-1]);
-        beMonth=Math.round((i+frac)*12);
-        break;
+    // AC-030: 若用戶已修改對應 schemaKey，顯示雙行值
+    let dualHtml='';
+    if(d.schemaKey && typeof _userModified!=='undefined' && _userModified[d.schemaKey]){
+      const userVal=document.getElementById('param_'+d.schemaKey)?.value;
+      if(userVal!=null){
+        const defaultVal=defs[d.schemaKey];
+        dualHtml=`<div class="dual-val">公司預設：${defaultVal}% ｜ 您輸入：${userVal}%</div>`;
+        tradVal=userVal+'%';
       }
     }
-  }
-  return { trad, broker, cumT, cumB, net, beMonth,
-    sum5trad:cumT[4], sum5broker:cumB[4], diff5:net[4] };
-}
 
+    return `<tr>
+      <td class="cs-label">${d.label}</td>
+      <td>${tradVal}${dualHtml}</td>
+      <td>${gsVal}</td>
+    </tr>`;
+  }).join('');
 
-// ─── Annual Comparison Renderer ────────────────────────────────────────────────
-function renderAnnualComparison(p, r) {
-  const yrs = [1,2,3,4,5];
-  const cfg = ID_CONFIG[CID];
-  const tradLabel = cfg.tradLabel || '傳統公司';
-
-  // Build trad breakdown items
-  function tradItems(y) {
-    const items = [];
-    // 新人培育使用 fyb 係數，其他身份 fyb=1（直接用 FYP）
-    const fyb_eff = (p._id==='newbie') ? (p.fyb||1) : 1;
-    const fyc = p.FYP * fyb_eff * p.rate_trad;
-    if (fyc > 0) items.push({label:'首年佣金', val: fyc, cls:'trad'});
-    // 遞迴續佣：計算第 y 年傳統端的續佣/津貼（Y1=基準，Y2+=遞迴累積）
-    {
-      const decay = p.ry_decay || 0.6;
-      const base  = (p.ry_sunk || 0) + (p._mRySunk || 0);
-      let ry = base;
-      for (let i = 2; i <= y; i++) ry = ry * decay + p.FYP * (p.ryr || 0);
-      if (ry > 0) {
-        const lbl = CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':CID==='manager'?'津貼＋續佣':'續期佣金';
-        items.push({label: lbl, val: ry, cls:'trad'});
-      }
-    }
-    return items;
-  }
-
-  // Build broker breakdown items per year
-  function brokerItems(y) {
-    const items = [];
-    // 新人培育使用 fyb 係數，其他身份 fyb=1
-    const _fyb  = (p._id==='newbie') ? (p.fyb||1) : 1;
-    const fyp_i = p.FYP * _fyb *(1-p.L)*p.rb;
-    // 遞迴續佣：保經端從0起步，Y2+逐年累積
-    const decay = p.ry_decay || 0.6;
-    let ry_i = 0;
-    for (let i = 2; i <= y; i++) ry_i = ry_i * decay + p.FYP * _fyb * (1-p.L) * (p.ryr||0);
-    const or_i  = (p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
-    if (fyp_i > 0)    items.push({label:'首年佣金', val: fyp_i, cls:'broker'});
-    if (ry_i  > 0)    items.push({label:`累積續佣(Y${y})`, val: ry_i, cls:'broker'});
-    if (or_i  > 0)    items.push({label:'組織獎金', val: or_i, cls:'broker'});
-    return items;
-  }
-
-  function itemsHtml(arr) {
-    if (!arr.length) return '';
-    return '<div class="ac-items">' +
-      arr.map(it => `<div class="ac-item"><span class="ac-item-dot ${it.cls}"></span><span>${it.label}</span><span style="font-family:'DM Mono',monospace;margin-left:auto;padding-left:6px">${fmtM(it.val)}萬</span></div>`).join('') +
-    '</div>';
-  }
-
-  function itemsHtmlR(arr) {
-    if (!arr.length) return '';
-    return '<div class="ac-items">' +
-      arr.map(it => `<div class="ac-item"><span style="font-family:'DM Mono',monospace;margin-right:auto;padding-right:6px">${fmtM(it.val)}萬</span><span>${it.label}</span><span class="ac-item-dot ${it.cls}" style="margin-left:3px"></span></div>`).join('') +
-    '</div>';
-  }
-
-  const rows = yrs.map((y, i) => {
-    const tVal = r.trad[i];
-    const bVal = r.broker[i];
-    const diff = bVal - tVal;
-    const diffCls = diff > 100 ? 'pos' : diff < -100 ? 'neg' : 'neu';
-    const diffIcon = diff >= 0 ? '▲' : '▼';
-    const diffStr = `${diffIcon} ${diff>=0?'+':''}${fmtM(diff)}萬`;
-
-    return `<div class="ac-row">
-      <div class="ac-trad-col">
-        <div class="ac-amount trad">${fmtM(tVal)}萬</div>
-        ${itemsHtml(tradItems(y))}
-      </div>
-      <div class="ac-mid-col">
-        <div class="ac-year-label">第${y}年</div>
-        <div class="ac-diff ${diffCls}">${diffStr}</div>
-      </div>
-      <div class="ac-broker-col">
-        <div class="ac-amount broker">${fmtM(bVal)}萬</div>
-        ${itemsHtmlR(brokerItems(y))}
-      </div>
-    </div>`;
-  });
-
-  const diff5 = r.diff5;
-  const diffCls5 = diff5 > 100 ? 'pos' : diff5 < -100 ? 'neg' : 'neu';
-  const diffStr5 = `${diff5>=0?'▲':'▼'} ${diff5>=0?'+':''}${fmtM(diff5)}萬`;
-
-  const totalRow = `<div class="ac-row ac-total">
-    <div class="ac-trad-col">
-      <div class="ac-amount trad">${fmtM(r.sum5trad)}萬</div>
-      <div class="ac-items"><div class="ac-item"><span class="ac-item-dot trad"></span>5年累計</div></div>
-    </div>
-    <div class="ac-mid-col">
-      <div class="ac-year-label">5年總計</div>
-      <div class="ac-diff ${diffCls5}">${diffStr5}</div>
-    </div>
-    <div class="ac-broker-col">
-      <div class="ac-amount broker">${fmtM(r.sum5broker)}萬</div>
-      <div class="ac-items"><div class="ac-item"><span class="ac-item-dot broker"></span>5年累計</div></div>
-    </div>
-  </div>`;
-
-  g('annual_comparison').innerHTML =
-    `<div class="ac-wrap">
-      <div class="ac-header">
-        <div class="ac-trad-h">← ${tradLabel}</div>
-        <div class="ac-mid-h">比較</div>
-        <div class="ac-broker-h">公勝保經 →</div>
-      </div>
-      ${rows.join('\n      ')}
-      ${totalRow}
+  container.innerHTML=`
+    <table class="comparison-table">
+      <thead><tr>
+        <th>比較項目</th>
+        <th>🏢 ${c.short||c.name}</th>
+        <th>🏢 公勝保經</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+      ⚠️ 數值僅供參考，實際佣金因商品、職級、年資有異。
     </div>`;
 }
 
-// ─── Update result panel ──────────────────────────────────────────────────────
-function updateResult(p, r) {
-  g('trad-label').textContent = (ID_CONFIG[CID]||{}).tradLabel||'傳統公司';
-  g('k_trad5').textContent   = fmtM(r.sum5trad);
-  g('k_broker5').textContent = fmtM(r.sum5broker);
-  const d = r.diff5;
-  g('k_diff5').textContent   = (d>=0?'+':'')+fmtM(d);
-  g('k_diff_label').textContent = d>=0?'✅ 保經5年累計領先':'⚠ 建議重新確認假設';
+// ─── Annual Comparison Renderer ──────────────────────────────────────────────
+function renderAnnualComparison(p,r){
+  const yrs=[1,2,3,4,5]; const cfg=ID_CONFIG[CID]; const tradLabel=cfg.tradLabel||'傳統公司';
+  function tradItems(y){
+    const items=[]; const fyb_eff=(p._id==='newbie')?(p.fyb||1):1;
+    const fyc=p.FYP*fyb_eff*p.rate_trad; if(fyc>0)items.push({label:'首年佣金',val:fyc,cls:'trad'});
+    {const decay=p.ry_decay||0.6;const base=(p.ry_sunk||0)+(p._mRySunk||0);let ry=base;for(let i=2;i<=y;i++)ry=ry*decay+p.FYP*(p.ryr||0);
+    if(ry>0){const lbl=CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':CID==='manager'?'津貼＋續佣':'續期佣金';items.push({label:lbl,val:ry,cls:'trad'});}}
+    return items;
+  }
+  function brokerItems(y){
+    const items=[]; const _fyb=(p._id==='newbie')?(p.fyb||1):1;
+    const fyp_i=p.FYP*_fyb*(1-p.L)*p.rb;const decay=p.ry_decay||0.6;let ry_i=0;
+    for(let i=2;i<=y;i++)ry_i=ry_i*decay+p.FYP*_fyb*(1-p.L)*(p.ryr||0);
+    const or_i=(p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
+    if(fyp_i>0)items.push({label:'首年佣金',val:fyp_i,cls:'broker'});
+    if(ry_i>0)items.push({label:`累積續佣(Y${y})`,val:ry_i,cls:'broker'});
+    if(or_i>0)items.push({label:'組織獎金',val:or_i,cls:'broker'});
+    return items;
+  }
+  function itemsHtml(arr){if(!arr.length)return'';return'<div class="ac-items">'+arr.map(it=>`<div class="ac-item"><span class="ac-item-dot ${it.cls}"></span><span>${it.label}</span><span style="font-family:'DM Mono',monospace;margin-left:auto;padding-left:6px">${fmtM(it.val)}萬</span></div>`).join('')+'</div>';}
+  function itemsHtmlR(arr){if(!arr.length)return'';return'<div class="ac-items">'+arr.map(it=>`<div class="ac-item"><span style="font-family:'DM Mono',monospace;margin-right:auto;padding-right:6px">${fmtM(it.val)}萬</span><span>${it.label}</span><span class="ac-item-dot ${it.cls}" style="margin-left:3px"></span></div>`).join('')+'</div>';}
+  const rows=yrs.map((y,i)=>{const tVal=r.trad[i];const bVal=r.broker[i];const diff=bVal-tVal;const diffCls=diff>100?'pos':diff<-100?'neg':'neu';const diffIcon=diff>=0?'▲':'▼';const diffStr=`${diffIcon} ${diff>=0?'+':''}${fmtM(diff)}萬`;return`<div class="ac-row"><div class="ac-trad-col"><div class="ac-amount trad">${fmtM(tVal)}萬</div>${itemsHtml(tradItems(y))}</div><div class="ac-mid-col"><div class="ac-year-label">第${y}年</div><div class="ac-diff ${diffCls}">${diffStr}</div></div><div class="ac-broker-col"><div class="ac-amount broker">${fmtM(bVal)}萬</div>${itemsHtmlR(brokerItems(y))}</div></div>`;});
+  const diff5=r.diff5;const diffCls5=diff5>100?'pos':diff5<-100?'neg':'neu';const diffStr5=`${diff5>=0?'▲':'▼'} ${diff5>=0?'+':''}${fmtM(diff5)}萬`;
+  const totalRow=`<div class="ac-row ac-total"><div class="ac-trad-col"><div class="ac-amount trad">${fmtM(r.sum5trad)}萬</div><div class="ac-items"><div class="ac-item"><span class="ac-item-dot trad"></span>5年累計</div></div></div><div class="ac-mid-col"><div class="ac-year-label">5年總計</div><div class="ac-diff ${diffCls5}">${diffStr5}</div></div><div class="ac-broker-col"><div class="ac-amount broker">${fmtM(r.sum5broker)}萬</div><div class="ac-items"><div class="ac-item"><span class="ac-item-dot broker"></span>5年累計</div></div></div></div>`;
+  g('annual_comparison').innerHTML=`<div class="ac-wrap"><div class="ac-header"><div class="ac-trad-h">← ${tradLabel}</div><div class="ac-mid-h">比較</div><div class="ac-broker-h">公勝保經 →</div></div>${rows.join('')}${totalRow}</div>`;
+}
 
-  if (!r.beMonth)         g('k_be').textContent='3年以上';
-  else if(r.beMonth<=1)   g('k_be').textContent='第1年內即回本';
-  else                    g('k_be').textContent=`約第 ${r.beMonth} 個月`;
-
+// ─── Update result panel (Section ②) ──────────────────────────────────────
+function updateResult(p,r){
+  g('trad-label').textContent=(ID_CONFIG[CID]||{}).tradLabel||'傳統公司';
+  g('k_trad5').textContent=fmtM(r.sum5trad);g('k_broker5').textContent=fmtM(r.sum5broker);
+  const d=r.diff5;g('k_diff5').textContent=(d>=0?'+':'')+fmtM(d);
+  g('k_diff_label').textContent=d>=0?'✅ 保經5年累計領先':'⚠ 請重新確認假設';
+  if(!r.beMonth)g('k_be').textContent='3年以上';
+  else if(r.beMonth<=1)g('k_be').textContent='第1年內即回本';
+  else g('k_be').textContent=`約第 ${r.beMonth} 個月`;
   const bePct=r.beMonth?Math.min(r.beMonth/36*100,100):100;
-  g('tl_fill').style.width=bePct+'%';
-  g('tl_dot').style.left=bePct+'%';
-  g('tl_label').style.left=bePct+'%';
-  g('tl_label').textContent=r.beMonth?(r.beMonth<=1?'<1月':r.beMonth+'月'):'>36月';
-
-  // Annual comparison side-by-side
-  renderAnnualComparison(p, r);
+  g('tl_fill').style.width=bePct+'%';g('tl_dot').style.left=bePct+'%';
+  g('tl_label').style.left=bePct+'%';g('tl_label').textContent=r.beMonth?(r.beMonth<=1?'<1月':r.beMonth+'月'):'>36月';
+  renderAnnualComparison(p,r);
 }
 
-// ─── Scenarios ────────────────────────────────────────────────────────────────
+// ─── Scenarios ───────────────────────────────────────────────────────────────
 let curSc='C';
-function getScParams(key) {
-  const base = getInputs();
-  const sc   = ID_CONFIG[CID].sc[key];
-  return { ...base, L:sc.L, rb:sc.rb,
-    nrec: key==='C'?1:key==='B'?3:5,
-    rfyp: base.rfyp||0 };
+function getScParams(key){
+  const base=schemaToComputeParams(collectInputs(CID),CID);
+  const sc=ID_CONFIG[CID].sc[key];
+  return{...base,L:sc.L,rb:sc.rb,nrec:key==='C'?1:key==='B'?3:5,rfyp:base.rfyp||0};
 }
+function updateScenario(){showScenario(curSc,null);}
+function showScenario(key,btnEl){
+  curSc=key;const cfg=ID_CONFIG[CID];const sc=cfg.sc[key];const sp=getScParams(key);const r=compute5yr(sp);
+  const colors={C:'#ff7a6a',B:'#e8c04a',O:'#5dd990'};const borders={C:'rgba(231,76,60,.4)',B:'rgba(201,162,39,.4)',O:'rgba(39,174,96,.4)'};const cl=colors[key],bo=borders[key];
+  // Scenario tabs highlight
+  document.querySelectorAll('.sc-btn').forEach(b=>b.className='sc-btn');
+  if(btnEl)btnEl.classList.add('active-'+key.toLowerCase());
+  else document.querySelector(`.sc-btn:nth-child(${key==='C'?1:key==='B'?2:3})`).classList.add('active-'+key.toLowerCase());
 
-function updateScenario() { showScenario(curSc,null); }
-
-function showScenario(key, btnEl) {
-  curSc=key;
-  const cfg   = ID_CONFIG[CID];
-  const sc    = cfg.sc[key];
-  const sp    = getScParams(key);
-  const r     = compute5yr(sp);
-  const colors= {C:'#ff7a6a',B:'#e8c04a',O:'#5dd990'};
-  const borders={C:'rgba(231,76,60,.4)',B:'rgba(201,162,39,.4)',O:'rgba(39,174,96,.4)'};
-  const cl=colors[key], bo=borders[key];
-
-  g('sc_detail').innerHTML=`
-    <div class="card" style="border-color:${bo}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
-        <div>
-          <div style="font-size:14px;font-weight:700;color:${cl}">${{C:'😰 保守情境',B:'📊 基準情境',O:'🚀 樂觀情境'}[key]}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">
-            ${cfg.scRiskFn(sc)} · 保經首佣 ${fmtPct(sc.rb)} · 增員 ${{C:1,B:3,O:5}[key]} 人
-          </div>
-        </div>
-        <div class="badge ${r.diff5>=0?'pos':'neg'}">${r.diff5>=0?'保經勝出':'需調整'}</div>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi broker"><div class="kpi-label">保經5年</div><div class="kpi-value">${fmtM(r.sum5broker)}</div><div class="kpi-sub">萬元</div></div>
-        <div class="kpi trad"><div class="kpi-label">傳統5年</div><div class="kpi-value">${fmtM(r.sum5trad)}</div><div class="kpi-sub">萬元</div></div>
-        <div class="kpi diff kpi-full"><div class="kpi-label">5年淨利差距</div>
-          <div class="kpi-value" style="color:${cl}">${(r.diff5>=0?'+':'')+fmtM(r.diff5)}</div><div class="kpi-sub">萬元</div></div>
-      </div>
-      <div style="margin-top:10px;font-size:11px;color:var(--text-muted)">
-        📌 黃金交叉：<strong style="color:${cl}">${r.beMonth?(r.beMonth<=1?'第1年內即回本':r.beMonth+'個月內回本'):'>3年後回本'}</strong>
-      </div>
-      <div style="margin-top:12px">
-        ${[1,2,3,4,5].map((y,i)=>{
-          const bp=Math.min(r.broker[i]/Math.max(...r.broker)*100,100).toFixed(1);
-          return `<div style="margin-bottom:6px">
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:3px">
-              <span>第${y}年</span><span style="color:${cl}">${fmtM(r.broker[i])}萬</span></div>
-            <div class="bar-track"><div class="bar-fill broker" style="width:${bp}%;background:${cl}"></div></div>
-          </div>`;}).join('')}
-      </div>
-    </div>`;
-
+  g('sc_detail').innerHTML=`<div class="card" style="border-color:${bo}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div><div style="font-size:14px;font-weight:700;color:${cl}">${{C:'😰 保守情境',B:'📊 基準情境',O:'🚀 樂觀情境'}[key]}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px">${cfg.scRiskFn(sc)} · 保經首佣 ${fmtPct(sc.rb)} · 增員 ${{C:1,B:3,O:5}[key]} 人</div></div><div class="badge ${r.diff5>=0?'pos':'neg'}">${r.diff5>=0?'保經勝出':'需調整'}</div></div><div class="kpi-grid"><div class="kpi broker"><div class="kpi-label">保經5年</div><div class="kpi-value">${fmtM(r.sum5broker)}</div><div class="kpi-sub">萬元</div></div><div class="kpi trad"><div class="kpi-label">傳統5年</div><div class="kpi-value">${fmtM(r.sum5trad)}</div><div class="kpi-sub">萬元</div></div><div class="kpi diff kpi-full"><div class="kpi-label">5年淨利差距</div><div class="kpi-value" style="color:${cl}">${(r.diff5>=0?'+':'')+fmtM(r.diff5)}</div><div class="kpi-sub">萬元 <span class="kpi-ref">僅供參考</span></div></div></div><div style="margin-top:10px;font-size:11px;color:var(--text-muted)">📌 黃金交叉：<strong style="color:${cl}">${r.beMonth?(r.beMonth<=1?'第1年內即回本':r.beMonth+'個月內回本'):'>3年後回本'}</strong></div></div>`;
   // Compare table
-  const cfg2=ID_CONFIG[CID];
-  const items=[
-    {label:cfg2.scRiskLabel, fn:k=>cfg2.scRiskFn(cfg2.sc[k])},
-    {label:'保經首佣率',      fn:k=>fmtPct(cfg2.sc[k].rb)},
-    {label:'增員人數',        fn:k=>({C:1,B:3,O:5}[k])+'人'},
-    {label:'保經5年累計',     fn:k=>fmtM(compute5yr(getScParams(k)).sum5broker)+'萬'},
-    {label:'傳統5年累計',     fn:k=>fmtM(compute5yr(getScParams(k)).sum5trad)+'萬'},
-    {label:'★ 5年淨利差距',  fn:k=>{const d=compute5yr(getScParams(k)).diff5;return (d>=0?'+':'')+fmtM(d)+'萬';}, hl:true},
-    {label:'黃金交叉',        fn:k=>{const bm=compute5yr(getScParams(k)).beMonth;return bm?(bm<=1?'<1月':bm+'月'):'>36月';}},
-  ];
-  g('sc_compare_tbody').innerHTML=items.map(it=>`
-    <tr class="${it.hl?'highlight':''}">
-      <td>${it.label}</td>
-      ${['C','B','O'].map(k=>`<td class="val-${k.toLowerCase()}">${it.fn(k)}</td>`).join('')}
-    </tr>`).join('');
+  const items=[{label:cfg.scRiskLabel,fn:k=>cfg.scRiskFn(cfg.sc[k])},{label:'保經首佣率',fn:k=>fmtPct(cfg.sc[k].rb)},{label:'增員人數',fn:k=>({C:1,B:3,O:5}[k])+'人'},{label:'保經5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5broker)+'萬'},{label:'傳統5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5trad)+'萬'},{label:'★ 5年淨利差距',fn:k=>{const d2=compute5yr(getScParams(k)).diff5;return(d2>=0?'+':'')+fmtM(d2)+'萬';},hl:true},{label:'黃金交叉',fn:k=>{const bm=compute5yr(getScParams(k)).beMonth;return bm?(bm<=1?'<1月':bm+'月'):'>36月';}}];
+  g('sc_compare_tbody').innerHTML=items.map(it=>`<tr class="${it.hl?'highlight':''}"><td style="text-align:left">${it.label}</td>${['C','B','O'].map(k=>`<td>${it.fn(k)}</td>`).join('')}</tr>`).join('');
 }
 
-// ─── Deep Mindset Scripts ─────────────────────────────────────────────────────
-const SCRIPTS = {
-  insurance: [
-    ['第一層思維｜我在保護什麼？',
-     (p,r) => `每一個在這個時刻猶豫的人，心裡保護的往往不是「錢」，而是「安全感」。<br><br>
-     那筆每年 <strong>${fmtNT(p.ry_sunk)}</strong> 的續期佣金，代表的是您多年來用努力換來的「已知」。放棄已知，是人類本能上最難跨越的關卡——這不是軟弱，這是人性。<br><br>
-     但請問自己：<strong>我現在保護的這份安全感，是在幫助我走向真正想要的生活，還是只是讓我留在原地感覺比較不害怕？</strong><br><br>
-     真正的安全感，來自您相信自己有能力在任何環境中創造價值的那份底氣。`],
-    ['第二層思維｜時間站在誰那邊？',
-     (p,r) => `這份模型顯示，即使設定了 <strong>${fmtPct(p.L)}</strong> 的客戶流失率，您最快只需 <strong>${r.beMonth?(r.beMonth<=1?'不到1個月':r.beMonth+'個月'):'3年以上'}</strong> 就能完全補回放棄的一切——之後每一年，差距持續擴大。<br><br>
-     五年後的您，會是哪一個版本？留在原地的那個，仍在同樣的天花板下努力。選擇跨出的那個，擁有以您名字命名、可以傳承的事業體系。<br><br>
-     <strong>時間不會等人。差別只在於，這段時間是在為誰的夢想工作。</strong>`],
-    ['第三層思維｜我真正想留下什麼？',
-     (p,r) => `${p.nrec>0?`您身邊有 <strong>${p.nrec} 位夥伴</strong>，他們信任您、願意跟著您走。`:'您這些年累積的，不只是客戶，而是一群信任您這個「人」的關係網絡。'}<br><br>
-     有一種人，把最好的年華貢獻給一個不以自己名字命名的體制，退休那天兩手空空。<strong>有另一種人，選擇在還來得及的時候，開始建立屬於自己、屬於家人、可以傳下去的東西。</strong><br><br>
-     這個決定，不是跳槽——這是您對下一個十年的一次鄭重宣告。`],
+// ─── Deep Mindset Scripts ────────────────────────────────────────────────────
+const SCRIPTS={
+  insurance:[
+    ['第一層思維｜我在保護什麼？',(p,r)=>`每一個在這個時刻猶豫的人，心裡保護的往往不是「錢」，而是「安全感」。<br><br>那筆每年 <strong>${fmtNT(p.ry_sunk)}</strong> 的續期佣金，代表的是您多年來用努力換來的「已知」。放棄已知，是人類本能上最難跨越的關卡——這不是軟弱，這是人性。<br><br>但請問自己：<strong>我現在保護的這份安全感，是在幫助我走向真正想要的生活，還是只是讓我留在原地感覺比較不害怕？</strong><br><br>真正的安全感，來自您相信自己有能力在任何環境中創造價值的那份底氣。`],
+    ['第二層思維｜時間站在誰那邊？',(p,r)=>`這份模型顯示，即使設定了 <strong>${fmtPct(p.L)}</strong> 的客戶流失率，您最快只需 <strong>${r.beMonth?(r.beMonth<=1?'不到1個月':r.beMonth+'個月'):'3年以上'}</strong> 就能完全補回放棄的一切——之後每一年，差距持續擴大。<br><br>五年後的您，會是哪一個版本？留在原地的那個，仍在同樣的天花板下努力。選擇跨出的那個，擁有以您名字命名、可以傳承的事業體系。<br><br><strong>時間不會等人。差別只在於，這段時間是在為誰的夢想工作。</strong>`],
+    ['第三層思維｜我真正想留下什麼？',(p,r)=>`${p.nrec>0?`您身邊有 <strong>${p.nrec} 位夥伴</strong>，他們信任您、願意跟著您走。`:'您這些年累積的，不只是客戶，而是一群信任您這個「人」的關係網絡。'}<br><br>有一種人，把最好的年華貢獻給一個不以自己名字命名的體制，退休那天兩手空空。<strong>有另一種人，選擇在還來得及的時候，開始建立屬於自己、屬於家人、可以傳下去的東西。</strong><br><br>這個決定，不是跳槽——這是您對下一個十年的一次鄭重宣告。`]
   ],
-  banker: [
-    ['第一層思維｜客戶認識誰？',
-     (p,r) => `您在銀行累積的客戶，AUM 高達 <strong>${fmtNT(p._aum)}</strong>——但請問一個殘酷的問題：<br><br>
-     <strong>這些客戶，認識的是「您」，還是銀行這塊招牌？</strong><br><br>
-     如果有一天您離開，銀行會把這些客戶帳戶直接轉給下一位理專。您多年建立的信任，會成為另一個人的業績。<br><br>
-     而在保經，每一份保單上，永遠只有您的名字。<strong>這才是真正屬於您的資產。</strong>`],
-    ['第二層思維｜底薪消失後怎麼了？',
-     (p,r) => `許多理專猶豫，來自「底薪消失」的恐懼。但讓我們看數字：即使只有 <strong>${fmtPct(p._conv)}</strong> 的客戶跟著您走，模型顯示最快 <strong>${r.beMonth?(r.beMonth<=1?'第1年內':r.beMonth+'個月'):'>3年'}</strong> 就能補回放棄的一切。<br><br>
-     之後每一年，收入持續成長，而不是被 KPI 壓著跑。<br><br>
-     <strong>銀行給您的是「工作」，保經給您的是「事業」。五年後，這兩個字的差距會讓您看得非常清楚。</strong>`],
-    ['第三層思維｜您的初衷是什麼？',
-     (p,r) => `在銀行，您每季面對不合理的 KPI、被迫推銷不適合客戶的商品、在合規與業績之間拉扯。<br><br>
-     您選擇這份工作的初衷，是幫助客戶做好財務規劃——<strong>還是為了完成銀行的銷售目標？</strong><br><br>
-     在保經，您可以真正站在客戶利益這一側，提供市場上最適合的商品。<br><br>
-     <strong>這不只是換工作，這是選擇一種您可以驕傲告訴客戶：「我為您選的是最好的」的工作方式。</strong>`],
+  banker:[
+    ['第一層思維｜客戶認識誰？',(p,r)=>`您在銀行累積的客戶，AUM 高達 <strong>${fmtNT(p._aum)}</strong>——但請問一個殘酷的問題：<br><br><strong>這些客戶，認識的是「您」，還是銀行這塊招牌？</strong><br><br>如果有一天您離開，銀行會把這些客戶帳戶直接轉給下一位理專。您多年建立的信任，會成為另一個人的業績。<br><br>而在保經，每一份保單上，永遠只有您的名字。<strong>這才是真正屬於您的資產。</strong>`],
+    ['第二層思維｜底薪消失後怎麼了？',(p,r)=>`許多理專猶豫，來自「底薪消失」的恐懼。但讓我們看數字：即使只有 <strong>${fmtPct(p._conv)}</strong> 的客戶跟著您走，模型顯示最快 <strong>${r.beMonth?(r.beMonth<=1?'第1年內':r.beMonth+'個月'):'>3年'}</strong> 就能補回放棄的一切。<br><br>之後每一年，收入持續成長，而不是被 KPI 壓著跑。<br><br><strong>銀行給您的是「工作」，保經給您的是「事業」。五年後，這兩個字的差距會讓您看得非常清楚。</strong>`],
+    ['第三層思維｜您的初衷是什麼？',(p,r)=>`在銀行，您每季面對不合理的 KPI、被迫推銷不適合客戶的商品、在合規與業績之間拉扯。<br><br>您選擇這份工作的初衷，是幫助客戶做好財務規劃——<strong>還是為了完成銀行的銷售目標？</strong><br><br>在保經，您可以真正站在客戶利益這一側，提供市場上最適合的商品。<br><br><strong>這不只是換工作，這是選擇一種您可以驕傲告訴客戶：「我為您選的是最好的」的工作方式。</strong>`]
   ],
-  manager: [
-    ['第一層思維｜您的團隊跟的是誰？',
-     (p,r) => `您帶了 <strong>${p._teamSize} 人</strong> 的團隊，每年組織津貼 <strong>${fmtNT(p.ry_sunk)}</strong>——這是您花了多少年心血換來的成果。<br><br>
-     但請問自己一個問題：<strong>您的團隊，跟的是「公司」，還是跟的是「您」？</strong><br><br>
-     如果答案是後者，那麼您在哪裡，他們就會在哪裡。而在保經，帶著這支團隊，您能給他們更高的佣金、更自由的商品選擇、更真實的個人品牌。<strong>這才是領導人真正的資產。</strong>`],
-    ['第二層思維｜天花板在哪裡？',
-     (p,r) => `在傳統公司，主管的收入被組織架構限制——您能帶多少人、晉升到哪個層級，公司的制度已經替您畫好了邊界。<br><br>
-     模型顯示，即使扣除競業緩衝期成本，<strong>${r.beMonth?(r.beMonth<=1?'第1年內就能':r.beMonth+'個月後就能'):'預計'}</strong> 讓您的收入回到原點——之後沒有天花板。<br><br>
-     <strong>您花了這麼多年幫公司建立組織，是時候為自己建立一個了。</strong>`],
-    ['第三層思維｜留下的是制度，還是傳承？',
-     (p,r) => `很多壽險主管最後的遺憾是：退休那天，所有的組織津貼歸零，帶出來的人也被公司接管。<br><br>
-     ${p._follow>0?`您預估有 <strong>${p._follow} 位核心夥伴</strong> 願意跟著您走。`:'您身邊一定有幾位核心夥伴，他們真正信任的是您這個人，而不是公司的招牌。'}<br><br>
-     在保經，您的合約、您的組織、您的客戶——<strong>全部以您的名字登記。這不只是事業，這是可以傳給下一代的資產。</strong>`],
+  manager:[
+    ['第一層思維｜您的團隊跟的是誰？',(p,r)=>`您帶了 <strong>${p._teamSize} 人</strong> 的團隊，每年組織津貼 <strong>${fmtNT(p.ry_sunk)}</strong>——這是您花了多少年心血換來的成果。<br><br>但請問自己一個問題：<strong>您的團隊，跟的是「公司」，還是跟的是「您」？</strong><br><br>如果答案是後者，那麼您在哪裡，他們就會在哪裡。而在保經，帶著這支團隊，您能給他們更高的佣金、更自由的商品選擇、更真實的個人品牌。<strong>這才是領導人真正的資產。</strong>`],
+    ['第二層思維｜天花板在哪裡？',(p,r)=>`在傳統公司，主管的收入被組織架構限制——您能帶多少人、晉升到哪個層級，公司的制度已經替您畫好了邊界。<br><br>模型顯示，即使扣除競業緩衝期成本，<strong>${r.beMonth?(r.beMonth<=1?'第1年內就能':r.beMonth+'個月後就能'):'預計'}</strong> 讓您的收入回到原點——之後沒有天花板。<br><br><strong>您花了這麼多年幫公司建立組織，是時候為自己建立一個了。</strong>`],
+    ['第三層思維｜留下的是制度，還是傳承？',(p,r)=>`很多壽險主管最後的遺憾是：退休那天，所有的組織津貼歸零，帶出來的人也被公司接管。<br><br>${p._follow>0?`您預估有 <strong>${p._follow} 位核心夥伴</strong> 願意跟著您走。`:'您身邊一定有幾位核心夥伴，他們真正信任的是您這個人，而不是公司的招牌。'}<br><br>在保經，您的合約、您的組織、您的客戶——<strong>全部以您的名字登記。這不只是事業，這是可以傳給下一代的資產。</strong>`]
   ],
-  medical: [
-    ['第一層思維｜您的信任值多少錢？',
-     (p,r) => `醫療背景賦予您一件普通業務員花十年都買不到的東西——<strong>客戶的高度信任。</strong><br><br>
-     您每年服務的 <strong>${p._clients} 位客戶</strong>，在聽到「醫師建議」或「醫療專業背景」時，成交率和保費規模都遠高於市場平均。<br><br>
-     問題不是您有沒有能力，而是：<strong>您現在的制度，有沒有讓這份信任變成您應得的收入？</strong>`],
-    ['第二層思維｜平台決定天花板',
-     (p,r) => `在現有通路，佣金率 <strong>${fmtPct(p.rate_trad)}</strong>，且商品選擇受限。在保經，同樣的客戶、同樣的信任，佣金可達 <strong>${fmtPct(p.rb)}</strong>，且能為客戶選擇市場上最適合的商品。<br><br>
-     模型顯示，光是佣金結構的差異，5年累計多出 <strong>${fmtM(r.diff5)} 萬元</strong>。<br><br>
-     <strong>您的專業沒有變，變的只是平台——而平台決定了您的天花板在哪裡。</strong>`],
-    ['第三層思維｜成為客戶的終身顧問',
-     (p,r) => `醫療通路的核心價值，不是「賣保險」，而是「成為客戶在健康與財務上最信任的那個人」。<br><br>
-     在保經，您可以整合壽險、健康險、長照險、投資型商品——<strong>為每一位客戶提供真正完整的財務醫療保障規劃。</strong><br><br>
-     這才是您的醫療背景最大的戰略價值——不是轉介一張保單，而是成為客戶一生的守護者。`],
+  medical:[
+    ['第一層思維｜您的信任值多少錢？',(p,r)=>`醫療背景賦予您一件普通業務員花十年都買不到的東西——<strong>客戶的高度信任。</strong><br><br>您每年服務的 <strong>${p._clients} 位客戶</strong>，在聽到「醫療專業背景」時，成交率和保費規模都遠高於市場平均。<br><br>問題不是您有沒有能力，而是：<strong>您現在的制度，有沒有讓這份信任變成您應得的收入？</strong>`],
+    ['第二層思維｜平台決定天花板',(p,r)=>`在現有通路，佣金率 <strong>${fmtPct(p.rate_trad)}</strong>，且商品選擇受限。在保經，同樣的客戶、同樣的信任，佣金可達 <strong>${fmtPct(p.rb)}</strong>，且能為客戶選擇市場上最適合的商品。<br><br>模型顯示，光是佣金結構的差異，5年累計多出 <strong>${fmtM(r.diff5)} 萬元</strong>。<br><br><strong>您的專業沒有變，變的只是平台——而平台決定了您的天花板在哪裡。</strong>`],
+    ['第三層思維｜成為客戶的終身顧問',(p,r)=>`醫療通路的核心價值，不是「賣保險」，而是「成為客戶在健康與財務上最信任的那個人」。<br><br>在保經，您可以整合壽險、健康險、長照險、投資型商品——<strong>為每一位客戶提供真正完整的財務醫療保障規劃。</strong><br><br>這才是您的醫療背景最大的戰略價值——不是轉介一張保單，而是成為客戶一生的守護者。`]
   ],
-  newbie: [
-    ['第一層思維｜第一步決定未來十年',
-     (p,r) => `剛入行的您，沉沒成本幾乎是零——這是一個極其珍貴的優勢，因為您可以從一開始就做出最正確的選擇，而不需要像許多前輩一樣，花十年才看清楚。<br><br>
-     傳統公司 vs 保經公司，差異不只是佣金率。<strong>差異是：十年後，您的客戶是「屬於公司的」，還是「屬於您個人的」？</strong><br><br>
-     入行第一步，就選擇讓自己的努力永遠為自己所有。`],
-    ['第二層思維｜複利效應從現在開始',
-     (p,r) => `模型顯示，同樣的產能，在保經的佣金結構下，5年累計比傳統公司多出 <strong>${fmtM(r.diff5)} 萬元</strong>——而您才剛開始，業績還會隨著每年 <strong>${fmtPct(p._growth)}</strong> 的成長率持續放大。<br><br>
-     <strong>複利的威力，在越早期啟動時越驚人。</strong> 同樣是五年的努力，起點的選擇決定終點差距有多大。<br><br>
-     現在就站對位置，讓未來每一分努力的回報，都流向正確的地方。`],
-    ['第三層思維｜你要建立的是事業，不是工作',
-     (p,r) => `很多新人入行，把「進大公司」當成目標。但五年後最後悔的，往往是那些在傳統公司努力了幾年，才發現客戶帶不走、組織制度限制重重的人。<br><br>
-     在保經，從第一天起，您服務的每一位客戶都是您的。您建立的每一段關係，都是您個人品牌的一部分。<br><br>
-     <strong>您現在選擇的，不只是一份工作——而是決定十年後，您是在幫別人打工，還是在經營屬於自己的事業。</strong>`],
+  newbie:[
+    ['第一層思維｜第一步決定未來十年',(p,r)=>`剛入行的您，沉沒成本幾乎是零——這是一個極其珍貴的優勢，因為您可以從一開始就做出最正確的選擇，而不需要像許多前輩一樣，花十年才看清楚。<br><br>傳統公司 vs 保經公司，差異不只是佣金率。<strong>差異是：十年後，您的客戶是「屬於公司的」，還是「屬於您個人的」？</strong><br><br>入行第一步，就選擇讓自己的努力永遠為自己所有。`],
+    ['第二層思維｜複利效應從現在開始',(p,r)=>`模型顯示，同樣的產能，在保經的佣金結構下，5年累計比傳統公司多出 <strong>${fmtM(r.diff5)} 萬元</strong>——而您才剛開始，業績還會隨著每年 <strong>${fmtPct(p._growth)}</strong> 的成長率持續放大。<br><br><strong>複利的威力，在越早期啟動時越驚人。</strong> 同樣是五年的努力，起點的選擇決定終點差距有多大。<br><br>現在就站對位置，讓未來每一分努力的回報，都流向正確的地方。`],
+    ['第三層思維｜你要建立的是事業，不是工作',(p,r)=>`很多新人入行，把「進大公司」當成目標。但五年後最後悔的，往往是那些在傳統公司努力了幾年，才發現客戶帶不走、組織制度限制重重的人。<br><br>在保經，從第一天起，您服務的每一位客戶都是您的。您建立的每一段關係，都是您個人品牌的一部分。<br><br><strong>您現在選擇的，不只是一份工作——而是決定十年後，您是在幫別人打工，還是在經營屬於自己的事業。</strong>`]
   ],
 };
-
-function updateScripts(p, r) {
-  const scripts = SCRIPTS[CID] || SCRIPTS.insurance;
-  scripts.forEach(([tag, fn], i) => {
-    const idx = i+1;
-    g('tag'+idx).textContent = tag;
-    g('script'+idx).innerHTML = fn(p, r);
-  });
+function updateScripts(p,r){
+  const scripts=SCRIPTS[CID]||SCRIPTS.insurance;
+  scripts.forEach(([tag,fn],i)=>{const idx=i+1;g('tag'+idx).textContent=tag;g('script'+idx).innerHTML=fn(p,r);});
 }
 
-// ─── Identity switcher ────────────────────────────────────────────────────────
-function setId(id, btn) {
-  CID = id;
-  document.body.className = id;
-  document.querySelectorAll('.id-btn').forEach(b=>{
-    b.className='id-btn';
-  });
-  btn.classList.add('active','active-'+id);
-  const cfg = ID_CONFIG[id];
-  g('id-badge').className = 'id-badge '+cfg.badge;
-  g('id-badge').textContent = cfg.label;
+// ─── Company Chips (auto-rendered from COMPANY_DB) ──────────────────────────
+function renderCompanyChips(){
+  const container=g('company-chips-container');if(!container)return;
+  const lifes=Object.entries(COMPANY_DB).filter(([k,v])=>v.type==='life');
+  const brokers=Object.entries(COMPANY_DB).filter(([k,v])=>v.type==='broker');
+  const customs=Object.entries(COMPANY_DB).filter(([k,v])=>v.type==='custom');
+  let html='<div class="company-chips">';
+  html+='<div class="company-chip-section">壽險公司</div>';
+  lifes.forEach(([k,v])=>{html+=`<button class="company-chip${k===selectedCompanyId?' active':''}" data-id="${k}" onclick="selectCompany('${k}',this)">${v.icon} ${v.short}</button>`;});
+  html+='<div class="company-chip-section">保經（對照）</div>';
+  brokers.filter(([k])=>k!=='other-broker').forEach(([k,v])=>{html+=`<button class="company-chip${k===selectedCompanyId?' active':''}" data-id="${k}" onclick="selectCompany('${k}',this)">${v.icon} ${v.short}</button>`;});
+  html+='<div class="company-chip-section">自訂</div>';
+  customs.forEach(([k,v])=>{html+=`<button class="company-chip${k===selectedCompanyId?' active':''}" data-id="${k}" onclick="selectCompany('${k}',this)">${v.icon} ${v.short}</button>`;});
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function selectCompany(id,chipEl){
+  // userModified confirmation dialog (AC-022)
+  const hasModified=Object.keys(_userModified||{}).length>0;
+  if(hasModified&&id!==selectedCompanyId){
+    if(!confirm('切換公司將重置所有參數，是否繼續？'))return;
+    clearUserModified();
+  }
+
+  // 自訂公司：彈出輸入介面收集公司名+佣金率
+  if(id==='custom'){
+    const customName=prompt('請輸入對方公司名稱：','自訂公司');
+    if(!customName){return;}// 取消則不切換
+    const customComm=prompt('該公司首年佣金率（%）：','20');
+    const customContract=prompt('合約制度（例：雙合約制/純承攬）：','—');
+    // 寫入 COMPANY_DB
+    COMPANY_DB['custom'].name=customName;
+    COMPANY_DB['custom'].short=customName.length>4?customName.slice(0,4):customName;
+    COMPANY_DB['custom'].contract=customContract||'—';
+    const commVal=parseFloat(customComm)||20;
+    // 所有身份統一設定
+    Object.keys(COMPANY_DB['custom'].defaults).forEach(p=>{
+      COMPANY_DB['custom'].defaults[p].commRateTrad=commVal;
+    });
+  }
+
+  selectedCompanyId=id;
+  document.querySelectorAll('.company-chip').forEach(c=>c.classList.remove('active'));
+  if(chipEl)chipEl.classList.add('active');
+  // 自訂公司：更新 Chip 文字
+  if(id==='custom'&&chipEl){chipEl.textContent='✏️ '+COMPANY_DB['custom'].short;}
+  updateCompanyNotice();
+  applyCompanyDefaults(id,CID);
+  renderInputs(CID);
   recalc();
 }
 
-// ─── Tab switching ────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  g('panel-'+name).classList.add('active');
-  document.querySelector('.tab-'+name).classList.add('active');
+function updateCompanyNotice(){
+  const c=COMPANY_DB[selectedCompanyId];const notice=g('company-notice');
+  if(!c||!notice)return;
+  // Check lastVerified staleness (>6 months or '—' = stale)
+  let staleHtml='';
+  if(!c.lastVerified||c.lastVerified==='—'){
+    staleHtml=`<br><span class="stale-warn">⚠️ 資料尚未驗證，請與對方確認實際數值</span>`;
+  } else {
+    const verified=new Date(c.lastVerified);const now=new Date();const diffMs=now-verified;const diffMonths=diffMs/(1000*60*60*24*30);
+    if(diffMonths>6)staleHtml=`<br><span class="stale-warn">⚠️ 資料可能已過時（上次驗證：${c.lastVerified}）</span>`;
+  }
+  const sources=Object.values(c.dataSources||{}).join('、');
+  notice.innerHTML=`⚙️ 已套用「<strong>${c.name}</strong>」預設參數 ｜ ${c.contract} ｜ ${c.benefits}${staleHtml}<br>⚠️ 數值僅供參考，請依對方實際職階與年資調整${c.note?`<br>💡 ${c.note}`:''}${sources?`<br>📎 資料來源：${sources}`:''}`;
+  notice.style.display='block';
+}
+
+// ─── Identity switcher ───────────────────────────────────────────────────────
+function setId(id,btn){
+  CID=id;currentPersonaId=id;
+  document.querySelectorAll('.id-btn').forEach(b=>{b.className='id-btn';});
+  btn.classList.add('active','active-'+id);
+  const cfg=ID_CONFIG[id];
+  g('id-badge').className='id-badge '+cfg.badge;g('id-badge').textContent=cfg.label;
+  renderInputs(id);
+  applyCompanyDefaults(selectedCompanyId,id);
+  recalc();
 }
 
 // ─── Main recalc ──────────────────────────────────────────────────────────────
-function recalc() {
-  const p = getInputs();
-  const r = compute5yr(p);
-  updateResult(p, r);
+function recalc(){
+  const values=collectInputs(CID);
+  const p=schemaToComputeParams(values,CID);
+  const r=compute5yr(p);
+  updateResult(p,r);
+  updateComparisonTable();
   updateScenario();
-  updateScripts(p, r);
+  updateScripts(p,r);
+  // Update income chart if available
+  if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container');}
+}
+
+// ─── Section Nav (IntersectionObserver) ──────────────────────────────────────
+function initSectionNav(){
+  const navLinks=document.querySelectorAll('.section-nav a');
+  const sections=document.querySelectorAll('.section[id]');
+  if(!sections.length)return;
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      const active=document.querySelector(`.section-nav a[href="#${e.target.id}"]`);
+      if(active)active.classList.add('active');
+    }});
+  },{rootMargin:'-30% 0px -60% 0px'});
+  sections.forEach(s=>obs.observe(s));
+}
+
+// ─── Footer data sources ────────────────────────────────────────────────────
+function renderFooter(){
+  if(typeof DATA_DISCLAIMER==='undefined')return;
+  g('footer-disclaimer').textContent=DATA_DISCLAIMER.disclaimer;
+  g('footer-sources').innerHTML='📎 資料來源：'+DATA_DISCLAIMER.primarySources.join(' ｜ ')+'<br>最後更新：'+DATA_DISCLAIMER.lastUpdated;
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+renderCompanyChips();
+updateCompanyNotice();
+renderInputs(CID);
+applyCompanyDefaults(selectedCompanyId,CID);
 recalc();
+initSectionNav();
+renderFooter();
 </script>
 
-<!-- Company Selector Module -->
-<link rel="stylesheet" href="company-selector.css?v=2">
-<script src="companies.js?v=2"></script>
-<script src="company-selector.js?v=2"></script>
+<!-- Income Chart Module (P0-8 will migrate GONGSHENG constants) -->
+<link rel="stylesheet" href="income-chart.css?v=3">
+<script src="income-chart.js?v=3"></script>
 </body>
 </html>

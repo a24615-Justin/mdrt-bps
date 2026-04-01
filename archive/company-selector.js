@@ -1,5 +1,5 @@
 // ─── Company Selector Module ─────────────────────────────────────────────────
-// 依賴：companies.js（COMPANY_DB, GONGSHENG_COMPARE）
+// 依賴：companies.js（COMPANY_DB — v3.0 已合併 GONGSHENG_COMPARE）
 // 依賴：原 index.html 中的 CID, g(), recalc(), ID_CONFIG
 // 載入順序：companies.js → company-selector.css → company-selector.js（在原 <script> 之後）
 
@@ -138,18 +138,18 @@
 
   function updateComparisonTable() {
     const c = COMPANY_DB[selectedCompanyId];
-    const gs = GONGSHENG_COMPARE;
+    const gs = COMPANY_DB['gongsheng'];
     const container = document.getElementById('cs-comparison');
     if (!c || !container) return;
 
     const rows = [
       ['合約制度', _esc(c.contract), _esc(gs.contract)],
-      ['產品選擇', _esc(c.comparison.productChoice), _esc(gs.productChoice)],
-      ['收入天花板', _esc(c.comparison.ceiling), _esc(gs.ceiling)],
+      ['產品選擇', _esc(c.comparison.productChoice), _esc(gs.comparison.productChoice)],
+      ['收入天花板', _esc(c.comparison.ceiling), _esc(gs.comparison.ceiling)],
       ['勞健保', _esc(c.benefits), _esc(gs.benefits)],
-      ['培訓體系', _esc(c.comparison.training), _esc(gs.training)],
-      ['組織發展支援', _esc(c.comparison.orgDev || '—'), _esc(gs.orgDev)],
-      ['品牌特色', _esc(c.comparison.brand || '—'), _esc(gs.brand)],
+      ['培訓體系', _esc(c.comparison.training), _esc(gs.comparison.training)],
+      ['組織發展支援', _esc(c.comparison.orgDev || '—'), _esc(gs.comparison.orgDev)],
+      ['品牌特色', _esc(c.comparison.brand || '—'), _esc(gs.comparison.brand)],
     ];
 
     // 加入佣金率對比（依身份別）+ info tooltip + 10年累積概估
@@ -175,12 +175,9 @@
 
     const brokerRate = document.getElementById('i_rate_broker')?.value || 50;
 
-    if (defs.commRate) {
-      rows.splice(1, 0, ['簽新保單時的佣金<br><span class="cs-term-hint">（首年佣金率）</span>', `基礎 ${defs.commRate}% ${tooltipHTML}`, `基礎 ${brokerRate}%`]);
-    } else if (defs.personalComm) {
-      rows.splice(1, 0, ['簽新保單時的佣金<br><span class="cs-term-hint">（個人首佣率）</span>', `基礎 ${defs.personalComm}% ${tooltipHTML}`, `基礎 ${brokerRate}%`]);
-    } else if (defs.altComm) {
-      rows.splice(1, 0, ['簽新保單時的佣金<br><span class="cs-term-hint">（首年佣金率）</span>', `基礎 ${defs.altComm}% ${tooltipHTML}`, `基礎 ${brokerRate}%`]);
+    if (defs.commRateTrad != null) {
+      const commLabel = persona === 'manager' ? '個人首佣率' : '首年佣金率';
+      rows.splice(1, 0, [`簽新保單時的佣金<br><span class="cs-term-hint">（${commLabel}）</span>`, `基礎 ${defs.commRateTrad}% ${tooltipHTML}`, `基礎 ${brokerRate}%`]);
     }
 
     // 續期佣金率（僅 insurance 身份顯示）
@@ -194,7 +191,7 @@
     if (insDefs && persona === 'insurance') {
       const baseFYP = 1000000;
       // 邊界值防護
-      const tradComm = Math.max(0, Math.min(1, (Number(insDefs.commRate) || 0) / 100));
+      const tradComm = Math.max(0, Math.min(1, (Number(insDefs.commRateTrad) || 0) / 100));
       const tradRenewal = Math.max(0, Math.min(1, (Number(insDefs.renewalRate) || 0) / 100));
       const tradDecay = Math.max(0, Math.min(1, Number(insDefs.renewalDecay) || 0));
       const gsComm = Math.max(0, Math.min(1, (Number(brokerRate) || 50) / 100));
@@ -298,12 +295,12 @@
   // ─── 匯出對照表（複製純文字到剪貼簿）──────────────────────────────────
   function exportComparison() {
     const c = COMPANY_DB[selectedCompanyId];
-    const gs = GONGSHENG_COMPARE;
+    const gs = COMPANY_DB['gongsheng'];
     if (!c) return;
 
     const persona = PERSONA_MAP[typeof CID !== 'undefined' ? CID : 'insurance'];
     const defs = c.defaults[persona] || c.defaults.insurance || {};
-    const commRate = defs.commRate || defs.personalComm || defs.altComm || '—';
+    const commRate = defs.commRateTrad ?? '—';
     const brokerRate = document.getElementById('i_rate_broker')?.value || 50;
 
     // 計算 10 年累積（與對照表同邏輯）
@@ -312,7 +309,7 @@
     if (insDefs) {
       const baseFYP = 1000000;
       // 邊界值防護
-      const _commR = Math.max(0, Math.min(100, Number(insDefs.commRate) || 0));
+      const _commR = Math.max(0, Math.min(100, Number(insDefs.commRateTrad) || 0));
       const _renewR = Math.max(0, Math.min(100, Number(insDefs.renewalRate) || 0));
       const _decay = Math.max(0, Math.min(1, Number(insDefs.renewalDecay) || 0));
       const _brRate = Math.max(0, Math.min(100, Number(brokerRate) || 50));

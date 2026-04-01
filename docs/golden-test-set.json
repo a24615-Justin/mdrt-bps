@@ -1,0 +1,452 @@
+[
+  {
+    "persona": "insurance",
+    "company": "cathay-life",
+    "inputs_summary": {
+      "FYP": 3000000,
+      "rate_trad": 0.2,
+      "L": 0.15,
+      "ry_sunk": 500000
+    },
+    "outputs": {
+      "trad": [
+        1100000,
+        1050000,
+        1020000,
+        1002000,
+        991200
+      ],
+      "broker": [
+        1087500,
+        1282500,
+        1359000,
+        1404900,
+        1432440
+      ],
+      "sum5trad": 5163200,
+      "sum5broker": 6566340,
+      "diff5": 1403140,
+      "beMonth": 13
+    }
+  },
+  {
+    "persona": "insurance",
+    "company": "nanshan-life",
+    "inputs_summary": {
+      "FYP": 3000000,
+      "rate_trad": 0.25,
+      "L": 0.15,
+      "ry_sunk": 500000
+    },
+    "outputs": {
+      "trad": [
+        1250000,
+        1225000,
+        1208750,
+        1198188,
+        1191322
+      ],
+      "broker": [
+        1087500,
+        1282500,
+        1365375,
+        1419244,
+        1454258
+      ],
+      "sum5trad": 6073259,
+      "sum5broker": 6608877,
+      "diff5": 535618,
+      "beMonth": 32
+    }
+  },
+  {
+    "persona": "insurance",
+    "company": "shin-kong-life",
+    "inputs_summary": {
+      "FYP": 3000000,
+      "rate_trad": 0.19,
+      "L": 0.15,
+      "ry_sunk": 500000
+    },
+    "outputs": {
+      "trad": [
+        1070000,
+        995000,
+        953750,
+        931063,
+        918584
+      ],
+      "broker": [
+        1087500,
+        1282500,
+        1352625,
+        1391194,
+        1412407
+      ],
+      "sum5trad": 4868397,
+      "sum5broker": 6526225,
+      "diff5": 1657828,
+      "beMonth": 1
+    }
+  },
+  {
+    "persona": "banker",
+    "company": "cathay-life",
+    "inputs_summary": {
+      "FYP": 2000000,
+      "rate_trad": 0.08,
+      "L": 0.25,
+      "ry_sunk": 800000
+    },
+    "outputs": {
+      "trad": [
+        960000,
+        740000,
+        608000,
+        528800,
+        481280
+      ],
+      "broker": [
+        1080000,
+        675000,
+        720000,
+        747000,
+        763200
+      ],
+      "sum5trad": 3318080,
+      "sum5broker": 3985200,
+      "diff5": 667120,
+      "beMonth": 1
+    }
+  },
+  {
+    "persona": "banker",
+    "company": "nanshan-life",
+    "inputs_summary": {
+      "FYP": 2000000,
+      "rate_trad": 0,
+      "L": 0.25,
+      "ry_sunk": 0
+    },
+    "outputs": {
+      "trad": [
+        0,
+        100000,
+        160000,
+        196000,
+        217600
+      ],
+      "broker": [
+        1080000,
+        675000,
+        720000,
+        747000,
+        763200
+      ],
+      "sum5trad": 673600,
+      "sum5broker": 3985200,
+      "diff5": 3311600,
+      "beMonth": 1
+    }
+  },
+  {
+    "persona": "banker",
+    "company": "shin-kong-life",
+    "inputs_summary": {
+      "FYP": 2000000,
+      "rate_trad": 0.07,
+      "L": 0.25,
+      "ry_sunk": 750000
+    },
+    "outputs": {
+      "trad": [
+        890000,
+        690000,
+        570000,
+        498000,
+        454800
+      ],
+      "broker": [
+        1080000,
+        675000,
+        720000,
+        747000,
+        763200
+      ],
+      "sum5trad": 3102800,
+      "sum5broker": 3985200,
+      "diff5": 882400,
+      "beMonth": 1
+    }
+  },
+  {
+    "persona": "manager",
+    "company": "cathay-life",
+    "inputs_summary": {
+      "FYP": 3000000,
+      "rate_trad": 0.22,
+      "L": 0.25,
+      "ry_sunk": 800000
+    },
+    "outputs": {
+      "trad": [
+        1660000,
+        1410000,
+        1260000,
+        1170000,
+        1116000
+      ],
+      "broker": [
+        916000,
+        1444500,
+        1512000,
+        1552500,
+        1576800
+      ],
+      "sum5trad": 6616000,
+      "sum5broker": 7001800,
+      "diff5": 385800,
+      "beMonth": 50
+    }
+  },
+  {
+    "persona": "manager",
+    "company": "nanshan-life",
+    "inputs_summary": {
+      "FYP": 3000000,
+      "rate_trad": 0.25,
+      "L": 0.25,
+      "ry_sunk": 600000
+    },
+    "outputs": {
+      "trad": [
+        1600000,
+        1410000,
+        1296000,
+        1227600,
+        1186560
+      ],
+      "broker": [
+        916000,
+        1444500,
+        1512000,
+        1552500,
+        1576800
+      ],
+      "sum5trad": 6720160,
+      "sum5broker": 7001800,
+      "diff5": 281640,
+      "beMonth": 51
+    }
+  },
+  {
+    "persona": "manager",
+    "company": "shin-kong-life",
+    "inputs_summary": {
+      "FYP": 3000000,
+      "rate_trad": 0.2,
+      "L": 0.25,
+      "ry_sunk": 700000
+    },
+    "outputs": {
+      "trad": [
+        1480000,
+        1278000,
+        1156800,
+        1084080,
+        1040448
+      ],
+      "broker": [
+        916000,
+        1444500,
+        1512000,
+        1552500,
+        1576800
+      ],
+      "sum5trad": 6039328,
+      "sum5broker": 7001800,
+      "diff5": 962472,
+      "beMonth": 37
+    }
+  },
+  {
+    "persona": "medical",
+    "company": "cathay-life",
+    "inputs_summary": {
+      "FYP": 12000000,
+      "rate_trad": 0.15,
+      "L": 0.3333333333333333,
+      "ry_sunk": 1800000
+    },
+    "outputs": {
+      "trad": [
+        3600000,
+        3480000,
+        3408000,
+        3364800,
+        3338880
+      ],
+      "broker": [
+        3200000,
+        3600000,
+        3840000,
+        3984000,
+        4070400
+      ],
+      "sum5trad": 17191680,
+      "sum5broker": 18694400,
+      "diff5": 1502720,
+      "beMonth": 32
+    }
+  },
+  {
+    "persona": "medical",
+    "company": "nanshan-life",
+    "inputs_summary": {
+      "FYP": 12000000,
+      "rate_trad": 0.18,
+      "L": 0.3333333333333333,
+      "ry_sunk": 1800000
+    },
+    "outputs": {
+      "trad": [
+        3960000,
+        3840000,
+        3768000,
+        3724800,
+        3698880
+      ],
+      "broker": [
+        3200000,
+        3600000,
+        3840000,
+        3984000,
+        4070400
+      ],
+      "sum5trad": 18991680,
+      "sum5broker": 18694400,
+      "diff5": -297280,
+      "beMonth": null
+    }
+  },
+  {
+    "persona": "medical",
+    "company": "shin-kong-life",
+    "inputs_summary": {
+      "FYP": 12000000,
+      "rate_trad": 0.14,
+      "L": 0.3333333333333333,
+      "ry_sunk": 1800000
+    },
+    "outputs": {
+      "trad": [
+        3480000,
+        3360000,
+        3288000,
+        3244800,
+        3218880
+      ],
+      "broker": [
+        3200000,
+        3600000,
+        3840000,
+        3984000,
+        4070400
+      ],
+      "sum5trad": 16591680,
+      "sum5broker": 18694400,
+      "diff5": 2102720,
+      "beMonth": 25
+    }
+  },
+  {
+    "persona": "newbie",
+    "company": "cathay-life",
+    "inputs_summary": {
+      "FYP": 1200000,
+      "rate_trad": 0.18,
+      "L": 0.25,
+      "ry_sunk": 0
+    },
+    "outputs": {
+      "trad": [
+        216000,
+        259200,
+        311040,
+        373248,
+        447898
+      ],
+      "broker": [
+        360000,
+        486000,
+        648000,
+        855360,
+        1119744
+      ],
+      "sum5trad": 1607386,
+      "sum5broker": 3469104,
+      "diff5": 1861718,
+      "beMonth": 1
+    }
+  },
+  {
+    "persona": "newbie",
+    "company": "nanshan-life",
+    "inputs_summary": {
+      "FYP": 1200000,
+      "rate_trad": 0.22,
+      "L": 0.25,
+      "ry_sunk": 0
+    },
+    "outputs": {
+      "trad": [
+        264000,
+        316800,
+        380160,
+        456192,
+        547430
+      ],
+      "broker": [
+        360000,
+        486000,
+        648000,
+        855360,
+        1119744
+      ],
+      "sum5trad": 1964582,
+      "sum5broker": 3469104,
+      "diff5": 1504522,
+      "beMonth": 1
+    }
+  },
+  {
+    "persona": "newbie",
+    "company": "shin-kong-life",
+    "inputs_summary": {
+      "FYP": 1200000,
+      "rate_trad": 0.17,
+      "L": 0.25,
+      "ry_sunk": 0
+    },
+    "outputs": {
+      "trad": [
+        204000,
+        244800,
+        293760,
+        352512,
+        423014
+      ],
+      "broker": [
+        360000,
+        486000,
+        648000,
+        855360,
+        1119744
+      ],
+      "sum5trad": 1518086,
+      "sum5broker": 3469104,
+      "diff5": 1951018,
+      "beMonth": 1
+    }
+  }
+]

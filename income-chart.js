@@ -1,7 +1,7 @@
 // ─── 10-Year Income Gap Chart Module ─────────────────────────────────────────
-// 依賴：companies.js（COMPANY_DB）, company-selector.js（已初始化）
+// 依賴：companies.js（COMPANY_DB — 公勝參數從 COMPANY_DB['gongsheng'] 讀取）
 // 用純 CSS + DOM 繪製橫條動畫圖表，不依賴外部 charting library
-// lastUpdated: 2026-03-29
+// lastUpdated: 2026-04-01
 
 (function() {
   'use strict';
@@ -9,12 +9,20 @@
   // ─── 收入模型參數 ──────────────────────────────────────────────────────────
   // 假設：年繳保費 100 萬（FYP），每年新增相同保費
   const BASE_FYP = 1000000; // 年繳保費 100 萬
-  const GONGSHENG_COMM = 40; // 公勝首佣率 %
-  const GONGSHENG_RENEWAL = 5; // 公勝續佣率 %
-  const GONGSHENG_RENEWAL_DECAY = 0.85; // 公勝續佣遞減
-  const GONGSHENG_ORG_RATE = 5; // 公勝組織津貼率 %（假設帶 3 人）
-  const ORG_MEMBERS = 3; // 假設組織人數
-  const ORG_MEMBER_FYP = 600000; // 每位組員年繳保費
+
+  // 公勝參數從 COMPANY_DB 動態讀取（P0-8 遷移）
+  function getGsParams() {
+    const gs = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB['gongsheng'] : null;
+    const gsDefs = gs?.defaults?.insurance || {};
+    return {
+      comm:         gsDefs.commRateTrad ?? 40,
+      renewal:      gsDefs.renewalRate ?? 5,
+      renewalDecay: gs?.renewalDecay ?? 0.85,
+      orgRate:      5, // 組織津貼率 %（假設帶 3 人）
+      orgMembers:   3,
+      orgMemberFyp: 600000,
+    };
+  }
 
   // ─── 計算 10 年累計收入 ─────────────────────────────────────────────────────
   function calc10YearIncome(commRate, renewalRate, renewalDecay, hasOrg, orgAllowance) {
@@ -41,8 +49,9 @@
       if (hasOrg && orgAllowance > 0) {
         yearIncome += orgAllowance;
       } else if (hasOrg && y >= 3) {
-        // 公勝端：第 3 年起有組織津貼
-        yearIncome += ORG_MEMBERS * ORG_MEMBER_FYP * (GONGSHENG_ORG_RATE / 100);
+        // 公勝端：第 3 年起有組織津貼（從 COMPANY_DB 動態讀取）
+        const gsp = getGsParams();
+        yearIncome += gsp.orgMembers * gsp.orgMemberFyp * (gsp.orgRate / 100);
       }
 
       cumulative += yearIncome;
@@ -64,10 +73,10 @@
     const defs = c.defaults[persona] || c.defaults.insurance || {};
 
     return {
-      commRate: defs.commRate || defs.personalComm || defs.altComm || defs.bankComm || 20,
-      renewalRate: defs.renewalRate || (defs.personalRenewal ? (defs.personalRenewal / BASE_FYP * 100) : 3),
-      renewalDecay: defs.renewalDecay || 0.6,
-      orgAllowance: defs.orgAllowance || 0,
+      commRate: defs.commRateTrad ?? 20,
+      renewalRate: defs.renewalRate ?? (defs.mgrRenewal ? (defs.mgrRenewal / BASE_FYP * 100) : 3),
+      renewalDecay: defs.renewalDecay ?? 0.6,
+      orgAllowance: defs.orgAllowance ?? 0,
     };
   }
 
@@ -83,15 +92,16 @@
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const companyId = window.CompanySelector
-      ? window.CompanySelector.getSelectedId()
-      : 'cathay-life';
+    const companyId = (typeof selectedCompanyId !== 'undefined')
+      ? selectedCompanyId
+      : (window.CompanySelector ? window.CompanySelector.getSelectedId() : 'cathay-life');
     const company = COMPANY_DB[companyId];
     if (!company) return;
 
     const params = getCompanyParams(companyId);
     const tradData = calc10YearIncome(params.commRate, params.renewalRate || 3, params.renewalDecay, true, params.orgAllowance);
-    const gsData = calc10YearIncome(GONGSHENG_COMM, GONGSHENG_RENEWAL, GONGSHENG_RENEWAL_DECAY, true, 0);
+    const gsp = getGsParams();
+    const gsData = calc10YearIncome(gsp.comm, gsp.renewal, gsp.renewalDecay, true, 0);
 
     const maxVal = Math.max(gsData[9].cumulative, tradData[9].cumulative);
     const gap = gsData[9].cumulative - tradData[9].cumulative;
@@ -105,7 +115,7 @@
         <div class="ic-header">
           <div class="ic-title">📈 十年累計收入差距模擬</div>
           <div class="ic-subtitle">
-            假設每年新增 FYP ${formatMoney(BASE_FYP)}，第 3 年起帶組織 ${ORG_MEMBERS} 人
+            假設每年新增 FYP ${formatMoney(BASE_FYP)}，第 3 年起帶組織 ${gsp.orgMembers} 人
           </div>
         </div>
 
