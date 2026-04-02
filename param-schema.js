@@ -46,14 +46,22 @@ const PARAM_SCHEMA = [
     description: '過去一年的年化保費總額，含新契約和續期保費。',
   },
   {
-    key: 'commRateTrad', label: '傳統公司首年佣金率', section: 'current',
+    key: 'avgProductCommRate', label: '平均商品佣金率', section: 'current',
+    type: 'percent', default: 60, suffix: '%',
+    min: 10, max: 100, step: 1,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '所銷售商品的平均佣金率。終身壽險約 70-90%、定期壽險約 30-50%、投資型約 15-25%。此為加權平均。雙方試算共用同一商品佣金率。',
+  },
+  {
+    key: 'commRateTrad', label: '個人佣金率（職階）', section: 'current',
     type: 'percent', default: 20, suffix: '%',
     min: 0, max: 100,
     personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
     companyOverride: true, requiresVerification: true,
-    description: '現職公司給付的首年佣金比率。實際依個人職階與年資而異。',
+    description: '依個人職階與年資，公司給付的佣金分潤比率。實際首年收入 = FYP × 商品佣金率 × 此比率。',
     personaConfig: {
-      banker: { default: 8, description: '銀行給付的保費佣金比率，通常為保經公司的 1/4 ~ 1/5。' },
+      banker: { default: 8, description: '銀行給付的保費佣金分潤比率，通常為保經公司的 1/4 ~ 1/5。' },
     },
   },
   {
@@ -211,12 +219,12 @@ const PARAM_SCHEMA = [
 
   // ═══ Section C — 保經優勢 (advantage) ═══
   {
-    key: 'brokerCommRate', label: '保經首年佣金率', section: 'advantage',
+    key: 'brokerCommRate', label: '保經個人佣金率（職階）', section: 'advantage',
     type: 'percent', default: 40, suffix: '%',
     min: 0, max: 100,
     personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
     companyOverride: false,
-    description: '加入保經公司後的首年佣金比率。',
+    description: '加入保經後的個人佣金分潤比率。保經首年收入 = FYP × 商品佣金率 × 此比率。',
   },
   {
     key: 'brokerRenewalRate', label: '保經續期佣金率', section: 'advantage',
@@ -477,10 +485,11 @@ function collectInputs(personaId) {
 
 // ─── Convert collectInputs output → compute5yr params ───
 // Bridges the schema keys to the compute5yr(p) parameter format
-// v3.0.1: 新增 broker_ry_decay / tradGrowth / attrition / fypShrink
+// v3.0.2: 新增 avgProductCommRate — 實際佣金 = FYP × 商品佣金率 × 個人佣金率
 function schemaToComputeParams(values, personaId) {
   const personaShort = PERSONA_IDS[personaId];
-  const rb = (values.brokerCommRate ?? 40) / 100;
+  const productComm = (values.avgProductCommRate ?? 60) / 100;
+  const rb = productComm * (values.brokerCommRate ?? 40) / 100;
   const ryr = (values.brokerRenewalRate ?? 5) / 100;
   const or_ = (values.orgBonusRate ?? 0) / 100;
 
@@ -495,7 +504,7 @@ function schemaToComputeParams(values, personaId) {
   if (personaId === 'insurance') {
     return {
       FYP: values.fyp ?? 3000000,
-      rate_trad: (values.commRateTrad ?? 20) / 100,
+      rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
       ry_sunk: values.renewalIncome ?? 500000,
       ry_decay: values.renewalDecay ?? 0.6,
       broker_ry_decay: gsBrokerDecay,
@@ -516,7 +525,7 @@ function schemaToComputeParams(values, personaId) {
     const maxL = adaptConfig.maxL || 0.9;
     return {
       FYP: rawFYP * conv,
-      rate_trad: (values.commRateTrad ?? 8) / 100,
+      rate_trad: productComm * (values.commRateTrad ?? 8) / 100,
       ry_sunk: values.fixedSalary ?? 800000,
       ry_decay: 0.6,
       broker_ry_decay: gsBrokerDecay,
@@ -537,7 +546,7 @@ function schemaToComputeParams(values, personaId) {
     const maxL = adaptConfig.maxL || 0.8;
     return {
       FYP,
-      rate_trad: (values.commRateTrad ?? 20) / 100,
+      rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
       ry_sunk: values.orgAllowance ?? 0,
       _mRySunk: values.renewalIncome ?? 0,
       ry_decay: 0.6,
@@ -564,7 +573,7 @@ function schemaToComputeParams(values, personaId) {
     const maxL = adaptConfig.maxL || 0.7;
     return {
       FYP,
-      rate_trad: (values.commRateTrad ?? 15) / 100,
+      rate_trad: productComm * (values.commRateTrad ?? 15) / 100,
       ry_sunk: values.medIncome ?? 1800000,
       ry_decay: 0.6,
       broker_ry_decay: gsBrokerDecay,
@@ -583,7 +592,7 @@ function schemaToComputeParams(values, personaId) {
     const fyb = Math.min(1, Math.max(0.1, values.fybCoeff ?? 1));
     return {
       FYP,
-      rate_trad: (values.commRateTrad ?? 18) / 100,
+      rate_trad: productComm * (values.commRateTrad ?? 18) / 100,
       ry_sunk: 0,
       ry_decay: 0.6,
       broker_ry_decay: gsBrokerDecay,
