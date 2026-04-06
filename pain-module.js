@@ -9,7 +9,7 @@ function renderTabA(personaId) {
   if (!p) return;
   renderRadar(p, personaId);
   renderDailySchedule(p);
-  renderPainIncome(p, personaId);
+  // renderPainIncome 已移除 — 收入天花板無數據支撐，改由 Tab B 試算
   renderPainScripts(p);
 }
 
@@ -82,7 +82,7 @@ function renderRadar(p, personaId) {
     + '</svg>';
 
   // 圖例
-  var legend = '<div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:11px">'
+  var legend = '<div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:13px">'
     + '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;display:inline-block"></span><span style="color:#e74c3c;font-weight:600">現職</span></span>'
     + '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#27ae60;display:inline-block"></span><span style="color:#27ae60;font-weight:600">保經</span></span>'
     + '</div>';
@@ -90,7 +90,7 @@ function renderRadar(p, personaId) {
   // 痛點清單
   var painList = '<div style="margin-top:14px">';
   p.topPainPoints.forEach(function(pt, i) {
-    painList += '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);font-size:12px;color:#3a5878;line-height:1.5">'
+    painList += '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);font-size:14px;color:#3a5878;line-height:1.5">'
       + '<span style="color:#e74c3c;font-weight:700;flex-shrink:0">' + (i + 1) + '.</span>'
       + '<span>' + pt + '</span></div>';
   });
@@ -110,12 +110,12 @@ function renderDailySchedule(p) {
 
   function renderColumn(items, label, accentColor) {
     var html = '<div style="flex:1;min-width:0">';
-    html += '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + accentColor + ';margin-bottom:8px;text-align:center">' + label + '</div>';
+    html += '<div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + accentColor + ';margin-bottom:8px;text-align:center">' + label + '</div>';
     items.forEach(function(item) {
       var mc = moodColors[item.mood] || '#999';
       var me = moodEmoji[item.mood] || '';
-      html += '<div style="display:flex;gap:6px;padding:6px 4px;border-bottom:1px solid rgba(0,0,0,0.04);font-size:11px;line-height:1.4">'
-        + '<span style="flex-shrink:0;font-family:\'DM Mono\',monospace;font-size:10px;color:#6a8ea8;min-width:38px">' + item.time + '</span>'
+      html += '<div style="display:flex;gap:6px;padding:6px 4px;border-bottom:1px solid rgba(0,0,0,0.04);font-size:13px;line-height:1.4">'
+        + '<span style="flex-shrink:0;font-family:\'DM Mono\',monospace;font-size:12px;color:#6a8ea8;min-width:38px">' + item.time + '</span>'
         + '<span style="flex:1;color:#3a5878">' + item.event + '</span>'
         + '<span style="flex-shrink:0" title="' + item.mood + '">' + me + '</span>'
         + '</div>';
@@ -160,28 +160,28 @@ function renderPainIncome(p, personaId) {
   var diffPct = Math.round(((brokerAnnual - currentAnnual) / currentAnnual) * 100);
 
   var html = '<div class="card">';
-  html += '<div style="font-size:11px;color:#6a8ea8;margin-bottom:12px">以' + p.label + '典型產能估算（僅供趨勢參考）</div>';
+  html += '<div style="font-size:13px;color:#6a8ea8;margin-bottom:12px">以' + p.label + '典型產能估算（僅供趨勢參考）</div>';
 
   // 現職 bar
   html += '<div style="margin-bottom:12px">';
-  html += '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span style="color:#e74c3c;font-weight:600">現職年收入</span><span style="font-family:\'DM Mono\',monospace;color:#e74c3c">' + fmtW(currentAnnual) + '</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#e74c3c;font-weight:600">現職年收入</span><span style="font-family:\'DM Mono\',monospace;color:#e74c3c">' + fmtW(currentAnnual) + '</span></div>';
   html += '<div class="bar-track"><div class="bar-fill trad" style="width:' + currentPct + '%"></div></div>';
   html += '</div>';
 
   // 保經 bar
   html += '<div style="margin-bottom:12px">';
-  html += '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span style="color:#27ae60;font-weight:600">保經年收入</span><span style="font-family:\'DM Mono\',monospace;color:#27ae60">' + fmtW(brokerAnnual) + '</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#27ae60;font-weight:600">保經年收入</span><span style="font-family:\'DM Mono\',monospace;color:#27ae60">' + fmtW(brokerAnnual) + '</span></div>';
   html += '<div class="bar-track"><div class="bar-fill broker" style="width:' + brokerPct + '%"></div></div>';
   html += '</div>';
 
   // 差距標記
   if (diffPct > 0) {
-    html += '<div style="text-align:center;padding:8px;background:rgba(39,174,96,0.08);border-radius:8px;font-size:12px;color:#27ae60;font-weight:600">';
+    html += '<div style="text-align:center;padding:8px;background:rgba(39,174,96,0.08);border-radius:8px;font-size:14px;color:#27ae60;font-weight:600">';
     html += '保經收入約為現職的 ' + (diffPct + 100) + '%（高出 ' + fmtW(brokerAnnual - currentAnnual) + '）';
     html += '</div>';
   }
 
-  html += '<div style="margin-top:8px;font-size:10px;color:#6a8ea8">⚠️ 實際收入因個人業績、商品組合、市場環境而異。以上數字僅供趨勢參考。</div>';
+  html += '<div style="margin-top:8px;font-size:12px;color:#6a8ea8">⚠️ 實際收入因個人業績、商品組合、市場環境而異。以上數字僅供趨勢參考。</div>';
   html += '</div>';
 
   container.innerHTML = html;
@@ -202,9 +202,9 @@ function renderPainScripts(p) {
     html += '<div class="pain-card-a"><div class="pain-card-a-label">💡 參考回應</div>' + obj.a;
     if (obj.followUp) {
       html += '<div class="pain-followup" style="margin-top:12px;padding:10px 12px;background:rgba(154,110,0,0.06);border-left:3px solid var(--gold,#9a6e00);border-radius:0 8px 8px 0">';
-      html += '<div style="font-size:11px;color:var(--gold,#9a6e00);font-weight:600;margin-bottom:4px">🔄 對方追問</div>';
-      html += '<div style="font-size:12px;color:var(--text-dim,#3a5878);font-weight:600;margin-bottom:6px">「' + obj.followUp.q + '」</div>';
-      html += '<div style="font-size:12px;color:var(--text,#1a2d42);line-height:1.6">' + obj.followUp.a + '</div>';
+      html += '<div style="font-size:13px;color:var(--gold,#9a6e00);font-weight:600;margin-bottom:4px">🔄 對方追問</div>';
+      html += '<div style="font-size:14px;color:var(--text-dim,#3a5878);font-weight:600;margin-bottom:6px">「' + obj.followUp.q + '」</div>';
+      html += '<div style="font-size:14px;color:var(--text,#1a2d42);line-height:1.6">' + obj.followUp.a + '</div>';
       html += '</div>';
     }
     html += '</div>';

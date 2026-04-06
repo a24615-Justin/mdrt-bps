@@ -13,7 +13,7 @@ var PERSONA_PAIN_POINTS = {
     desc: '壽險公司資深業務，有客戶基礎但受限於公司制度',
 
     radar: { income: 3, ownership: 2, freedom: 4, growth: 3, retirement: 2 },
-    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 10 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 5 },
 
     dailySchedule: {
       current: [
@@ -28,7 +28,7 @@ var PERSONA_PAIN_POINTS = {
       broker: [
         { time: '09:00', event: '自主安排第一位客戶', mood: 'high' },
         { time: '11:00', event: '線上處理續保/理賠', mood: 'ok' },
-        { time: '12:00', event: '午餐（客戶或自由）', mood: 'high' },
+        { time: '12:00', event: '午餐（客戶或自由）', mood: 'ok' },
         { time: '14:00', event: '客戶約訪 ×2（自選最適商品）', mood: 'high' },
         { time: '16:30', event: '學習/進修/經營社群', mood: 'high' },
         { time: '18:00', event: '回家（充電）', mood: 'high' },
@@ -46,9 +46,9 @@ var PERSONA_PAIN_POINTS = {
     topObjections: [
       { q: '我現在公司待得好好的，為什麼要動？',
         a: '現在客戶上網就能比較各家商品，資訊落差已經被科技抹平了。客戶拿著別家方案來問「為什麼你們的比較貴」，只能賣自家產品的時候很難回答。這不是能力問題，是通路給的武器不夠多。',
-        followUp: { q: '但我已經在公司經營很多年了，現在走太可惜了吧？', a: '年資沉沒成本確實讓人不想動。但可以換個角度想：如果再過五年，客戶持續流向能提供全市場方案的人，那時候才離開的成本更高。越早建立跨通路的服務能力，未來的選擇權越多。這個工具可以幫你算出五年後的差距有多大。' } },
+        followUp: { q: '但我已經在公司經營很多年了，現在走太可惜了吧？', a: '年資沉沒成本確實是重要考量。可以換個角度評估：市場上客戶對全商品方案的需求趨勢，跟你目前平台能提供的之間有沒有落差。這個工具可以幫你用自己的數字算出五年的結構性差異，讓你有依據地判斷。' } },
       { q: '我的客戶跟公司綁定，帶不走怎麼辦？',
-        a: '客戶的保單跟公司走，但信任關係跟「人」走。你服務這麼多年，客戶遇到理賠、變更，第一個找的是你還是公司客服？信任在誰身上，關係就在誰身上。',
+        a: '客戶的保單跟公司走，但長期服務建立的信任關係跟「人」走。你可以觀察：客戶遇到理賠、變更時，習慣找的是你還是公司客服？這個比例能幫你評估可攜帶的客戶基礎。',
         followUp: { q: '話是這樣講，但真的離開時客戶會跟嗎？', a: '這是可以驗證的：你可以觀察現在每個月有多少客戶主動找你而不是公司。這個數字就是你的「可攜帶客戶數」。業界經驗是認真服務的業務員，60-80% 的主動客戶會在 6 個月內回來找你。轉換期重點是做好保全交接，讓客戶感覺被照顧而不是被拋棄。' } },
       { q: '佣金率看起來差不多，有差嗎？',
         a: '關鍵在兩件事：第一，有些通路來佣會先打折再發給你，保經是保司給付的全額計算；第二，能跨公司選商品，成交率和件均保費會不一樣。轉換前備好 6 個月生活預備金是基本功，之後結構差異看數字最清楚。',
@@ -65,7 +65,7 @@ var PERSONA_PAIN_POINTS = {
     desc: '銀行財富管理通路，有高品質客戶但受限於 KPI 與產品線',
 
     radar: { income: 4, ownership: 2, freedom: 3, growth: 3, retirement: 5 },
-    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 8 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 5 },
 
     dailySchedule: {
       current: [
@@ -79,7 +79,7 @@ var PERSONA_PAIN_POINTS = {
       broker: [
         { time: '09:00', event: '自主規劃客戶拜訪行程', mood: 'high' },
         { time: '10:00', event: '用全市場商品做財務規劃諮詢', mood: 'high' },
-        { time: '12:00', event: '彈性午餐、經營人脈', mood: 'high' },
+        { time: '12:00', event: '彈性午餐、經營人脈', mood: 'ok' },
         { time: '14:00', event: '深度諮詢、整合壽/健/投商品', mood: 'high' },
         { time: '16:30', event: '提案撰寫、客戶關係維護', mood: 'ok' },
         { time: '18:00', event: '回家（無輪調風險）', mood: 'high' },
@@ -96,7 +96,7 @@ var PERSONA_PAIN_POINTS = {
 
     topObjections: [
       { q: '銀行有底薪、有現成客戶名單',
-        a: '銀行名單是「銀行的客戶」，離職那天全部收回。而且你手上的客戶已經很懂商品了，他們上網比價、看評測，需要的是能從全市場幫他們挑最適合方案的人，不是只能推自家產品的理專。',
+        a: '銀行名單的歸屬確實是銀行，離職後無法帶走。另一個趨勢是客戶越來越懂商品，會上網比價、看評測。在這個環境下，能從全市場挑方案的服務模式，跟只有自家產品線的模式，客戶體驗不同。',
         followUp: { q: '但銀行理專的客戶資產量大，保經能接到這種等級的客戶嗎？', a: '高資產客戶看的是三件事：專業度、商品豐富度、長期關係。你在銀行累積的財管能力不會消失，到保經反而多了全市場商品可以搭配。不少轉職的理專反映，客戶知道你「為了他們」而離開限制性平台，信任感反而更深。' } },
       { q: '銀行穩定，轉保經太冒險',
         a: '現在的趨勢是客戶自己就能上網做功課，對單一通路的黏著度在降低。理專能給的價值，越來越取決於你有多少商品可以搭配。保經不是冒險——是讓你的專業有更大的發揮空間。',
@@ -116,7 +116,7 @@ var PERSONA_PAIN_POINTS = {
     desc: '帶團隊的壽險主管，有組織津貼但受制度天花板限制',
 
     radar: { income: 5, ownership: 3, freedom: 4, growth: 4, retirement: 2 },
-    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 10 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 6 },
 
     dailySchedule: {
       current: [
@@ -131,8 +131,8 @@ var PERSONA_PAIN_POINTS = {
       broker: [
         { time: '09:00', event: '團隊線上同步（15分鐘）', mood: 'high' },
         { time: '09:30', event: '個人高價值客戶經營', mood: 'high' },
-        { time: '12:00', event: '午餐（彈性）', mood: 'high' },
-        { time: '13:30', event: '團隊培訓 / 新人陪跑', mood: 'high' },
+        { time: '12:00', event: '午餐（彈性）', mood: 'ok' },
+        { time: '13:30', event: '團隊培訓 / 新人陪跑', mood: 'ok' },
         { time: '16:00', event: '組織發展策略規劃', mood: 'high' },
         { time: '17:30', event: '回家（精力充沛）', mood: 'high' },
       ],
@@ -168,7 +168,7 @@ var PERSONA_PAIN_POINTS = {
     desc: '醫療背景的保險銷售通路，客戶信任度高但佣金結構受限',
 
     radar: { income: 4, ownership: 3, freedom: 4, growth: 3, retirement: 3 },
-    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 9 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 6 },
 
     dailySchedule: {
       current: [
@@ -182,9 +182,9 @@ var PERSONA_PAIN_POINTS = {
       broker: [
         { time: '09:00', event: '自主安排高信任度客戶', mood: 'high' },
         { time: '11:00', event: '整合壽/健/長照/投資型商品規劃', mood: 'high' },
-        { time: '12:00', event: '午餐（經營醫療人脈圈）', mood: 'high' },
+        { time: '12:00', event: '午餐（經營醫療人脈圈）', mood: 'ok' },
         { time: '14:00', event: '深度健康財務規劃諮詢', mood: 'high' },
-        { time: '16:30', event: '醫療社群經營、轉介紹開發', mood: 'high' },
+        { time: '16:30', event: '醫療社群經營、轉介紹開發', mood: 'ok' },
         { time: '18:00', event: '回家（時間自主）', mood: 'high' },
       ],
     },
@@ -219,7 +219,7 @@ var PERSONA_PAIN_POINTS = {
     desc: '剛入行或考慮從其他行業轉職進入保險業',
 
     radar: { income: 4, ownership: 2, freedom: 3, growth: 2, retirement: 3 },
-    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 8 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 5 },
 
     dailySchedule: {
       current: [
@@ -232,8 +232,8 @@ var PERSONA_PAIN_POINTS = {
       ],
       broker: [
         { time: '09:00', event: '線上自學課程 + 數位工具培訓', mood: 'high' },
-        { time: '10:30', event: '師傅帶領實戰陪訪', mood: 'high' },
-        { time: '12:00', event: '午餐（團隊氛圍）', mood: 'high' },
+        { time: '10:30', event: '師傅帶領實戰陪訪', mood: 'ok' },
+        { time: '12:00', event: '午餐（團隊氛圍）', mood: 'ok' },
         { time: '13:30', event: '模擬演練 + 案例討論', mood: 'high' },
         { time: '16:00', event: '社群經營、個人品牌建立', mood: 'high' },
         { time: '17:30', event: '回家（對未來有期待）', mood: 'high' },
@@ -244,7 +244,7 @@ var PERSONA_PAIN_POINTS = {
 
     topPainPoints: [
       '底薪即將歸零，缺乏系統化培訓支持',
-      '壽險公司制度不透明，不知道自己的佣金被抽了多少',
+      '壽險公司佣金結構較複雜，各階層分潤比例不易掌握',
       '第一步就決定未來十年——選錯公司代價很高',
     ],
 

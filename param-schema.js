@@ -155,14 +155,14 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'newbieFyp', label: '預估第一年 FYP', section: 'current',
-    type: 'currency', default: 1200000, prefix: 'NT$',
+    type: 'currency', default: 800000, prefix: 'NT$',
     personas: ['new'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
     description: '估計入行第一年能達成的年化保費總額，後續每年以成長率複利累積。',
   },
   {
     key: 'growthRate', label: '每年業績成長率', section: 'current',
-    type: 'percent', default: 20, suffix: '%',
+    type: 'percent', default: 15, suffix: '%',
     min: 0, max: 100,
     personas: ['new'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
@@ -204,7 +204,7 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'transitionSubsidy', label: '過渡期底薪補貼', section: 'risk',
-    type: 'currency', default: 480000, prefix: 'NT$',
+    type: 'currency', default: 0, prefix: 'NT$',
     personas: ['banker'], visibility: 'always',
     companyOverride: false,
     description: '保經公司提供的第一年底薪支援，用於抵銷適應期的收入缺口。直接加入第 1 年保經收入。',
@@ -519,17 +519,21 @@ function schemaToComputeParams(values, personaId) {
   const adaptParam = PARAM_SCHEMA.find(p => p.key === 'adaptMonths');
   const adaptConfig = adaptParam?.personaConfig?.[personaShort] || {};
 
-  // v3.0.3: 保經端續佣遞減從 selectedBrokerId 動態讀取（brokerId/_brokerEntry 已在上方宣告）
-  const gsBrokerDecay = _brokerEntry ? (_brokerEntry.renewalDecay ?? 0.85) : 0.85;
-  // v4.2: 桌費/年終獎金已移除，簡化為個人銷售比較
+  // v4.5: 保經端佣金率遞減（brokerCommStep），與 persistency 分離
+  // persistency 雙邊共用（同一張保單續期率不因通路而異）
+  // brokerCommStep: 保經佣金率遞減較緩（無內扣，預設 0.95）
+  const gsBrokerCommStep = 0.95;
 
   if (personaId === 'insurance') {
     return {
       FYP: values.fyp ?? 3000000,
       rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
-      ry_sunk: values.renewalIncome ?? 500000,
+      // v4.5: 保險同業的續佣是純續佣，進衰減池
+      _fixedIncome: 0,
+      _renewalSunk: values.renewalIncome ?? 500000,
+      ry_sunk: values.renewalIncome ?? 500000,  // 向下相容（postRenewal 用）
       ry_decay: values.renewalDecay ?? 0.6,
-      broker_ry_decay: gsBrokerDecay,
+      broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       postResignYrs: values.postResignRenewalYrs ?? 0,
       L: (values.lossRate ?? 15) / 100,
@@ -551,9 +555,12 @@ function schemaToComputeParams(values, personaId) {
     return {
       FYP: rawFYP * conv,
       rate_trad: productComm * (values.commRateTrad ?? 8) / 100,
-      ry_sunk: values.fixedSalary ?? 800000,
+      // v4.5: 底薪是固定收入，不進衰減池
+      _fixedIncome: values.fixedSalary ?? 800000,
+      _renewalSunk: 0,  // 銀行理專無續佣
+      ry_sunk: 0,
       ry_decay: 0.6,
-      broker_ry_decay: gsBrokerDecay,
+      broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       fypShrink: (values.fypShrink ?? 80) / 100,
       L: Math.min(adapt / divisor, maxL),
@@ -576,10 +583,13 @@ function schemaToComputeParams(values, personaId) {
     return {
       FYP,
       rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
-      ry_sunk: values.orgAllowance ?? 0,
-      _mRySunk: values.renewalIncome ?? 0,
+      // v4.5: 組織津貼是固定收入，不進衰減池；續佣才進衰減池
+      _fixedIncome: values.orgAllowance ?? 0,
+      _renewalSunk: values.renewalIncome ?? 0,
+      ry_sunk: values.renewalIncome ?? 0,  // 向下相容（postRenewal 用：離職後仍發放的純續佣）
+      _mRySunk: 0,
       ry_decay: 0.6,
-      broker_ry_decay: gsBrokerDecay,
+      broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       postResignYrs: values.postResignRenewalYrs ?? 0,
       L: Math.min(adapt / divisor, maxL),
@@ -607,21 +617,26 @@ function schemaToComputeParams(values, personaId) {
     return {
       FYP,
       rate_trad: productComm * (values.commRateTrad ?? 15) / 100,
-      ry_sunk: values.medIncome ?? 1800000,
+      // v4.5: 醫療收入是固定收入，不進衰減池
+      _fixedIncome: values.medIncome ?? 1800000,
+      _renewalSunk: 0,
+      ry_sunk: 0,
       ry_decay: 0.6,
-      broker_ry_decay: gsBrokerDecay,
+      broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb: 1,
       _clients: clients, _avgP: avgP, _id: 'medical',
       fybDiscount: _fybDiscount,
+      perfBonus: _perfBonus,
       brokerYEB: _brokerYEB,
     };
   }
   if (personaId === 'newbie') {
     const ptRatio = (values.partTimeRatio ?? 100) / 100;  // v4.3: 兼職模式
-    const FYP = (values.newbieFyp ?? 1200000) * ptRatio;
-    const growth = (values.growthRate ?? 20) / 100;
+    // v4.5: 新人 FYP 預設降為 80 萬（更貼近實際）、成長率降為 15%
+    const FYP = (values.newbieFyp ?? 800000) * ptRatio;
+    const growth = (values.growthRate ?? 15) / 100;
     const adapt = values.adaptMonths ?? (adaptConfig.default ?? 3);
     const divisor = adaptConfig.divisor || 12;
     const maxL = adaptConfig.maxL || 0.5;
@@ -631,7 +646,7 @@ function schemaToComputeParams(values, personaId) {
       rate_trad: productComm * (values.commRateTrad ?? 18) / 100,
       ry_sunk: 0,
       ry_decay: 0.6,
-      broker_ry_decay: gsBrokerDecay,
+      broker_comm_step: gsBrokerCommStep,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb,
       _growth: growth, _id: 'newbie',

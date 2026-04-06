@@ -11,19 +11,20 @@
   const BASE_FYP = 1000000; // 年繳保費 100 萬
 
   // v3.0.3: 保經參數從 selectedBrokerId 動態讀取（不再硬編碼 gongsheng）
+  // v4.5: renewalDecay → commStepDown（佣金率遞減係數），persistency 統一在 calc10YearIncome 處理
   function getGsParams() {
     const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
     const gs = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB[brokerId] : null;
     if (!gs) {
       const fallback = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB['gongsheng'] : null;
       const fbDefs = fallback?.defaults?.insurance || {};
-      return { comm: fbDefs.commRateTrad ?? 40, renewal: fbDefs.renewalRate ?? 5, renewalDecay: fallback?.renewalDecay ?? 0.85, orgRate: 5, orgMembers: 3, orgMemberFyp: 600000 };
+      return { comm: fbDefs.commRateTrad ?? 40, renewal: fbDefs.renewalRate ?? 5, renewalDecay: 0.95, orgRate: 5, orgMembers: 3, orgMemberFyp: 600000 };
     }
     const gsDefs = gs.defaults?.insurance || {};
     return {
       comm:         gs.brokerDefaults?.brokerComm ?? gsDefs.commRateTrad ?? 40,
       renewal:      gs.brokerDefaults?.renewalRate ?? gsDefs.renewalRate ?? 5,
-      renewalDecay: gs.renewalDecay ?? 0.85,
+      renewalDecay: 0.95,  // 保經端佣金率遞減（無內扣，較緩）
       orgRate:      gs.brokerDefaults?.orgRate ?? 5,
       orgMembers:   3,
       orgMemberFyp: 600000,
@@ -31,12 +32,19 @@
   }
 
   // ─── 計算 10 年累計收入 ─────────────────────────────────────────────────────
+  // v4.5: 統一 persistency 模型 — decay = persistency × commStepDown
+  // persistency: 保單續期率（雙邊共用，預設 0.90）
+  // commStepDown: 佣金率逐年遞減係數（通路別，傳統 0.6 / 保經 0.95）
   function calc10YearIncome(commRate, renewalRate, renewalDecay, hasOrg, orgAllowance) {
     // 邊界值防護：避免異常輸入導致荒謬結果
     commRate = Math.max(0, Math.min(100, Number(commRate) || 0));
     renewalRate = Math.max(0, Math.min(100, Number(renewalRate) || 0));
     renewalDecay = Math.max(0, Math.min(1, Number(renewalDecay) || 0));
     orgAllowance = Math.max(0, Number(orgAllowance) || 0);
+
+    // v4.5: renewalDecay 現在是 commStepDown，乘上 persistency 才是實際衰減
+    const PERSISTENCY = 0.90;
+    const effectiveDecay = PERSISTENCY * renewalDecay;
 
     const years = [];
     let cumulative = 0;
@@ -45,9 +53,9 @@
       // 首佣：每年新保單
       let yearIncome = BASE_FYP * (commRate / 100);
 
-      // 續佣：之前每年保單的續佣（遞減）
+      // 續佣：之前每年保單的續佣（遞減 = persistency × commStepDown）
       for (let prev = 1; prev < y; prev++) {
-        const decayFactor = Math.pow(renewalDecay, y - prev - 1);
+        const decayFactor = Math.pow(effectiveDecay, y - prev - 1);
         yearIncome += BASE_FYP * (renewalRate / 100) * decayFactor;
       }
 
@@ -71,6 +79,7 @@
   }
 
   // ─── 取得對方公司的佣金參數 ────────────────────────────────────────────────
+  // v4.5: renewalDecay 現為 commStepDown（傳統端佣金率遞減，預設 0.6）
   function getCompanyParams(companyId) {
     const c = COMPANY_DB[companyId];
     if (!c) return { commRate: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 };
@@ -81,7 +90,7 @@
     return {
       commRate: defs.commRateTrad ?? 20,
       renewalRate: defs.renewalRate ?? (defs.mgrRenewal ? (defs.mgrRenewal / BASE_FYP * 100) : 3),
-      renewalDecay: defs.renewalDecay ?? 0.6,
+      renewalDecay: defs.renewalDecay ?? 0.6,  // commStepDown for traditional side
       orgAllowance: defs.orgAllowance ?? 0,
     };
   }

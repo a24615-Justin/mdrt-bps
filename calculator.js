@@ -6,7 +6,8 @@
   'use strict';
 
   // ─── 格式化工具 ─────────────────────────────────────────────────────────────
-  const fmtM   = v => (Math.round(v) / 10000).toFixed(0);
+  // v4.5: fmtM 修正 — 小於 1 萬時顯示千元，避免 0萬
+  const fmtM   = v => { const abs = Math.abs(Math.round(v)); if (abs < 10000) return (abs / 1000).toFixed(0) + '千'; return (Math.round(v) / 10000).toFixed(0); };
   const fmtNT  = v => 'NT$ ' + Math.round(v).toLocaleString();
   const fmtPct = v => (v * 100).toFixed(0) + '%';
 
@@ -21,21 +22,23 @@
   //  - 組織獎金加入增員脫落率 attrition（預設 20%/年）
   //  - 銀行理專加入保費縮水係數 fypShrink（預設 0.8）
   //
-  // v4.4 修正：
-  //  - 傳統端續佣拆分兩層：persistency（保單續期率，預設 0.90）× commStepDown（佣金率遞減，即舊 ry_decay）
-  //  - 業務員留任時每年持續產出新 FYP → 續佣池累積成長而非遞減
-  //  - 舊的 ry_decay 現在只控制「單張保單續佣率逐年降低」，保單是否繼續繳費由 persistency 決定
+  // v4.5 修正：
+  //  - 雙邊共用 persistency（保單續期率），差異只在佣金率遞減係數
+  //  - 固定收入（底薪/組織津貼/醫療收入）獨立計算，不進入續佣衰減池
+  //  - fmtM 修正小值顯示
   function compute5yr(p) {
     const yrs = [1, 2, 3, 4, 5];
     let trad, broker;
 
-    // v4.4: 傳統端拆分 — persistency × commStepDown
+    // v4.5: 雙邊統一 persistency — 同一張保單不因通路不同而有不同續期率
     // persistency: 保單繼續繳費的比率（預設 90%，業界常見 85-95%）
-    // commStepDown: 單張保單續佣率逐年遞減（舊 ry_decay，如 0.6 代表第N年續佣 = 第N-1年 × 0.6）
-    const tradPersistency = p.persistency ?? 0.90;
+    // tradCommStep: 傳統端佣金率逐年遞減（如 0.6）
+    // brokerCommStep: 保經端佣金率逐年遞減（較高，如 0.95，因無內扣）
+    const persistency     = p.persistency ?? 0.90;
     const tradCommStep    = p.ry_decay || 0.6;
-    const tradDecay       = tradPersistency * tradCommStep; // 合成衰減（向下相容）
-    const brokerDecay     = p.broker_ry_decay || 0.85;
+    const tradDecay       = persistency * tradCommStep;
+    const brokerCommStep  = p.broker_comm_step ?? 0.95;
+    const brokerDecay     = persistency * brokerCommStep; // 0.90 × 0.95 = 0.855（≈舊 0.85）
 
     // v3.0.1: 傳統端年成長率（非 newbie 身份也適用）
     const tradGrowth = p.tradGrowth || 0;
@@ -77,20 +80,21 @@
       });
     } else {
       // ─── 傳統端 ───
-      // v4.4: 續佣池逐年累積模型
-      // 舊保單續佣：每年因保單脫落（1-persistency）和佣金率遞減（commStepDown）雙重衰減
-      // 新保單續佣：業務員留任持續產出新 FYP，產生新的續佣收入
-      // 結果：續佣池先升後平（而非舊版的逐年遞減）
-      let ry_t = p.ry_sunk + (p._mRySunk || 0);
+      // v4.5: 固定收入與續佣收入分離
+      // fixedIncome: 底薪(banker) / 組織津貼(manager) / 醫療收入(medical) — 留任期間不衰減
+      // ry_sunk: 純續佣收入（保險同業）— 隨 tradDecay 衰減 + 新 FYP 續佣累積
+      const fixedIncome = p._fixedIncome ?? 0;   // 不進衰減池的固定收入
+      const renewalSunk = p._renewalSunk ?? (p.ry_sunk + (p._mRySunk || 0)); // 純續佣沉沒收入
+
+      let ry_t = renewalSunk;
       const trad_ry = [ry_t];
       for (let y = 2; y <= 5; y++) {
-        // 舊續佣衰減（保單續期率 × 佣金率遞減）+ 新 FYP 產生的新續佣（保單續期率加持）
-        ry_t = ry_t * tradDecay + p.FYP * Math.pow(1 + tradGrowth, y - 1) * (p.ryr || 0) * tradPersistency;
+        ry_t = ry_t * tradDecay + p.FYP * Math.pow(1 + tradGrowth, y - 1) * (p.ryr || 0) * persistency;
         trad_ry.push(ry_t);
       }
       trad = yrs.map((_, i) => {
         const growthFYP = p.FYP * Math.pow(1 + tradGrowth, i);
-        return growthFYP * p.rate_trad + trad_ry[i] + perfBonus + benefitsVal + retirePenalty5;
+        return growthFYP * p.rate_trad + trad_ry[i] + fixedIncome + perfBonus + benefitsVal + retirePenalty5;
       });
 
       // ─── 保經端 ───
@@ -108,7 +112,7 @@
         const or_i  = surviving * (p.rfyp || 0) * (p.or_ || 0) * (y === 1 ? 0.5 : 1);
         // v3.0.2: 離職後續佣（舊公司仍支付的續佣，逐年遞減）
         const postRenewal = (y <= postResignYrs)
-          ? (p.ry_sunk + (p._mRySunk || 0)) * Math.pow(tradDecay, y)
+          ? renewalSunk * Math.pow(tradDecay, y)
           : 0;
         const brokerAnnual = fyp_i + broker_ry[i] + or_i + postRenewal;
         return brokerAnnual + brokerAnnual * brokerYEB;
