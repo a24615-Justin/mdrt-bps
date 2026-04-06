@@ -94,7 +94,7 @@ const PARAM_SCHEMA = [
     type: 'currency', default: 800000, prefix: 'NT$',
     personas: ['banker'], visibility: 'always',
     companyOverride: true, requiresVerification: false,
-    description: '銀行支付的年度固定薪資（含底薪+固定津貼）。轉職後此收入歸零。',
+    description: '銀行支付的年度固定薪資（含底薪+固定津貼+年終獎金）。轉職後此收入歸零。',
   },
   {
     key: 'clientAum', label: '客戶 AUM 規模', section: 'current',
@@ -209,13 +209,7 @@ const PARAM_SCHEMA = [
     companyOverride: false,
     description: '保經公司提供的第一年底薪支援，用於抵銷適應期的收入缺口。直接加入第 1 年保經收入。',
   },
-  {
-    key: 'legalReserve', label: '法律顧問預備金', section: 'risk',
-    type: 'currency', default: 200000, prefix: 'NT$',
-    personas: ['mgr'], visibility: 'always',
-    companyOverride: false,
-    description: '轉職可能涉及的法律費用預備金，於第 1 年保經收入中扣除。',
-  },
+  // v4.2: legalReserve 已移除（保險業無競業禁止）
 
   // ═══ Section C — 保經優勢 (advantage) ═══
   {
@@ -257,6 +251,16 @@ const PARAM_SCHEMA = [
     description: '每位增員夥伴的預估年化保費。組織獎金 = 增員人數 × 此數字 × 獎金率。',
   },
 
+  // ═══ v4.3 新增：保經年終獎金率 ═══
+  {
+    key: 'brokerYearEndBonus', label: '保經年終獎金率', section: 'advantage',
+    type: 'percent', default: 6, suffix: '%',
+    min: 0, max: 20, step: 1,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '保經公司年度總佣金的年終獎金比率。公勝平均約 6%，直接加入保經端年收入。',
+  },
+
   // ═══ v3.0.2 新增：離職後續佣年數 ═══
   {
     key: 'postResignRenewalYrs', label: '離職後續佣年數', section: 'current',
@@ -288,17 +292,11 @@ const PARAM_SCHEMA = [
   {
     key: 'performanceBonus', label: '年度績效獎金', section: 'current',
     type: 'currency', default: 0, prefix: 'NT$',
-    personas: ['ins', 'banker', 'mgr'], visibility: 'hidden',
-    companyOverride: false,
-    description: '傳統端每季或每年的績效獎金。',
+    personas: ['ins', 'banker', 'mgr'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: true,
+    description: '傳統端每年的績效獎金（含競賽獎金、旅遊獎勵折算）。此數值加入傳統端年收入。',
   },
-  {
-    key: 'nonCompeteMonths', label: '競業禁止期限', section: 'risk',
-    type: 'slider', default: 0, min: 0, max: 24, step: 1,
-    personas: ['ins', 'mgr'], visibility: 'hidden',
-    companyOverride: false,
-    description: '競業條款限制的月數，影響轉職時間規劃。',
-  },
+  // v4.2: nonCompeteMonths 已移除（保險業無競業禁止）
   {
     key: 'trainingStipend', label: '培訓津貼', section: 'risk',
     type: 'currency', default: 0, prefix: 'NT$',
@@ -315,17 +313,25 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'benefitsValue', label: '福利年度價值', section: 'current',
-    type: 'currency', default: 0, prefix: 'NT$',
-    personas: ['banker'], visibility: 'hidden',
-    companyOverride: false,
-    description: '團保+福利的隱形年度價值。',
+    type: 'currency', default: 80000, prefix: 'NT$',
+    personas: ['banker'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '銀行雇主提撥的勞退 6%、勞保雇主負擔、團保等隱形福利年度價值合計。轉職後此福利歸零。',
   },
   {
     key: 'retirementPenalty', label: '退職金損失', section: 'current',
     type: 'currency', default: 0, prefix: 'NT$',
-    personas: ['mgr'], visibility: 'hidden',
+    personas: ['mgr'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: true,
+    description: '離職將喪失的累積退職金/養老金總額。此金額平攤 5 年計入傳統端收入。設為 0 表示無此項目。',
+  },
+  // v4.3: 兼職模式係數（醫療通路 + 新人）
+  {
+    key: 'partTimeRatio', label: '投入比例', section: 'risk',
+    type: 'slider', default: 100, suffix: '%', min: 20, max: 100, step: 10,
+    personas: ['med', 'new'], visibility: 'advanced',
     companyOverride: false,
-    description: '離職將喪失的退職金總額。',
+    description: '兼職投入程度。100% = 全職，50% = 半職（FYP 按此比例縮減）。適用於評估兼職轉換的場景。',
   },
 ];
 
@@ -489,17 +495,28 @@ function collectInputs(personaId) {
 function schemaToComputeParams(values, personaId) {
   const personaShort = PERSONA_IDS[personaId];
   const productComm = (values.avgProductCommRate ?? 60) / 100;
-  const rb = productComm * (values.brokerCommRate ?? 40) / 100;
-  const ryr = (values.brokerRenewalRate ?? 5) / 100;
-  const or_ = (values.orgBonusRate ?? 0) / 100;
+
+  // v4.2: 來佣打折率 — 公勝 1.0（不打折）、同業 0.8（保司來佣先扣 20%）
+  const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
+  const _brokerEntry = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB[brokerId] : null;
+  const _fybDiscount = _brokerEntry?.brokerDefaults?.fybDiscount ?? 1.0;
+
+  // fybDiscount 乘入保經端所有收入（首佣、續佣、組織獎金）
+  const rb = productComm * _fybDiscount * (values.brokerCommRate ?? 40) / 100;
+  const ryr = _fybDiscount * (values.brokerRenewalRate ?? 5) / 100;
+  const or_ = _fybDiscount * (values.orgBonusRate ?? 0) / 100;
+
+  // v4.3: 共用參數 — 傳統端隱形損失 + 保經端年終獎金
+  const _perfBonus = values.performanceBonus ?? 0;
+  const _brokerYEB = (values.brokerYearEndBonus ?? 6) / 100;
 
   // Get adaptMonths config
   const adaptParam = PARAM_SCHEMA.find(p => p.key === 'adaptMonths');
   const adaptConfig = adaptParam?.personaConfig?.[personaShort] || {};
 
-  // v3.0.1: 保經端續佣遞減從 COMPANY_DB['gongsheng'] 動態讀取
-  const gsBrokerDecay = (typeof COMPANY_DB !== 'undefined' && COMPANY_DB['gongsheng'])
-    ? (COMPANY_DB['gongsheng'].renewalDecay ?? 0.85) : 0.85;
+  // v3.0.3: 保經端續佣遞減從 selectedBrokerId 動態讀取（brokerId/_brokerEntry 已在上方宣告）
+  const gsBrokerDecay = _brokerEntry ? (_brokerEntry.renewalDecay ?? 0.85) : 0.85;
+  // v4.2: 桌費/年終獎金已移除，簡化為個人銷售比較
 
   if (personaId === 'insurance') {
     return {
@@ -515,6 +532,9 @@ function schemaToComputeParams(values, personaId) {
       nrec: values.recruitCount ?? 0,
       rfyp: values.recruitAvgFyp ?? 0,
       fyb: 1,
+      fybDiscount: _fybDiscount,
+      perfBonus: _perfBonus,
+      brokerYEB: _brokerYEB,
     };
   }
   if (personaId === 'banker') {
@@ -536,6 +556,10 @@ function schemaToComputeParams(values, personaId) {
       _rawFYP: rawFYP, _conv: conv, _aum: values.clientAum ?? 0,
       _subsidy: values.transitionSubsidy ?? 0,
       _adapt: adapt, _id: 'banker',
+      fybDiscount: _fybDiscount,
+      perfBonus: _perfBonus,
+      benefitsValue: values.benefitsValue ?? 80000,
+      brokerYEB: _brokerYEB,
     };
   }
   if (personaId === 'manager') {
@@ -558,16 +582,20 @@ function schemaToComputeParams(values, personaId) {
       nrec: follow,
       rfyp: values.recruitAvgFyp ?? (FYP * 0.8),
       fyb: 1,
-      _legal: values.legalReserve ?? 0,
       _follow: follow,
       _teamSize: values.teamSize ?? 0,
       _id: 'manager',
+      fybDiscount: _fybDiscount,
+      perfBonus: _perfBonus,
+      retirePenalty: values.retirementPenalty ?? 0,
+      brokerYEB: _brokerYEB,
     };
   }
   if (personaId === 'medical') {
     const clients = values.referralClients ?? 80;
     const avgP = values.avgPremium ?? 150000;
-    const FYP = clients * avgP;
+    const ptRatio = (values.partTimeRatio ?? 100) / 100;  // v4.3: 兼職模式
+    const FYP = clients * avgP * ptRatio;
     const adapt = values.adaptMonths ?? (adaptConfig.default ?? 6);
     const divisor = adaptConfig.divisor || 18;
     const maxL = adaptConfig.maxL || 0.7;
@@ -581,10 +609,13 @@ function schemaToComputeParams(values, personaId) {
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb: 1,
       _clients: clients, _avgP: avgP, _id: 'medical',
+      fybDiscount: _fybDiscount,
+      brokerYEB: _brokerYEB,
     };
   }
   if (personaId === 'newbie') {
-    const FYP = values.newbieFyp ?? 1200000;
+    const ptRatio = (values.partTimeRatio ?? 100) / 100;  // v4.3: 兼職模式
+    const FYP = (values.newbieFyp ?? 1200000) * ptRatio;
     const growth = (values.growthRate ?? 20) / 100;
     const adapt = values.adaptMonths ?? (adaptConfig.default ?? 3);
     const divisor = adaptConfig.divisor || 12;
@@ -599,6 +630,8 @@ function schemaToComputeParams(values, personaId) {
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb,
       _growth: growth, _id: 'newbie',
+      fybDiscount: _fybDiscount,
+      brokerYEB: _brokerYEB,
     };
   }
   return {};
@@ -706,9 +739,9 @@ function validateField(key, value, inputEl) {
   warningEl.style.display = 'none';
 }
 
-// ─── Apply company defaults ───
+// ─── Apply company defaults（傳統端 Section A 欄位）───
 // v3.0: COMPANY_DB defaults key 已統一為 PARAM_SCHEMA schemaKey，不需 keyMap 轉換
-// v3.0.1: 保經類公司的 brokerDefaults 自動填入 Section C 保經優勢欄位
+// v3.0.3: brokerDefaults 邏輯移至 index.html applyBrokerDefaults()，此處只處理傳統端
 function applyCompanyDefaults(companyId, personaId) {
   if (typeof COMPANY_DB === 'undefined' || !COMPANY_DB[companyId]) return;
 
@@ -723,26 +756,6 @@ function applyCompanyDefaults(companyId, personaId) {
     if (inputEl) {
       inputEl.value = value;
       setCurrentValue(schemaKey, value, personaId);
-    }
-  }
-
-  // 保經類公司：brokerDefaults → Section C 保經優勢欄位
-  // 讓選擇「永達」時自動帶入永達的佣金率，而非預設的公勝 40%
-  if (company.brokerDefaults) {
-    const bdMap = {
-      brokerComm:  'brokerCommRate',
-      renewalRate: 'brokerRenewalRate',
-      orgRate:     'orgBonusRate',
-    };
-    for (const [bdKey, schemaKey] of Object.entries(bdMap)) {
-      if (isUserModified(schemaKey)) continue;
-      const val = company.brokerDefaults[bdKey];
-      if (val == null) continue;
-      const inputEl = document.getElementById(`param_${schemaKey}`);
-      if (inputEl) {
-        inputEl.value = val;
-        setCurrentValue(schemaKey, val, personaId);
-      }
     }
   }
 }

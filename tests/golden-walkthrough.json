@@ -1,0 +1,323 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-04-06",
+  "description": "MDRT-BPS 增員流程走查測試標準 — 六階段 Golden Walkthrough",
+  "notes": "每次版本更新後，必須逐案執行此測試集並記錄 PASS/FAIL。搭配增員教案 L1-L9 作為訓練教材品質基準。",
+
+  "testCases": [
+    {
+      "id": "GW-01",
+      "stage": "Stage 2 — 痛點覺醒",
+      "scenario": "壽險同業：國泰人壽 10 年資深業務",
+      "steps": [
+        "開啟 MDRT-BPS 首頁",
+        "點選 Tab A「為什麼做保經？」",
+        "選擇身份「保險同業」",
+        "確認雷達圖顯示 5 維度（收入天花板/客戶主權/工作自主/成長空間/退休保障）",
+        "確認生活節奏對照表顯示現職 vs 保經的一天",
+        "確認收入天花板區塊顯示合理數字（非 NaN、非 0）",
+        "確認觀念話術卡片可展開/收合",
+        "確認 followUp 追問層存在且可展開"
+      ],
+      "expectedResults": {
+        "radarChart": "紅色（現職）面積 < 綠色（保經）面積",
+        "dailySchedule": "兩欄對照，emoji 表情符號正確",
+        "incomeBar": "保經年收入 > 現職年收入",
+        "scriptCards": "3 張卡片，每張含 followUp"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-02",
+      "stage": "Stage 3 — 制度比較",
+      "scenario": "壽險同業：國泰人壽 → 公勝保經",
+      "steps": [
+        "從 Tab A 底部 CTA 切換到 Tab B",
+        "確認 persona context 顯示「保險同業」",
+        "公司選擇器選「國泰人壽」",
+        "確認制度對照表載入（非空白）",
+        "確認參數自動帶入（首佣率 20%、續佣 3% 等國泰預設值）",
+        "檢查 Section ① 制度比較表 7 維度完整"
+      ],
+      "expectedResults": {
+        "companyChip": "國泰人壽被選中（高亮）",
+        "comparisonTable": "7 維度非空",
+        "autoParams": "commRateTrad=20, renewalRate=3, renewalDecay=0.6"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-03",
+      "stage": "Stage 3 — 數字呈現",
+      "scenario": "壽險同業：FYP 120 萬，國泰 → 公勝",
+      "steps": [
+        "在 Section ① 輸入 FYP = 1,200,000",
+        "切換到 Section ② 數字區",
+        "確認 KPI 四格數字非 NaN",
+        "確認傳統 5 年累計 < 保經 5 年累計",
+        "確認收入超越點顯示月數",
+        "確認年度比較表 5 列完整",
+        "確認十年收入圖表 bar 動畫正常"
+      ],
+      "expectedResults": {
+        "kpi_tradSum": "約 167 萬（±20%）",
+        "kpi_brokerSum": "約 325 萬（±20%）",
+        "kpi_diff": "正數",
+        "kpi_beMonth": "≤ 12 個月",
+        "annualTable": "5 行 × 4 列，數字遞增"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-04",
+      "stage": "Stage 4 — 異議處理",
+      "scenario": "壽險同業質疑：客戶會跟我走嗎？",
+      "steps": [
+        "在 Tab A 觀念話術區找到客戶跟隨相關卡片",
+        "點擊展開查看回應",
+        "確認 followUp 追問「沒有品牌光環怎麼辦？」存在",
+        "確認語言無處方性用語（建議/應該/必須/推薦/保證）"
+      ],
+      "expectedResults": {
+        "cardExpand": "展開動畫平滑",
+        "followUpExists": true,
+        "complianceClean": true
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-05",
+      "stage": "Stage 3 — 進階情境",
+      "scenario": "壽險同業：三情境比較（保守/基準/樂觀）",
+      "steps": [
+        "切換到 Section ③ 進階區",
+        "展開三情境手風琴",
+        "確認保守/基準/樂觀三欄數字遞增",
+        "確認每個情境的客戶流失率不同"
+      ],
+      "expectedResults": {
+        "scenarios": "保守 < 基準 < 樂觀",
+        "lossRates": "保守 L 最高、樂觀 L 最低"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-06",
+      "stage": "Stage 5 — 決策促進",
+      "scenario": "截圖分享試算結果",
+      "steps": [
+        "確認分享列（share bar）出現在底部",
+        "點擊「複製連結」按鈕",
+        "確認 toast 提示「連結已複製」",
+        "點擊「截圖分享」按鈕",
+        "確認 html2canvas 觸發（按鈕顯示 loading）",
+        "確認產出 PNG 檔名包含 'mdrt-推演結果'"
+      ],
+      "expectedResults": {
+        "shareBar": "可見，3 個按鈕",
+        "copyLink": "clipboard 寫入 URL 含 ?persona=insurance&tab=B&company=cathay-life",
+        "screenshot": "PNG 生成不報錯"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-07",
+      "stage": "Stage 2-3",
+      "scenario": "銀行理專：富邦銀行 → 公勝保經",
+      "steps": [
+        "選擇身份「銀行理專」",
+        "Tab A 確認雷達圖/生活節奏/話術切換為銀行理專版",
+        "切換 Tab B",
+        "公司選擇器選「富邦人壽」",
+        "確認自動帶入固定薪資欄位（bankFyp/fixedSalary）",
+        "輸入 FYP=800,000, fixedSalary=600,000",
+        "確認 KPI 顯示（注意：銀行理專有 benefitsValue + fypShrink）",
+        "確認收入超越點合理（因底薪優勢，beMonth 可能較長）"
+      ],
+      "expectedResults": {
+        "personaSwitch": "所有區塊更新為 banker 版本",
+        "bankFields": "fixedSalary 欄位可見",
+        "beMonth": "可能為 null（合理）或 > 12 個月"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-08",
+      "stage": "Stage 2-3",
+      "scenario": "壽險主管：南山 → 公勝保經",
+      "steps": [
+        "選擇身份「壽險主管」",
+        "公司選擇器選「南山人壽」",
+        "確認自動帶入組織津貼欄位（orgAllowance）",
+        "輸入 FYP=2,000,000, orgAllowance=500,000",
+        "確認 followCount（帶人數）欄位可見",
+        "確認 KPI 數字合理（主管端 trad 收入較高）"
+      ],
+      "expectedResults": {
+        "mgrFields": "orgAllowance + teamSize + followCount 可見",
+        "tradIncome": "含組織津貼，數字較高",
+        "brokerIncome": "含組織獎金計算"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-09",
+      "stage": "Stage 2-3",
+      "scenario": "醫療通路：兼職模式",
+      "steps": [
+        "選擇身份「醫療通路」",
+        "確認 Tab A 痛點/話術為醫療版",
+        "切換 Tab B，確認欄位（medIncome, referralClients, avgPremium）",
+        "輸入 medIncome=800,000, referralClients=20, avgPremium=50,000",
+        "確認 KPI 計算正常"
+      ],
+      "expectedResults": {
+        "medFields": "medIncome + referralClients + avgPremium 可見",
+        "calculation": "非 NaN，合理範圍"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-10",
+      "stage": "Stage 2-3",
+      "scenario": "新人：零基礎入行",
+      "steps": [
+        "選擇身份「新人/考慮入行」",
+        "確認 Tab A 痛點為新人版（培訓/安全感/家人支持）",
+        "切換 Tab B",
+        "確認欄位（newbieFyp, growthRate）",
+        "輸入 newbieFyp=500,000",
+        "確認 5 年收入曲線呈成長趨勢",
+        "確認 beMonth 為 1（newbie 通常立即超越）"
+      ],
+      "expectedResults": {
+        "newbieFields": "newbieFyp + growthRate 可見",
+        "growthCurve": "Y5 > Y1",
+        "beMonth": 1
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-11",
+      "stage": "Stage 3",
+      "scenario": "自訂公司功能",
+      "steps": [
+        "公司選擇器選「自訂公司」",
+        "確認內嵌表單出現（公司名/合約類型/首佣率/續佣/衰退/來佣打折）",
+        "手動輸入：名稱=測試公司, 首佣率=25%, 續佣=4%",
+        "確認 KPI 使用自訂參數計算",
+        "確認對照表顯示「測試公司」名稱"
+      ],
+      "expectedResults": {
+        "customForm": "6 個欄位可編輯",
+        "calculation": "使用手動輸入值",
+        "companyName": "顯示「測試公司」"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-12",
+      "stage": "URL Routing",
+      "scenario": "分享連結還原狀態",
+      "steps": [
+        "開啟 URL: ?persona=banker&tab=B&company=fubon-life&broker=gongsheng",
+        "確認自動選中「銀行理專」身份",
+        "確認自動切換到 Tab B",
+        "確認公司選擇器高亮「富邦人壽」",
+        "確認參數已自動帶入"
+      ],
+      "expectedResults": {
+        "persona": "banker",
+        "tab": "B",
+        "company": "fubon-life",
+        "autoLoad": true
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-13",
+      "stage": "Accessibility",
+      "scenario": "鍵盤導航完整性",
+      "steps": [
+        "Tab 鍵跳到 skip link → Enter 跳到主內容",
+        "Tab/Shift+Tab 在 Tab A/B 間切換",
+        "方向鍵在身份選擇器間移動",
+        "Enter/Space 展開話術卡片",
+        "確認所有 focus-visible 外框可見"
+      ],
+      "expectedResults": {
+        "skipLink": "focus 時可見，Enter 跳轉正確",
+        "tabNav": "aria-selected 正確切換",
+        "radioGroup": "aria-checked 正確切換",
+        "focusOutline": "3px gold outline"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-14",
+      "stage": "Dark Mode",
+      "scenario": "深色模式渲染",
+      "steps": [
+        "系統切換深色模式",
+        "確認背景色切換為深色（#1a2d42 系列）",
+        "確認文字可讀（對比度足夠）",
+        "確認 bar chart 在深色下可見",
+        "確認十年收入圖表深色樣式套用"
+      ],
+      "expectedResults": {
+        "background": "深色",
+        "textContrast": "WCAG AA 以上",
+        "charts": "可辨識"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-15",
+      "stage": "Error Boundary",
+      "scenario": "計算引擎邊界值",
+      "steps": [
+        "輸入 FYP=0 → 確認 KPI 顯示 0 而非 NaN",
+        "輸入 FYP=99,999,999 → 確認無溢位",
+        "輸入 lossRate=100% → 確認 broker 收入為 0",
+        "清空所有欄位 → 確認頁面不崩潰"
+      ],
+      "expectedResults": {
+        "zeroFYP": "全部 KPI 顯示 0",
+        "maxFYP": "數字正確格式化",
+        "maxLoss": "broker = 0",
+        "emptyFields": "不崩潰，顯示預設值"
+      },
+      "pass": null
+    },
+    {
+      "id": "GW-BUG-01",
+      "stage": "已知 Bug",
+      "scenario": "fybDiscount 參數未生效",
+      "steps": [
+        "選擇保險同業",
+        "展開進階參數",
+        "調整「來佣打折率」為 0.8（80%）",
+        "觀察 broker 端首佣是否減少"
+      ],
+      "expectedResults": {
+        "expected": "broker 首佣 = FYP × (1-L) × rb × 0.8",
+        "actual": "fybDiscount 未被乘入 effectiveFYP，broker 首佣不變",
+        "severity": "P1 — 計算錯誤",
+        "status": "KNOWN_BUG"
+      },
+      "pass": false
+    }
+  ],
+
+  "courseMapping": {
+    "L1_趨勢與動機": ["GW-01"],
+    "L2_對象分類": ["GW-01", "GW-07", "GW-08", "GW-09", "GW-10"],
+    "L3_增員SOP": ["GW-02", "GW-03", "GW-06", "GW-12"],
+    "L4_異議處理": ["GW-04"],
+    "L5_MDRT-BPS實戰": ["GW-01", "GW-02", "GW-03", "GW-05", "GW-06", "GW-07", "GW-08", "GW-09", "GW-10", "GW-11"],
+    "L6_心態建設": [],
+    "L7_新人留存": ["GW-10"],
+    "L8_短影音法遵": ["GW-06"],
+    "L9_行動方案發表": ["GW-12"]
+  }
+}

@@ -40,17 +40,31 @@
     // v3.0.1: 銀行理專保費縮水係數
     const fypShrink = p._id === 'banker' ? (p.fypShrink ?? 0.8) : 1;
 
+    // v4.2→v4.3 修正: 來佣打折率（1.0 = 不打折，0.8 = 保司來佣先扣 20%）
+    // 乘入 effectiveFYP，影響保經端首佣、續佣、組織獎金
+    const fybDiscount = p.fybDiscount ?? 1.0;
+
+    // v4.3: 傳統端隱形收入 + 保經端年終獎金
+    const perfBonus = p.perfBonus ?? 0;           // 傳統端績效獎金
+    const benefitsVal = p.benefitsValue ?? 0;     // 銀行福利年度價值
+    const retirePenalty5 = (p.retirePenalty ?? 0) / 5; // 退職金損失平攤 5 年
+    const brokerYEB = p.brokerYEB ?? 0;           // 保經年終獎金率（佣金 × %）
+
     if (p._id === 'newbie') {
       const fyb_n = p.fyb || 1;
-      trad = yrs.map(y => p.FYP * Math.pow(1 + p._growth, y - 1) * fyb_n * p.rate_trad);
+      trad = yrs.map(y => {
+        const base = p.FYP * Math.pow(1 + p._growth, y - 1) * fyb_n;
+        return base * p.rate_trad;
+      });
       broker = yrs.map(y => {
         const base = p.FYP * Math.pow(1 + p._growth, y - 1) * fyb_n;
-        // newbie 保經端也用 brokerDecay
+        // newbie 保經端也用 brokerDecay；fybDiscount 已乘入 rb/ryr
         let ry_nb = 0;
         for (let prev = 1; prev < y; prev++) {
-          ry_nb += base * (1 - p.L) * (p.ryr || 0) * Math.pow(brokerDecay, y - prev - 1);
+          ry_nb += base * (1 - p.L) * fybDiscount * (p.ryr || 0) * Math.pow(brokerDecay, y - prev - 1);
         }
-        return base * (1 - p.L) * p.rb + ry_nb;
+        const brokerAnnual = base * (1 - p.L) * fybDiscount * p.rb + ry_nb;
+        return brokerAnnual + brokerAnnual * brokerYEB;
       });
     } else {
       // ─── 傳統端 ───
@@ -62,15 +76,15 @@
       }
       trad = yrs.map((_, i) => {
         const growthFYP = p.FYP * Math.pow(1 + tradGrowth, i);
-        return growthFYP * p.rate_trad + trad_ry[i];
+        return growthFYP * p.rate_trad + trad_ry[i] + perfBonus + benefitsVal + retirePenalty5;
       });
 
       // ─── 保經端 ───
-      const effectiveFYP = p.FYP * (1 - p.L) * fypShrink;
+      const effectiveFYP = p.FYP * (1 - p.L) * fypShrink * fybDiscount;
       let ry_b = 0;
       const broker_ry = [0];
       for (let y = 2; y <= 5; y++) {
-        ry_b = ry_b * brokerDecay + effectiveFYP * (p.ryr || 0);
+        ry_b = ry_b * brokerDecay + effectiveFYP * (p.ryr || 0);  // effectiveFYP 已含 fybDiscount
         broker_ry.push(ry_b);
       }
       broker = yrs.map((y, i) => {
@@ -82,14 +96,12 @@
         const postRenewal = (y <= postResignYrs)
           ? (p.ry_sunk + (p._mRySunk || 0)) * Math.pow(tradDecay, y)
           : 0;
-        return fyp_i + broker_ry[i] + or_i + postRenewal;
+        const brokerAnnual = fyp_i + broker_ry[i] + or_i + postRenewal;
+        return brokerAnnual + brokerAnnual * brokerYEB;
       });
     }
 
-    // 主管競業成本扣除
-    if (p._id === 'manager' && p._legal) {
-      broker[0] = Math.max(0, broker[0] - p._legal);
-    }
+    // v4.2: 主管競業成本已移除（保險業無競業禁止）
     // 銀行理專轉換補貼
     if (p._id === 'banker' && p._subsidy) {
       broker[0] += p._subsidy;
@@ -99,12 +111,9 @@
     const cumB = broker.reduce((a, v, i) => { a.push((a[i - 1] || 0) + v); return a; }, []);
     const net  = cumB.map((b, i) => b - cumT[i]);
 
-    // v3.0.2: 收入超越點用結構性收入計算，排除一次性項目（_subsidy/_legal）
+    // v3.0.2: 收入超越點用結構性收入計算，排除一次性項目（_subsidy）
     // 一次性項目只影響 Y1，不影響結構性趨勢判斷
     const structBroker = broker.slice();
-    if (p._id === 'manager' && p._legal) {
-      structBroker[0] = structBroker[0] + p._legal; // 還原扣除的法律費
-    }
     if (p._id === 'banker' && p._subsidy) {
       structBroker[0] = structBroker[0] - p._subsidy; // 還原加入的補貼
     }
@@ -133,11 +142,78 @@
     };
   }
 
+  // ─── v4.2: 稅後試算 ──────────────────────────────────────────────────────────
+  // 台灣保險從業人員稅務：執行業務所得（承攬制）or 薪資所得（僱傭制）
+  // 二代健保補充保費 2.11%（單次給付 ≥ NT$28,000）
+  // 所得稅：簡化累進稅率模型
+  function computeAfterTax(annualIncome, type) {
+    // type: 'employed'（壽險）或 'contractor'（保經）
+    var taxable = annualIncome;
+    var nhiSupplement = 0;
+
+    if (type === 'contractor') {
+      // 執行業務所得：必要費用率 20%（保險業務員）
+      taxable = annualIncome * 0.80;
+      // 二代健保補充保費（每月佣金 ≥ 28000）
+      var monthlyAvg = annualIncome / 12;
+      if (monthlyAvg >= 28000) {
+        nhiSupplement = annualIncome * 0.0211;
+      }
+    } else {
+      // 薪資所得：薪資特別扣除額 218,000
+      taxable = Math.max(0, annualIncome - 218000);
+    }
+
+    // 標準扣除額 131,000 + 免稅額 97,000
+    var netTaxable = Math.max(0, taxable - 131000 - 97000);
+
+    // 累進稅率（簡化）
+    var tax = 0;
+    if (netTaxable <= 590000) tax = netTaxable * 0.05;
+    else if (netTaxable <= 1330000) tax = 590000 * 0.05 + (netTaxable - 590000) * 0.12;
+    else if (netTaxable <= 2660000) tax = 590000 * 0.05 + 740000 * 0.12 + (netTaxable - 1330000) * 0.20;
+    else if (netTaxable <= 4980000) tax = 590000 * 0.05 + 740000 * 0.12 + 1330000 * 0.20 + (netTaxable - 2660000) * 0.30;
+    else tax = 590000 * 0.05 + 740000 * 0.12 + 1330000 * 0.20 + 2320000 * 0.30 + (netTaxable - 4980000) * 0.40;
+
+    var afterTax = annualIncome - tax - nhiSupplement;
+    return {
+      gross: annualIncome,
+      tax: Math.round(tax),
+      nhiSupplement: Math.round(nhiSupplement),
+      afterTax: Math.round(afterTax),
+      effectiveRate: annualIncome > 0 ? ((tax + nhiSupplement) / annualIncome) : 0
+    };
+  }
+
+  // ─── v4.2: 敏感度分析 ───────────────────────────────────────────────────────
+  // 輸入基準參數 + 要測試的 key + 偏移範圍，回傳各情境結果
+  function sensitivityAnalysis(baseParams, testKey, offsets) {
+    // offsets: [-0.2, -0.1, 0, 0.1, 0.2]（比例偏移）
+    if (!offsets) offsets = [-0.20, -0.10, 0, 0.10, 0.20];
+    var baseVal = baseParams[testKey];
+    if (baseVal == null || baseVal === 0) return null;
+
+    return offsets.map(function(offset) {
+      var tweaked = Object.assign({}, baseParams);
+      tweaked[testKey] = baseVal * (1 + offset);
+      var result = compute5yr(tweaked);
+      return {
+        offset: offset,
+        value: tweaked[testKey],
+        diff5: result.diff5,
+        beMonth: result.beMonth,
+        sum5broker: result.sum5broker
+      };
+    });
+  }
+
   // ─── 匯出全域 ─────────────────────────────────────────────────────────────
   window.compute5yr = compute5yr;
+  window.computeAfterTax = computeAfterTax;
+  window.sensitivityAnalysis = sensitivityAnalysis;
   window.fmtM   = fmtM;
   window.fmtNT  = fmtNT;
   window.fmtPct = fmtPct;
 
-  console.log('[Calculator] ✅ 初始化完成');
+  console.log('[Calculator] ✅ 初始化完成（含稅後試算+敏感度分析）');
 })();

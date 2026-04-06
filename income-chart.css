@@ -284,3 +284,60 @@
     display: none; /* 手機上隱藏差距 badge 避免擁擠 */
   }
 }
+
+/* ─── v4.2: Tooltip + Hover + Dark Mode ───────────────────────────────── */
+.ic-bar-row {
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+  border-radius: 6px;
+  padding: 2px 0;
+}
+.ic-bar-row:hover,
+.ic-bar-row:focus-visible {
+  background: rgba(0,0,0,0.03);
+}
+.ic-bar-row::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2d42;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+.ic-bar-row:hover::after,
+.ic-bar-row:focus-visible::after {
+  opacity: 1;
+}
+
+/* Dark mode chart */
+@media (prefers-color-scheme: dark) {
+  .ic-container {
+    background: var(--surface, #1e2636);
+    border-color: var(--border, rgba(255,255,255,0.10));
+  }
+  .ic-header { color: var(--text, #e8edf4); }
+  .ic-title { color: var(--text, #e8edf4); }
+  .ic-subtitle { color: var(--text-muted, #6a8ea8); }
+  .ic-highlight { background: rgba(79,70,229,0.1); border-color: rgba(79,70,229,0.2); }
+  .ic-gap-number { color: #a5b4fc; }
+  .ic-gap-label { color: var(--text-dim, #a8bdd0); }
+  .ic-bar-track { background: var(--navy-2, #232d3f); }
+  .ic-bar-val { color: var(--text-dim, #a8bdd0); }
+  .ic-bar-label { color: var(--text-muted, #6a8ea8); }
+  .ic-bar-year { color: var(--text-dim, #a8bdd0); }
+  .ic-footer { color: var(--text-muted, #6a8ea8); border-top-color: var(--border, rgba(255,255,255,0.08)); }
+  .ic-bar-row:hover { background: rgba(255,255,255,0.04); }
+  .ic-bar-diff { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+  .ic-skeleton { background: var(--surface, #1e2636); border-color: var(--border); }
+  .ic-sk-title, .ic-sk-bar { background: linear-gradient(90deg, #232d3f 25%, #2c3a50 50%, #232d3f 75%); background-size: 200% 100%; }
+}

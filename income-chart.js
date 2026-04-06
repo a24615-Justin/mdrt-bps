@@ -10,15 +10,21 @@
   // 假設：年繳保費 100 萬（FYP），每年新增相同保費
   const BASE_FYP = 1000000; // 年繳保費 100 萬
 
-  // 公勝參數從 COMPANY_DB 動態讀取（P0-8 遷移）
+  // v3.0.3: 保經參數從 selectedBrokerId 動態讀取（不再硬編碼 gongsheng）
   function getGsParams() {
-    const gs = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB['gongsheng'] : null;
-    const gsDefs = gs?.defaults?.insurance || {};
+    const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
+    const gs = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB[brokerId] : null;
+    if (!gs) {
+      const fallback = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB['gongsheng'] : null;
+      const fbDefs = fallback?.defaults?.insurance || {};
+      return { comm: fbDefs.commRateTrad ?? 40, renewal: fbDefs.renewalRate ?? 5, renewalDecay: fallback?.renewalDecay ?? 0.85, orgRate: 5, orgMembers: 3, orgMemberFyp: 600000 };
+    }
+    const gsDefs = gs.defaults?.insurance || {};
     return {
-      comm:         gsDefs.commRateTrad ?? 40,
-      renewal:      gsDefs.renewalRate ?? 5,
-      renewalDecay: gs?.renewalDecay ?? 0.85,
-      orgRate:      5, // 組織津貼率 %（假設帶 3 人）
+      comm:         gs.brokerDefaults?.brokerComm ?? gsDefs.commRateTrad ?? 40,
+      renewal:      gs.brokerDefaults?.renewalRate ?? gsDefs.renewalRate ?? 5,
+      renewalDecay: gs.renewalDecay ?? 0.85,
+      orgRate:      gs.brokerDefaults?.orgRate ?? 5,
       orgMembers:   3,
       orgMemberFyp: 600000,
     };
@@ -98,6 +104,10 @@
     const company = COMPANY_DB[companyId];
     if (!company) return;
 
+    // v3.0.3: 保經端讀取 selectedBrokerId
+    const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
+    const brokerCompany = COMPANY_DB[brokerId] || COMPANY_DB['gongsheng'];
+
     const params = getCompanyParams(companyId);
     const tradData = calc10YearIncome(params.commRate, params.renewalRate || 3, params.renewalDecay, true, params.orgAllowance);
     const gsp = getGsParams();
@@ -105,7 +115,7 @@
 
     const maxVal = Math.max(gsData[9].cumulative, tradData[9].cumulative);
     const gap = gsData[9].cumulative - tradData[9].cumulative;
-    const gapPercent = ((gap / tradData[9].cumulative) * 100).toFixed(0);
+    const gapPercent = tradData[9].cumulative > 0 ? ((gap / tradData[9].cumulative) * 100).toFixed(0) : '—';
 
     // Highlight years: 1, 3, 5, 10
     const keyYears = [0, 2, 4, 9]; // indices
@@ -122,7 +132,7 @@
         <div class="ic-highlight">
           <div class="ic-gap-number">${formatMoney(Math.abs(gap))}</div>
           <div class="ic-gap-label">
-            十年累計差距｜公勝多出 <strong>${gapPercent}%</strong>
+            十年累計差距｜${brokerCompany.short}多出 <strong>${gapPercent}%</strong>
           </div>
         </div>
 
@@ -137,15 +147,15 @@
               <div class="ic-bar-group">
                 <div class="ic-bar-year">第 ${d.year} 年</div>
                 <div class="ic-bar-pair">
-                  <div class="ic-bar-row">
+                  <div class="ic-bar-row" role="group" aria-label="${company.short} 第${d.year}年累計 ${formatMoney(d.cumulative)}" tabindex="0" onclick="this.classList.toggle('ic-expanded')" title="點擊看明細：年收入 ${formatMoney(d.annual)} / 累計 ${formatMoney(d.cumulative)}">
                     <span class="ic-bar-label ic-label-trad">${company.short}</span>
                     <div class="ic-bar-track">
                       <div class="ic-bar ic-bar-trad" style="width:${tradPct}%;" data-delay="${i * 150}"></div>
                     </div>
                     <span class="ic-bar-val">${formatMoney(d.cumulative)}</span>
                   </div>
-                  <div class="ic-bar-row">
-                    <span class="ic-bar-label ic-label-gs">公勝</span>
+                  <div class="ic-bar-row" role="group" aria-label="${brokerCompany.short} 第${g.year}年累計 ${formatMoney(g.cumulative)}" tabindex="0" onclick="this.classList.toggle('ic-expanded')" title="點擊看明細：年收入 ${formatMoney(g.annual)} / 累計 ${formatMoney(g.cumulative)}">
+                    <span class="ic-bar-label ic-label-gs">${brokerCompany.short}</span>
                     <div class="ic-bar-track">
                       <div class="ic-bar ic-bar-gs" style="width:${gsPct}%;" data-delay="${i * 150 + 80}"></div>
                     </div>

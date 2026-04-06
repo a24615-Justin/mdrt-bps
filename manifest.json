@@ -1,0 +1,28 @@
+{
+  "name": "公勝MDRT 財務推演模組",
+  "short_name": "MDRT推演",
+  "description": "保險增員五年收入推演工具 — 痛點覺醒 × 制度比較 × 收入試算",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1a2d42",
+  "background_color": "#f0f4f9",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business"],
+  "lang": "zh-TW",
+  "dir": "ltr"
+}

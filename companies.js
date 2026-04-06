@@ -63,6 +63,7 @@ const COMPANY_DB = {
       brand: '大型品牌光環',
       orgDev: '固定晉升階梯，需達組織人力門檻',
     },
+    annualBonusPct: 5, // 年終+季獎金估計（FYP 比例）
     note: '雙合約制（承攬+僱傭），提供勞健保、勞退、團險',
   },
   'fubon-life': {
@@ -90,6 +91,7 @@ const COMPANY_DB = {
       brand: '金融集團整合優勢',
       orgDev: '固定晉升階梯，需達組織人力門檻',
     },
+    annualBonusPct: 5,
     note: '金控體系，銀行保險通路強',
   },
   'nanshan-life': {
@@ -116,6 +118,7 @@ const COMPANY_DB = {
       brand: '老牌聲譽',
       orgDev: '組織層級多，晉升路徑長',
     },
+    annualBonusPct: 3,
     note: '純承攬制，佣金率較高但無勞健保',
   },
   'shin-kong-life': {
@@ -142,6 +145,7 @@ const COMPANY_DB = {
       brand: '老牌品牌',
       orgDev: '固定晉升階梯，需達組織人力門檻',
     },
+    annualBonusPct: 4,
     note: '雙合約制，新人財務補助計畫',
   },
   'allianz-life': {
@@ -168,6 +172,7 @@ const COMPANY_DB = {
       brand: '外商品牌、投資型商品強',
       orgDev: '固定晉升階梯，業績獎金月FYP>10K→FYC 10%',
     },
+    annualBonusPct: 8,
     note: '雙合約制（僱傭+承攬），WL1N首佣20-39%、ND10首佣38%、年終3-15%',
   },
   'taishin-life': {
@@ -193,7 +198,84 @@ const COMPANY_DB = {
       brand: '獨立經營、佣金率較高',
       orgDev: '無組織負擔，個人導向',
     },
+    annualBonusPct: 2,
     note: '獨立經營壽險，NWLB首佣15-55%、TLA首佣35-55%、集繳件折扣-2~-5%',
+  },
+
+  'china-life': {
+    name: '中國人壽', short: '中壽', icon: '🏛️', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '5.1%',
+    lastVerified: '2026-04-06',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '中壽業務人員管理辦法（業界估計中位數）',
+    },
+    defaults: {
+      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 8, fixedSalary: 700000 },
+      manager:   { commRateTrad: 24, orgAllowance: 700000, mgrRenewal: 180000 },
+      medical:   { commRateTrad: 16 },
+      newbie:    { commRateTrad: 20 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓體系+數位學院',
+      brand: '壽險市占前五、開發金控旗下',
+      orgDev: '固定晉升制度，通訊處經營模式',
+    },
+    note: '開發金控旗下；IFRS17 後投資型商品調整中',
+  },
+  'taiwan-life': {
+    name: '台灣人壽', short: '台壽', icon: '🏢', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '5.8%',
+    lastVerified: '2026-04-06',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '台灣人壽業務規範（業界估計中位數）',
+    },
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 9, fixedSalary: 750000 },
+      manager:   { commRateTrad: 22, orgAllowance: 750000, mgrRenewal: 200000 },
+      medical:   { commRateTrad: 15 },
+      newbie:    { commRateTrad: 18 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓+中信金控資源',
+      brand: '中信金控旗下、壽險前五大',
+      orgDev: '傳統通訊處+銀行通路雙軌，組織晉升穩定',
+    },
+    note: '中信金控旗下；銀行通路佔比高；2024合併前台灣人壽',
+  },
+  'mercuries-life': {
+    name: '三商美邦人壽', short: '三商', icon: '🔷', type: 'life',
+    contract: '承攬制', benefits: '部分有勞健保',
+    marketShare: '2.5%',
+    lastVerified: '2026-04-06',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '三商美邦業務規範（業界估計中位數）',
+    },
+    defaults: {
+      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      banker:    { commRateTrad: 0, fixedSalary: 0 },
+      manager:   { commRateTrad: 28, orgAllowance: 500000, mgrRenewal: 200000 },
+      medical:   { commRateTrad: 18 },
+      newbie:    { commRateTrad: 22 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '依個人能力+職階',
+      training: '內部培訓+年度大會',
+      brand: '三商集團旗下、承攬制先驅',
+      orgDev: '承攬制彈性高，個人經營導向',
+    },
+    note: '承攬制老牌壽險；佣金結構較接近保經模式',
   },
 
   // ═══ 公勝保經（教材主角）═══
@@ -217,7 +299,7 @@ const COMPANY_DB = {
       medical:   { commRateTrad: 50 },
       newbie:    { commRateTrad: 50 },
     },
-    brokerDefaults: { brokerComm: 50, renewalRate: 5, orgRate: 5 },
+    brokerDefaults: { brokerComm: 50, renewalRate: 5, orgRate: 5, deskFee: 3000, fybDiscount: 1.0 },
     comparison: {
       productChoice: '多家保司產品，各家來佣100%FYC',
       ceiling: '無上限（累積晉升，永不歸零）',
@@ -260,11 +342,11 @@ const COMPANY_DB = {
     defaults: {
       insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
       banker:    { commRateTrad: 22, fixedSalary: 0 },
-      manager:   { commRateTrad: 22, orgAllowance: 0, mgrRenewal: 0 },
+      manager:   { commRateTrad: 28, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 22 },
-      newbie:    { commRateTrad: 22 },
+      newbie:    { commRateTrad: 20 },
     },
-    brokerDefaults: { brokerComm: 38, renewalRate: 4.5, orgRate: 3 },
+    brokerDefaults: { brokerComm: 38, renewalRate: 4.5, orgRate: 3, deskFee: 3500, fybDiscount: 0.8 },
     comparison: {
       productChoice: '多家保司產品',
       ceiling: '依個人能力',
@@ -287,11 +369,11 @@ const COMPANY_DB = {
     defaults: {
       insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
       banker:    { commRateTrad: 22, fixedSalary: 0 },
-      manager:   { commRateTrad: 22, orgAllowance: 0, mgrRenewal: 0 },
+      manager:   { commRateTrad: 28, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 22 },
-      newbie:    { commRateTrad: 22 },
+      newbie:    { commRateTrad: 20 },
     },
-    brokerDefaults: { brokerComm: 38, renewalRate: 4.5, orgRate: 3 },
+    brokerDefaults: { brokerComm: 38, renewalRate: 4.5, orgRate: 3, deskFee: 3500, fybDiscount: 0.8 },
     comparison: {
       productChoice: '多家保司產品',
       ceiling: '依個人能力',
@@ -314,11 +396,11 @@ const COMPANY_DB = {
     defaults: {
       insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
       banker:    { commRateTrad: 20, fixedSalary: 0 },
-      manager:   { commRateTrad: 20, orgAllowance: 0, mgrRenewal: 0 },
+      manager:   { commRateTrad: 26, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 20 },
-      newbie:    { commRateTrad: 20 },
+      newbie:    { commRateTrad: 18 },
     },
-    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5 },
+    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5, deskFee: 0, fybDiscount: 0.8 },
     comparison: {
       productChoice: '多家保司產品',
       ceiling: '職階只升不降、不綁出勤',
@@ -341,11 +423,11 @@ const COMPANY_DB = {
     defaults: {
       insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
       banker:    { commRateTrad: 20, fixedSalary: 0 },
-      manager:   { commRateTrad: 20, orgAllowance: 0, mgrRenewal: 0 },
+      manager:   { commRateTrad: 26, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 20 },
-      newbie:    { commRateTrad: 20 },
+      newbie:    { commRateTrad: 18 },
     },
-    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5 },
+    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5, deskFee: 3000, fybDiscount: 0.8 },
     comparison: {
       productChoice: '多家保司產品',
       ceiling: '依個人能力',
@@ -362,10 +444,12 @@ const COMPANY_DB = {
     lastVerified: '2026-03-30',
     defaults: {
       insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
-      manager:   { commRateTrad: 20, orgAllowance: 0, mgrRenewal: 0 },
-      newbie:    { commRateTrad: 20 },
+      banker:    { commRateTrad: 20, fixedSalary: 0 },
+      manager:   { commRateTrad: 25, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 20 },
+      newbie:    { commRateTrad: 18 },
     },
-    brokerDefaults: { brokerComm: 35, renewalRate: 4, orgRate: 2 },
+    brokerDefaults: { brokerComm: 35, renewalRate: 4, orgRate: 2, deskFee: 3000, fybDiscount: 0.8 },
     comparison: {
       productChoice: '多家保司產品',
       ceiling: '依個人能力',

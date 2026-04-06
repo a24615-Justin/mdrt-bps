@@ -117,6 +117,157 @@ body::before {
 .id-badge.medical   { background: rgba(15,122,58,0.12); color: var(--broker); }
 .id-badge.newbie    { background: rgba(181,42,30,0.12); color: var(--danger); }
 
+/* ─── v4.0: Main Tabs ───────────────────────────────────────────────────── */
+.main-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+.main-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.main-tab.active {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  box-shadow: 0 2px 8px rgba(154,110,0,0.12);
+}
+.main-tab:not(.active):hover {
+  border-color: rgba(154,110,0,0.3);
+  color: var(--text);
+}
+
+/* ─── v4.0: Tab Panels ──────────────────────────────────────────────────── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─── v4.1: Persona Context Hint (Tab B) ────────────────────────────────── */
+.persona-context {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+}
+.persona-context span {
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* ─── v4.1: Custom Company Inline Form ──────────────────────────────────── */
+.custom-company-form {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin: 10px 0;
+}
+.custom-form-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: var(--text-dim);
+}
+.custom-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.custom-form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  color: var(--text-muted);
+  gap: 3px;
+}
+.custom-form-grid label:first-child {
+  grid-column: 1 / -1;
+}
+.custom-form-grid input {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--surface);
+}
+.custom-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+.custom-form-apply {
+  background: var(--broker);
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.custom-form-apply:hover { opacity: 0.9; }
+.custom-form-cancel {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ─── v4.0: CTA Bridge (Tab A → Tab B) ──────────────────────────────────── */
+.cta-bridge {
+  text-align: center;
+  padding: 28px 16px;
+}
+.cta-bridge-text {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.cta-bridge-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(154,110,0,0.25);
+  transition: all .2s;
+  letter-spacing: .03em;
+}
+.cta-bridge-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(154,110,0,0.35);
+}
+.cta-bridge-btn:active {
+  transform: translateY(0);
+}
+
 /* ─── Section Nav ────────────────────────────────────────────────────────── */
 .section-nav { display: flex; gap: 4px; margin-top: 8px; }
 .section-nav a {
@@ -140,31 +291,19 @@ body::before {
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 .section-nav a:hover { color: var(--text); }
+.section-nav a:visited { color: var(--text-muted); }
 
-/* ─── Identity Switcher ──────────────────────────────────────────────────── */
-.identity-bar {
-  padding: 10px 16px;
-  background: var(--navy-2);
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  z-index: 1;
+/* ─── Identity Switcher (v3.0.3: 移入 Section ①) ────────────────────────── */
+.identity-bar { display: none; } /* 舊版 header bar 隱藏 */
+.identity-inline {
+  margin: 4px 0 12px;
 }
-.identity-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 7px;
-}
-.identity-tabs {
+.identity-tabs-inline {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
   padding-bottom: 2px;
 }
-.identity-tabs::-webkit-scrollbar { display: none; }
 .id-btn {
   flex: none;
   padding: 8px 12px;
@@ -232,6 +371,12 @@ body::before {
   background: var(--gold-dim);
   color: var(--gold);
   font-weight: 600;
+}
+/* v3.0.3: 保經 chip active 用藍色區分 */
+.chip-broker.active {
+  border-color: #4A90D9;
+  background: rgba(74, 144, 217, 0.1);
+  color: #4A90D9;
 }
 .company-chip-section {
   font-size: 9px;
@@ -525,6 +670,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* ─── Small mobile (≤ 375px): extra compact ──────────────────────────────── */
 @media (max-width: 375px) {
+  .main-tab { font-size: 11px; padding: 8px 6px; }
   .header h1 { font-size: 15px; }
   .header-badge { font-size: 8px; padding: 2px 6px; }
   .id-badge { font-size: 9px; padding: 2px 6px; }
@@ -571,4 +717,159 @@ input[type="range"]::-moz-range-thumb {
 /* ─── Wide (≥ 1440px): max comfort ───────────────────────────────────────── */
 @media (min-width: 1440px) {
   .container { max-width: 1200px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v4.2: Accessibility + Dark Mode + Enhanced Mobile
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Skip Link (a11y) ──────────────────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background: var(--gold);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 0 0 8px 8px;
+  z-index: 10000;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* ─── Focus Visible (鍵盤導航可見焦點) ──────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─── Touch Target (≥44px，WCAG 2.5.5) ─────────────────────────────────── */
+@media (max-width: 639px) {
+  .id-btn { min-height: 44px; min-width: 44px; }
+  .main-tab { min-height: 44px; }
+  .sc-btn { min-height: 44px; min-width: 44px; }
+  .pain-script-card { min-height: 44px; }
+  .section-nav a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+
+/* ─── Reduced Motion ────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Dark Mode ─────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --navy: #1a2030;
+    --navy-2: #232d3f;
+    --navy-3: #2c3a50;
+    --gold: #c9912b;
+    --gold-light: #d4a03a;
+    --gold-dim: rgba(201,145,43,0.15);
+    --trad: #5b9be6;
+    --trad-light: rgba(91,155,230,0.15);
+    --broker: #45c975;
+    --broker-light: rgba(69,201,117,0.15);
+    --danger: #e85d52;
+    --surface: #1e2636;
+    --surface-2: #232d3f;
+    --border: rgba(255,255,255,0.10);
+    --text: #e8edf4;
+    --text-dim: #a8bdd0;
+    --text-muted: #6a8ea8;
+  }
+  body {
+    background: #111720;
+    color: var(--text);
+  }
+  .header {
+    background: rgba(26,32,48,0.92);
+    border-bottom-color: var(--border);
+  }
+  .section {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  .card {
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+  .kpi {
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+  .main-tab {
+    color: var(--text-dim);
+  }
+  .main-tab.active {
+    color: var(--text);
+    background: var(--surface);
+  }
+  .id-btn {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border-color: var(--border);
+  }
+  .company-chip {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border-color: var(--border);
+  }
+  .company-chip.selected {
+    background: var(--gold-dim);
+    color: var(--gold);
+    border-color: var(--gold);
+  }
+  input[type="number"],
+  input[type="text"],
+  select {
+    background: var(--navy-2);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .footer {
+    background: var(--navy);
+    color: var(--text-muted);
+  }
+  details summary {
+    color: var(--text);
+  }
+  .company-notice {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border-color: var(--border);
+  }
+  .script-card {
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+  .param-group-title {
+    color: var(--text);
+  }
+  /* Comparison table */
+  .ac-header { background: var(--navy-2); }
+  .ac-row { border-color: var(--border); }
+  .ac-row:nth-child(even) { background: var(--surface-2); }
+}
+
+/* ─── Print Styles ──────────────────────────────────────────────────────── */
+@media print {
+  .header, .section-nav, .main-tabs, #share-bar, .skip-link { display: none !important; }
+  .tab-panel { display: block !important; }
+  .section { break-inside: avoid; page-break-inside: avoid; }
+  body { background: #fff; color: #000; }
 }

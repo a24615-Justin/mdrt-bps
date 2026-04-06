@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MDRT-BPS v4.0 — Pain Module CSS (Tab A)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Pain Script Cards (A-4) ───────────────────────────────────────────── */
+.pain-cards-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pain-script-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.pain-script-card:hover {
+  border-color: var(--gold);
+}
+
+.pain-card-q {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.pain-card-a {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.pain-script-card.open .pain-card-a {
+  display: block;
+  animation: fadeIn .25s ease;
+}
+
+.pain-card-a-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--broker);
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+}
+
+/* ─── Responsive for Tab A ──────────────────────────────────────────────── */
+@media (max-width: 375px) {
+  .pain-card-q { font-size: 12px; }
+  .pain-card-a { font-size: 11px; }
+}
