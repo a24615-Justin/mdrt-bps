@@ -9,7 +9,7 @@
  * @typedef {Object} PersonaDefaults
  * @property {number} [commRateTrad]    - 傳統公司首年佣金率 (%)（統一 key）
  * @property {number} [renewalRate]     - 續期佣金率 (%)
- * @property {number} [renewalDecay]    - 續佣年遞減係數 (0-1)
+ * @property {number} [renewalDecay]    - 續佣佣金率年遞減係數 (0-1)，純佣金結構遞減，不含保單脫落（v4.4 拆分）
  * @property {number} [orgAllowance]    - 組織津貼 (NT$)
  * @property {number} [fixedSalary]     - 固定薪資 (NT$)
  * @property {number} [mgrRenewal]      - 個人續期佣金 (NT$)（原 personalRenewal）
@@ -50,7 +50,7 @@ const COMPANY_DB = {
       contract: '國泰人壽官網業務合作專區',
     },
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 8, fixedSalary: 800000 },
       manager:   { commRateTrad: 22, orgAllowance: 800000, mgrRenewal: 200000 },
       medical:   { commRateTrad: 15 },
@@ -78,7 +78,7 @@ const COMPANY_DB = {
       contract: '富邦人壽官網業務招募專區',
     },
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 8, fixedSalary: 850000 },
       manager:   { commRateTrad: 21, orgAllowance: 900000, mgrRenewal: 200000 },
       medical:   { commRateTrad: 15 },
@@ -105,7 +105,7 @@ const COMPANY_DB = {
       contract: '南山人壽官網增員專區',
     },
     defaults: {
-      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 0, fixedSalary: 0 },
       manager:   { commRateTrad: 25, orgAllowance: 600000, mgrRenewal: 250000 },
       medical:   { commRateTrad: 18 },
@@ -132,7 +132,7 @@ const COMPANY_DB = {
       contract: '新光人壽官網業務專區',
     },
     defaults: {
-      insurance: { commRateTrad: 19, renewalRate: 2.5, renewalDecay: 0.55, orgAllowance: 0 },
+      insurance: { commRateTrad: 19, renewalRate: 2.5, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 7, fixedSalary: 750000 },
       manager:   { commRateTrad: 20, orgAllowance: 700000, mgrRenewal: 180000 },
       medical:   { commRateTrad: 14 },
@@ -159,7 +159,7 @@ const COMPANY_DB = {
       bonusTable: '安聯佣金表',
     },
     defaults: {
-      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 10, fixedSalary: 700000 },
       manager:   { commRateTrad: 27, orgAllowance: 600000, mgrRenewal: 220000 },
       medical:   { commRateTrad: 18 },
@@ -185,7 +185,7 @@ const COMPANY_DB = {
       commRate: '台新佣金表 113年11月04日修訂',
     },
     defaults: {
-      insurance: { commRateTrad: 30, renewalRate: 4, renewalDecay: 0.7, orgAllowance: 0 },
+      insurance: { commRateTrad: 30, renewalRate: 4, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 0, fixedSalary: 0 },
       manager:   { commRateTrad: 30, orgAllowance: 400000, mgrRenewal: 250000 },
       medical:   { commRateTrad: 20 },
@@ -212,7 +212,7 @@ const COMPANY_DB = {
       commRate: '中壽業務人員管理辦法（業界估計中位數）',
     },
     defaults: {
-      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 8, fixedSalary: 700000 },
       manager:   { commRateTrad: 24, orgAllowance: 700000, mgrRenewal: 180000 },
       medical:   { commRateTrad: 16 },
@@ -237,7 +237,7 @@ const COMPANY_DB = {
       commRate: '台灣人壽業務規範（業界估計中位數）',
     },
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 9, fixedSalary: 750000 },
       manager:   { commRateTrad: 22, orgAllowance: 750000, mgrRenewal: 200000 },
       medical:   { commRateTrad: 15 },
@@ -262,7 +262,7 @@ const COMPANY_DB = {
       commRate: '三商美邦業務規範（業界估計中位數）',
     },
     defaults: {
-      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 0, fixedSalary: 0 },
       manager:   { commRateTrad: 28, orgAllowance: 500000, mgrRenewal: 200000 },
       medical:   { commRateTrad: 18 },
@@ -293,7 +293,7 @@ const COMPANY_DB = {
     },
     defaults: {
       // 以「專員」為預設起點，使用者可依實際職級調整
-      insurance: { commRateTrad: 50, renewalRate: 5, renewalDecay: 0.85, orgAllowance: 0 },
+      insurance: { commRateTrad: 50, renewalRate: 5, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 50, fixedSalary: 0 },
       manager:   { commRateTrad: 68, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 50 },
@@ -303,7 +303,7 @@ const COMPANY_DB = {
     comparison: {
       productChoice: '多家保司產品，各家來佣100%FYC',
       ceiling: '無上限（累積晉升，永不歸零）',
-      training: 'MDRT 系統培訓 + Legacy Grid 輔銷武器庫',
+      training: 'MDRT 系統培訓 + 學習地圖與學習金幣',
       brand: '連續七年保經業第一',
       orgDev: '六職級（專員50%→事業部經理82%+）+ 三代加發8% + 績效獎金4%',
     },
@@ -324,7 +324,7 @@ const COMPANY_DB = {
       { fycMin: 2000000, bonus: 4 },
     ],
     maxComm: 94, // 82% + 8%(三代) + 4%(績效)
-    renewalDecay: 0.85, // 公勝續佣遞減（原 income-chart.js GONGSHENG_RENEWAL_DECAY）
+    renewalDecay: 0.90, // 公勝續佣遞減（原 income-chart.js GONGSHENG_RENEWAL_DECAY）
     note: '專員50% → 主任60% → 襄理68% → 副理74% → 經理78% → 事業部經理82%+，最高94%',
   },
 
@@ -340,7 +340,7 @@ const COMPANY_DB = {
       mdrt: '2024 MDRT 307 位（平均每 2 人有 1 位 MDRT）',
     },
     defaults: {
-      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 22, fixedSalary: 0 },
       manager:   { commRateTrad: 28, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 22 },
@@ -367,7 +367,7 @@ const COMPANY_DB = {
       system: '經濟日報 2026/3：業界唯一雙制度（系統制＋事業部制）相互融合',
     },
     defaults: {
-      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 22, fixedSalary: 0 },
       manager:   { commRateTrad: 28, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 22 },
@@ -394,7 +394,7 @@ const COMPANY_DB = {
       system: '中央社 2025/2：2025 目標 300 位藍鵲企業家、40+ 區經理',
     },
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 20, fixedSalary: 0 },
       manager:   { commRateTrad: 26, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 20 },
@@ -421,7 +421,7 @@ const COMPANY_DB = {
       system: '中央社 2025/3：夢想飛翔計畫、夫妻同階同職、終身合約、世襲合約',
     },
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 20, fixedSalary: 0 },
       manager:   { commRateTrad: 26, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 20 },
@@ -443,7 +443,7 @@ const COMPANY_DB = {
     marketShare: '—',
     lastVerified: '2026-03-30',
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 20, fixedSalary: 0 },
       manager:   { commRateTrad: 25, orgAllowance: 0, mgrRenewal: 0 },
       medical:   { commRateTrad: 20 },
@@ -467,7 +467,7 @@ const COMPANY_DB = {
     marketShare: '—',
     lastVerified: '—',
     defaults: {
-      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 },
       banker:    { commRateTrad: 8, fixedSalary: 800000 },
       manager:   { commRateTrad: 22, orgAllowance: 800000, mgrRenewal: 200000 },
       medical:   { commRateTrad: 15 },

@@ -427,13 +427,18 @@ function renderField(param, personaId) {
     const max = param.max || 100;
     const step = param.step || 1;
     const suffix = param.suffix || '';
+    const pct = ((val - min) / (max - min) * 100).toFixed(1);
     inputHtml = `
-      <div class="slider-wrap">
-        <div class="slider-value" id="${inputId}_display">${val}${_esc(suffix)}</div>
-        <input type="range" id="${inputId}" data-key="${_esc(param.key)}"
-          min="${min}" max="${max}" step="${step}" value="${val}"
-          oninput="document.getElementById('${inputId}_display').textContent=this.value+'${_esc(suffix)}'">
-      </div>`;
+      <div class="stepper-wrap">
+        <button type="button" class="stepper-btn stepper-minus" onclick="stepperAdjust('${inputId}',${-step},${min},${max},'${_esc(suffix)}')">−</button>
+        <div class="stepper-display" id="${inputId}_display">${val}${_esc(suffix)}</div>
+        <button type="button" class="stepper-btn stepper-plus" onclick="stepperAdjust('${inputId}',${step},${min},${max},'${_esc(suffix)}')">+</button>
+        <input type="hidden" id="${inputId}" data-key="${_esc(param.key)}" value="${val}">
+      </div>
+      <div class="stepper-bar-wrap">
+        <div class="stepper-bar-fill" id="${inputId}_bar" style="width:${pct}%"></div>
+      </div>
+      <div class="stepper-range-label"><span>${min}${_esc(suffix)}</span><span>${max}${_esc(suffix)}</span></div>`;
   } else {
     const prefix = param.prefix ? `<span class="prefix">${_esc(param.prefix)}</span>` : '';
     const suffix = param.suffix ? `<span class="suffix">${_esc(param.suffix)}</span>` : '';
@@ -667,6 +672,22 @@ function setCurrentValue(key, value, personaId) {
 function getCurrentValue(key, personaId) {
   return _currentValues[personaId]?.[key];
 }
+
+// ─── v4.4: Stepper 控件 ───
+window.stepperAdjust = function(inputId, delta, min, max, suffix) {
+  var input = document.getElementById(inputId);
+  if (!input) return;
+  var val = parseFloat(input.value) || 0;
+  val = Math.round((val + delta) * 1000) / 1000; // 避免浮點誤差
+  val = Math.max(min, Math.min(max, val));
+  input.value = val;
+  var display = document.getElementById(inputId + '_display');
+  if (display) display.textContent = val + (suffix || '');
+  var bar = document.getElementById(inputId + '_bar');
+  if (bar) bar.style.width = ((val - min) / (max - min) * 100).toFixed(1) + '%';
+  // 觸發 change 事件讓計算引擎重新跑
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+};
 
 // ─── Handle input change (event listener) ───
 function handleInputChange(e) {

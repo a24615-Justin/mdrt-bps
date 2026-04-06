@@ -311,16 +311,7 @@ const g = id => document.getElementById(id);
 // AC-031: 新增維度只需加一條，不需改 updateComparisonTable()
 // v3.0.3: gsFn 改為從 selectedBrokerId 動態讀取，不再硬編碼 gongsheng
 const COMPARISON_DIMS = [
-  { key:'commRateTrad', label:'首年佣金率', personas:['insurance','banker','manager','medical','newbie'],
-    tradFn:(c,p,defs)=> defs.commRateTrad!=null ? defs.commRateTrad+'%' : '—',
-    gsFn:(c,p,defs,gs)=>{ const gd=gs.brokerDefaults?.brokerComm??gs.defaults?.[p]?.commRateTrad??40; return gd+'%+'; },
-    schemaKey:'commRateTrad' },
-  { key:'renewalRate', label:'續期佣金率', personas:['insurance'],
-    tradFn:(c,p,defs)=> (defs.renewalRate||'—')+'%'+(defs.renewalDecay?` (×${defs.renewalDecay})`:''),
-    gsFn:(c,p,defs,gs)=>{ const r=gs.brokerDefaults?.renewalRate??gs.defaults?.insurance?.renewalRate??5; const d=gs.renewalDecay??0.85; return r+'% (×'+d+')'; } },
-  { key:'fybDiscount', label:'來佣計算基礎',
-    tradFn:(c)=>c.type==='broker'?(c.brokerDefaults?.fybDiscount===1?'來佣不打折':'來佣 ×'+(c.brokerDefaults?.fybDiscount??0.8)*100+'%'):'N/A（壽險公司直接發放）',
-    gsFn:(c,p,defs,gs)=>{ const d=gs.brokerDefaults?.fybDiscount??1; return d===1?'✅ 來佣不打折（100%）':'來佣 ×'+d*100+'%'; } },
+  // 佣金類資訊（首年佣金率、續期佣金率、來佣計算基礎）已移至參數試算表，此處僅做公司制度介紹對比
   { key:'contract', label:'合約制度',
     tradFn:(c)=>c.contract, gsFn:(c,p,defs,gs)=>gs.contract },
   { key:'productChoice', label:'產品選擇',
@@ -375,12 +366,12 @@ function updateComparisonTable(){
       <thead><tr>
         <th>比較項目</th>
         <th>🏢 ${c.short||c.name}</th>
-        <th>🏅 ${gs.short||gs.name}</th>
+        <th>🏅 保經端</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
-      ⚠️ 數值僅供參考，實際佣金因商品、職級、年資有異。
+      ⚠️ 制度資訊僅供參考，實際條件因職級、年資、區域有異。佣金試算請見下方參數表。
     </div>`;
 }
 
@@ -390,7 +381,7 @@ function renderAnnualComparison(p,r){
   function tradItems(y){
     const items=[]; const fyb_eff=(p._id==='newbie')?(p.fyb||1):1;
     const fyc=p.FYP*fyb_eff*p.rate_trad; if(fyc>0)items.push({label:'首年佣金',val:fyc,cls:'trad'});
-    {const decay=p.ry_decay||0.6;const base=(p.ry_sunk||0)+(p._mRySunk||0);let ry=base;for(let i=2;i<=y;i++)ry=ry*decay+p.FYP*(p.ryr||0);
+    {const persist=p.persistency??0.90;const commStep=p.ry_decay||0.6;const decay=persist*commStep;const base=(p.ry_sunk||0)+(p._mRySunk||0);let ry=base;for(let i=2;i<=y;i++)ry=ry*decay+p.FYP*(p.ryr||0)*persist;
     if(ry>0){const lbl=CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':CID==='manager'?'津貼＋續佣':'續期佣金';items.push({label:lbl,val:ry,cls:'trad'});}}
     if(p.perfBonus>0)items.push({label:'績效獎金',val:p.perfBonus,cls:'trad'});
     if(p.benefitsValue>0)items.push({label:'福利價值',val:p.benefitsValue,cls:'trad'});
@@ -412,16 +403,14 @@ function renderAnnualComparison(p,r){
   const rows=yrs.map((y,i)=>{const tVal=r.trad[i];const bVal=r.broker[i];const diff=bVal-tVal;const diffCls=diff>100?'pos':diff<-100?'neg':'neu';const diffIcon=diff>=0?'▲':'▼';const diffStr=`${diffIcon} ${diff>=0?'+':''}${fmtM(diff)}萬`;return`<div class="ac-row"><div class="ac-trad-col"><div class="ac-amount trad">${fmtM(tVal)}萬</div>${itemsHtml(tradItems(y))}</div><div class="ac-mid-col"><div class="ac-year-label">第${y}年</div><div class="ac-diff ${diffCls}">${diffStr}</div></div><div class="ac-broker-col"><div class="ac-amount broker">${fmtM(bVal)}萬</div>${itemsHtmlR(brokerItems(y))}</div></div>`;});
   const diff5=r.diff5;const diffCls5=diff5>100?'pos':diff5<-100?'neg':'neu';const diffStr5=`${diff5>=0?'▲':'▼'} ${diff5>=0?'+':''}${fmtM(diff5)}萬`;
   const totalRow=`<div class="ac-row ac-total"><div class="ac-trad-col"><div class="ac-amount trad">${fmtM(r.sum5trad)}萬</div><div class="ac-items"><div class="ac-item"><span class="ac-item-dot trad"></span>5年累計</div></div></div><div class="ac-mid-col"><div class="ac-year-label">5年總計</div><div class="ac-diff ${diffCls5}">${diffStr5}</div></div><div class="ac-broker-col"><div class="ac-amount broker">${fmtM(r.sum5broker)}萬</div><div class="ac-items"><div class="ac-item"><span class="ac-item-dot broker"></span>5年累計</div></div></div></div>`;
-  const brokerLabel2=(COMPANY_DB[selectedBrokerId]||{}).short||'公勝保經';
-  g('annual_comparison').innerHTML=`<div class="ac-wrap"><div class="ac-header"><div class="ac-trad-h">← ${tradLabel}</div><div class="ac-mid-h">比較</div><div class="ac-broker-h">${brokerLabel2} →</div></div>${rows.join('')}${totalRow}</div>`;
+  g('annual_comparison').innerHTML=`<div class="ac-wrap"><div class="ac-header"><div class="ac-trad-h">← ${tradLabel}</div><div class="ac-mid-h">比較</div><div class="ac-broker-h">轉換後 →</div></div>${rows.join('')}${totalRow}</div>`;
 }
 
 // ─── Update result panel (Section ②) ──────────────────────────────────────
 function updateResult(p,r){
   g('trad-label').textContent=(ID_CONFIG[CID]||{}).tradLabel||'傳統公司';
-  // v3.0.3: 動態更新保經名稱
-  const brokerName=(COMPANY_DB[selectedBrokerId]||{}).short||'公勝保經';
-  if(g('broker-label'))g('broker-label').textContent=brokerName;
+  // v4.4: 保經端統一標示「轉換後」，不重複顯示公勝
+  if(g('broker-label'))g('broker-label').textContent='轉換後';
   g('k_trad5').textContent=fmtM(r.sum5trad);g('k_broker5').textContent=fmtM(r.sum5broker);
   const d=r.diff5;g('k_diff5').textContent=(d>=0?'+':'')+fmtM(d);
   g('k_diff_label').textContent=d>=0?'✅ 保經5年累計領先':'⚠ 請重新確認假設';
@@ -795,9 +784,19 @@ if (typeof renderTabA === 'function') renderTabA(painPersonaId || 'insurance');
   bar.id = 'share-bar';
   bar.style.cssText = 'position:fixed;bottom:16px;right:16px;display:flex;gap:8px;z-index:999;';
   bar.innerHTML =
+    '<button onclick="cycleZoom()" id="zoom-btn" style="background:#475569;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;gap:4px;" title="字體大小切換">🔤 100%</button>' +
     '<button onclick="copyShareLink()" style="background:#1a2d42;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;gap:4px;" title="複製分享連結">🔗 分享</button>' +
     '<button onclick="captureAndShare(currentTab===\'B\'?\'#tab-B .result-grid\':\'#tab-A .pain-radar-wrap\',\'mdrt-推演-\'+CID)" style="background:#9a6e00;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;gap:4px;" title="截圖儲存">📸 截圖</button>';
   document.body.appendChild(bar);
+  // v4.4: 字體縮放控制器
+  var zoomLevels = [100, 110, 120];
+  var zoomIdx = 0;
+  window.cycleZoom = function() {
+    zoomIdx = (zoomIdx + 1) % zoomLevels.length;
+    var z = zoomLevels[zoomIdx];
+    document.querySelector('.container').style.zoom = (z / 100);
+    document.getElementById('zoom-btn').textContent = '🔤 ' + z + '%';
+  };
 })();
 </script>
 
