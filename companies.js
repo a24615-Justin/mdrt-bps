@@ -400,7 +400,7 @@ const COMPANY_DB = {
       medical:   { commRateTrad: 20 },
       newbie:    { commRateTrad: 18 },
     },
-    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5, deskFee: 0, fybDiscount: 0.8 },
+    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5, deskFee: 0, fybDiscount: 1.0 },
     comparison: {
       productChoice: '多家保司產品',
       ceiling: '職階只升不降、不綁出勤',
@@ -408,7 +408,7 @@ const COMPANY_DB = {
       brand: '網路聲量高、行動理賠聯盟鏈',
       orgDev: '組織利益終身制（底下組員首續佣一輩子相關）、無桌費無考核',
     },
-    note: '來佣全發＋佣金表不後製＋7-20 年服務津貼；無強制出勤、無桌費',
+    note: '來佣全發＋佣金表不後製＋7-20 年服務津貼；無強制出勤、無桌費（fybDiscount=1.0：官網宣稱來佣不打折）',
   },
   'dacheng': {
     name: '大誠保經', short: '大誠', icon: '🏆', type: 'broker',
