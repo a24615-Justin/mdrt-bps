@@ -1,34 +1,23 @@
 /**
- * MDRT-BPS Auth Gate
- * 整合 Supabase Auth — Magic Link 無密碼登入 + 白名單存取控制
+ * MDRT-BPS Auth Gate v2
+ * 白名單驗證 — 不需要 Supabase SDK，不需要 email 驗證
  *
  * 流程：
- * 1. 頁面載入 → 檢查是否有有效 session
- * 2. 無 session → 顯示登入畫面（輸入 email → 寄 Magic Link）
- * 3. 有 session → 查 mdrt_bps_access 表確認白名單
- * 4. 白名單通過 → 隱藏閘門、顯示主內容
- * 5. 未在白名單 → 顯示「無權限」提示
+ * 1. 頁面載入 → 檢查 sessionStorage 是否有有效 token
+ * 2. 無 token → 顯示 email 輸入畫面
+ * 3. 輸入 email → 呼叫 verify-bps-access EF
+ * 4. EF 回傳 granted: true → 存 token、解鎖主內容
+ * 5. EF 回傳 granted: false → 顯示對應錯誤訊息
  */
 
-const AUTH_CONFIG = {
-  supabaseUrl: 'https://erslinimiwswobichelt.supabase.co',
-  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyc2xpbmltaXdzd29iaWNoZWx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODY1MTYsImV4cCI6MjA4Njc2MjUxNn0.3hl9QQ3xnIz_1xshJKJaj6LEhTV2VEBMyUQ_o6KP4UE',
-  redirectUrl: window.location.origin + window.location.pathname,
+const BPS_AUTH = {
+  verifyUrl: 'https://erslinimiwswobichelt.supabase.co/functions/v1/verify-bps-access',
+  tokenKey: 'bps_access_token',
 };
 
-let _supabase = null;
-
-function getSupabase() {
-  if (!_supabase) {
-    _supabase = window.supabase.createClient(AUTH_CONFIG.supabaseUrl, AUTH_CONFIG.supabaseAnonKey);
-  }
-  return _supabase;
-}
-
-/* ── UI 建構 ── */
+/* ── UI ── */
 
 function createAuthGateUI() {
-  // 遮罩層
   const overlay = document.createElement('div');
   overlay.id = 'auth-gate-overlay';
   overlay.innerHTML = `
@@ -37,34 +26,20 @@ function createAuthGateUI() {
       <h2>MDRT-BPS 增員推演工具</h2>
       <p class="auth-subtitle">此工具僅限授權使用者存取</p>
 
-      <!-- 登入表單 -->
       <div id="auth-login-form">
         <label for="auth-email">請輸入您的 Email</label>
         <input type="email" id="auth-email" placeholder="your@email.com" autocomplete="email" />
-        <button id="auth-submit-btn" onclick="handleMagicLink()">
-          發送登入連結
-        </button>
+        <button id="auth-submit-btn" onclick="handleVerify()">登入</button>
         <p id="auth-error" class="auth-error" style="display:none"></p>
       </div>
 
-      <!-- 已寄出提示 -->
-      <div id="auth-sent" style="display:none">
-        <div class="auth-sent-icon">✉️</div>
-        <p>登入連結已寄出！</p>
-        <p class="auth-hint">請到信箱點擊連結完成登入。<br>沒收到？請檢查垃圾信件匣。</p>
+      <div id="auth-denied" style="display:none">
+        <div class="auth-denied-icon">🚫</div>
+        <p id="auth-denied-msg">您尚未被授權使用此工具</p>
+        <p class="auth-hint">請聯繫您的主管或培訓負責人開通存取權限。</p>
         <button class="auth-link-btn" onclick="showLoginForm()">重新輸入 Email</button>
       </div>
 
-      <!-- 無權限提示 -->
-      <div id="auth-denied" style="display:none">
-        <div class="auth-denied-icon">🚫</div>
-        <p>您的帳號尚未被授權使用此工具</p>
-        <p class="auth-hint">請聯繫您的主管或培訓負責人開通存取權限。</p>
-        <p id="auth-denied-email" class="auth-denied-email"></p>
-        <button class="auth-link-btn" onclick="handleLogout()">換一個帳號登入</button>
-      </div>
-
-      <!-- 載入中 -->
       <div id="auth-loading" style="display:none">
         <div class="auth-spinner"></div>
         <p>驗證中...</p>
@@ -72,11 +47,7 @@ function createAuthGateUI() {
     </div>
   `;
   document.body.prepend(overlay);
-
-  // 隱藏主內容
-  document.querySelector('header')?.style.setProperty('display', 'none');
-  document.querySelector('main')?.style.setProperty('display', 'none');
-  document.querySelector('footer')?.style.setProperty('display', 'none');
+  hideApp();
 }
 
 function injectAuthStyles() {
@@ -130,9 +101,8 @@ function injectAuthStyles() {
       opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none;
     }
     .auth-error { color: #dc2626; font-size: 13px; margin-top: 12px; }
-    .auth-sent-icon, .auth-denied-icon { font-size: 48px; margin-bottom: 12px; }
+    .auth-denied-icon { font-size: 48px; margin-bottom: 12px; }
     .auth-hint { color: #6b7280; font-size: 13px; line-height: 1.6; }
-    .auth-denied-email { color: #9ca3af; font-size: 12px; margin-top: 8px; }
     .auth-link-btn {
       background: none; border: none; color: #C8963E;
       font-size: 14px; cursor: pointer; margin-top: 16px;
@@ -151,29 +121,28 @@ function injectAuthStyles() {
 
 /* ── 狀態切換 ── */
 
+function hideApp() {
+  document.querySelector('header')?.style.setProperty('display', 'none');
+  document.querySelector('main')?.style.setProperty('display', 'none');
+  document.querySelector('footer')?.style.setProperty('display', 'none');
+}
+
 function showLoginForm() {
   document.getElementById('auth-login-form').style.display = '';
-  document.getElementById('auth-sent').style.display = 'none';
   document.getElementById('auth-denied').style.display = 'none';
   document.getElementById('auth-loading').style.display = 'none';
   document.getElementById('auth-error').style.display = 'none';
 }
 
-function showSent() {
-  document.getElementById('auth-login-form').style.display = 'none';
-  document.getElementById('auth-sent').style.display = '';
-}
-
-function showDenied(email) {
+function showDenied(msg) {
   document.getElementById('auth-login-form').style.display = 'none';
   document.getElementById('auth-loading').style.display = 'none';
   document.getElementById('auth-denied').style.display = '';
-  document.getElementById('auth-denied-email').textContent = email || '';
+  document.getElementById('auth-denied-msg').textContent = msg;
 }
 
 function showLoading() {
   document.getElementById('auth-login-form').style.display = 'none';
-  document.getElementById('auth-sent').style.display = 'none';
   document.getElementById('auth-denied').style.display = 'none';
   document.getElementById('auth-loading').style.display = '';
 }
@@ -191,7 +160,14 @@ function unlockApp() {
 
 /* ── 核心邏輯 ── */
 
-async function handleMagicLink() {
+const DENY_MESSAGES = {
+  not_found: '此 Email 尚未被授權使用此工具',
+  inactive: '您的存取權限已被停用',
+  expired: '您的存取權限已到期',
+  limit_reached: '已達使用次數上限',
+};
+
+async function handleVerify() {
   const emailInput = document.getElementById('auth-email');
   const submitBtn = document.getElementById('auth-submit-btn');
   const errorEl = document.getElementById('auth-error');
@@ -204,111 +180,75 @@ async function handleMagicLink() {
   }
 
   submitBtn.disabled = true;
-  submitBtn.textContent = '傳送中...';
+  submitBtn.textContent = '驗證中...';
   errorEl.style.display = 'none';
 
   try {
-    const sb = getSupabase();
-    const { error } = await sb.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: AUTH_CONFIG.redirectUrl,
-      },
+    const resp = await fetch(BPS_AUTH.verifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     });
 
-    if (error) throw error;
-    showSent();
+    const data = await resp.json();
+
+    if (resp.ok && data.granted) {
+      // 儲存 token 到 sessionStorage
+      sessionStorage.setItem(BPS_AUTH.tokenKey, data.token);
+      unlockApp();
+    } else if (resp.status === 429) {
+      errorEl.textContent = '請求過於頻繁，請稍後再試';
+      errorEl.style.display = '';
+    } else {
+      showDenied(DENY_MESSAGES[data.reason] || '驗證失敗，請稍後再試');
+    }
   } catch (err) {
-    errorEl.textContent = '傳送失敗：' + (err.message || '請稍後再試');
+    errorEl.textContent = '網路錯誤，請檢查連線後重試';
     errorEl.style.display = '';
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = '發送登入連結';
+    submitBtn.textContent = '登入';
   }
 }
 
-async function checkAccess(email) {
-  const sb = getSupabase();
-  const { data, error } = await sb
-    .from('mdrt_bps_access')
-    .select('id, is_active, expires_at, max_sessions, session_count')
-    .eq('email', email.toLowerCase())
-    .eq('is_active', true)
-    .maybeSingle();
+function checkStoredToken() {
+  const tokenStr = sessionStorage.getItem(BPS_AUTH.tokenKey);
+  if (!tokenStr) return false;
 
-  if (error) {
-    console.error('[auth-gate] access check error:', error);
-    return false;
-  }
-  if (!data) return false;
-
-  // 檢查過期
-  if (data.expires_at && new Date(data.expires_at) < new Date()) {
-    return false;
-  }
-
-  // 檢查使用次數上限
-  if (data.max_sessions > 0 && data.session_count >= data.max_sessions) {
-    return false;
-  }
-
-  // 更新 session_count 和 last_accessed_at
-  await sb
-    .from('mdrt_bps_access')
-    .update({
-      session_count: (data.session_count || 0) + 1,
-      last_accessed_at: new Date().toISOString(),
-    })
-    .eq('id', data.id);
-
-  return true;
-}
-
-async function handleLogout() {
-  const sb = getSupabase();
-  await sb.auth.signOut();
-  showLoginForm();
-}
-
-async function initAuthGate() {
-  injectAuthStyles();
-  createAuthGateUI();
-
-  const sb = getSupabase();
-
-  // 監聽 auth 狀態變化（處理 Magic Link 回調）
-  sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      showLoading();
-      const email = session.user.email;
-      const hasAccess = await checkAccess(email);
-
-      if (hasAccess) {
-        unlockApp();
-      } else {
-        showDenied(email);
-      }
+  try {
+    const token = JSON.parse(atob(tokenStr));
+    // 檢查是否在 24 小時內
+    if (token.exp && Date.now() < token.exp) {
+      return true;
     }
-  });
-
-  // 初始檢查：是否已有 session
-  const { data: { session } } = await sb.auth.getSession();
-
-  if (session) {
-    showLoading();
-    const email = session.user.email;
-    const hasAccess = await checkAccess(email);
-
-    if (hasAccess) {
-      unlockApp();
-    } else {
-      showDenied(email);
-    }
+  } catch {
+    // token 無效
   }
-  // 無 session → 保持在登入表單畫面
+
+  sessionStorage.removeItem(BPS_AUTH.tokenKey);
+  return false;
+}
+
+// Enter 鍵提交
+function setupEnterKey() {
+  const emailInput = document.getElementById('auth-email');
+  if (emailInput) {
+    emailInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleVerify();
+    });
+  }
 }
 
 /* ── 啟動 ── */
+
+function initAuthGate() {
+  // 已有有效 token → 直接進入
+  if (checkStoredToken()) return;
+
+  injectAuthStyles();
+  createAuthGateUI();
+  setupEnterKey();
+}
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initAuthGate);
