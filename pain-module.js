@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    MDRT-BPS v4.0 — Pain Module (Tab A)
-   渲染：雷達圖 + 生活節奏 + 收入天花板 + 觀念話術卡片
+   渲染：雷達圖 + 生活節奏 + 收入天花板 + 觀念溝通卡片
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── renderTabA: Tab A 主入口 ─────────────────────────────────────────── */
@@ -187,7 +187,7 @@ function renderPainIncome(p, personaId) {
   container.innerHTML = html;
 }
 
-/* ─── A-4: 觀念溝通話術卡片 ───────────────────────────────────────── */
+/* ─── A-4: 觀念溝通卡片 ─────────────────────────────────────────── */
 function renderPainScripts(p) {
   var container = document.getElementById('pain-scripts-container');
   if (!container) return;
@@ -202,7 +202,7 @@ function renderPainScripts(p) {
     html += '<div class="pain-card-a"><div class="pain-card-a-label">💡 參考回應</div>' + obj.a;
     if (obj.followUp) {
       html += '<div class="pain-followup" style="margin-top:12px;padding:10px 12px;background:rgba(154,110,0,0.06);border-left:3px solid var(--gold,#9a6e00);border-radius:0 8px 8px 0">';
-      html += '<div style="font-size:13px;color:var(--gold,#9a6e00);font-weight:600;margin-bottom:4px">🔄 對方追問</div>';
+      html += '<div style="font-size:13px;color:var(--gold,#9a6e00);font-weight:600;margin-bottom:4px">🔄 延伸思考</div>';
       html += '<div style="font-size:14px;color:var(--text-dim,#3a5878);font-weight:600;margin-bottom:6px">「' + obj.followUp.q + '」</div>';
       html += '<div style="font-size:14px;color:var(--text,#1a2d42);line-height:1.6">' + obj.followUp.a + '</div>';
       html += '</div>';
@@ -212,7 +212,7 @@ function renderPainScripts(p) {
   });
   html += '</div>';
 
-  html += '<div class="script-disclaimer">⚠️ 以上話術僅供面談參考，請依對方實際狀況調整。不構成任何形式之收入承諾或轉職建議。</div>';
+  html += '<div class="script-disclaimer">⚠️ 以上內容僅供面談參考，請依對方實際狀況調整。不構成任何形式之收入承諾或轉職建議。</div>';
 
   container.innerHTML = html;
 }
