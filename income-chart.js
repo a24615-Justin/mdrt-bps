@@ -177,7 +177,7 @@
         </div>
 
         <div class="ic-mdrt-ref" style="margin:12px 0 8px;padding:10px 14px;background:rgba(154,110,0,0.06);border-left:3px solid #9a6e00;border-radius:0 8px 8px 0;font-size:13px;color:#3a5878;line-height:1.5">
-          📊 <strong>MDRT 2024 台灣門檻</strong>：FYC ≥ NT$2,280,000 或 Premium ≥ NT$4,560,000
+          📊 <strong>MDRT 2026 台灣門檻</strong>（以 2025 年度業績計算）：Commission ≥ NT$1,389,600 或 Premium ≥ NT$2,779,200
           <span style="color:#6a8ea8">（COT = 3 倍 / TOT = 6 倍）</span>
         </div>
         <div class="ic-footer">
