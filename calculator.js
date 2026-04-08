@@ -1,6 +1,6 @@
 // ─── BPS Calculator Module ──────────────────────────────────────────────────
 // 純計算邏輯，不依賴 DOM。由 param-schema.js 的 schemaToComputeParams() 提供參數。
-// lastUpdated: 2026-04-01
+// lastUpdated: 2026-04-08 (v4.6: fybDiscount去重 + renewalDecay語意修正 + 勞保自付 + MDRT門檻)
 
 (function() {
   'use strict';
@@ -52,9 +52,8 @@
     // v3.0.1: 銀行理專保費縮水係數
     const fypShrink = p._id === 'banker' ? (p.fypShrink ?? 0.8) : 1;
 
-    // v4.2→v4.3 修正: 來佣打折率（1.0 = 不打折，0.8 = 保司來佣先扣 20%）
-    // 乘入 effectiveFYP，影響保經端首佣、續佣、組織獎金
-    const fybDiscount = p.fybDiscount ?? 1.0;
+    // v4.6 修正: fybDiscount 已在 schemaToComputeParams 乘入 rb/ryr/or_
+    // compute5yr 不再重複乘入，避免雙重計算
 
     // v4.3: 傳統端隱形收入 + 保經端年終獎金
     const perfBonus = p.perfBonus ?? 0;           // 傳統端績效獎金
@@ -70,12 +69,12 @@
       });
       broker = yrs.map(y => {
         const base = p.FYP * Math.pow(1 + p._growth, y - 1) * fyb_n;
-        // newbie 保經端也用 brokerDecay；fybDiscount 已乘入 rb/ryr
+        // newbie 保經端也用 brokerDecay；fybDiscount 已在 rb/ryr 中（不再重複乘）
         let ry_nb = 0;
         for (let prev = 1; prev < y; prev++) {
-          ry_nb += base * (1 - p.L) * fybDiscount * (p.ryr || 0) * Math.pow(brokerDecay, y - prev - 1);
+          ry_nb += base * (1 - p.L) * (p.ryr || 0) * Math.pow(brokerDecay, y - prev - 1);
         }
-        const brokerAnnual = base * (1 - p.L) * fybDiscount * p.rb + ry_nb;
+        const brokerAnnual = base * (1 - p.L) * p.rb + ry_nb;
         return brokerAnnual + brokerAnnual * brokerYEB;
       });
     } else {
@@ -98,11 +97,12 @@
       });
 
       // ─── 保經端 ───
-      const effectiveFYP = p.FYP * (1 - p.L) * fypShrink * fybDiscount;
+      // v4.6: fybDiscount 已在 rb/ryr/or_ 中，不再乘入 effectiveFYP
+      const effectiveFYP = p.FYP * (1 - p.L) * fypShrink;
       let ry_b = 0;
       const broker_ry = [0];
       for (let y = 2; y <= 5; y++) {
-        ry_b = ry_b * brokerDecay + effectiveFYP * (p.ryr || 0);  // effectiveFYP 已含 fybDiscount
+        ry_b = ry_b * brokerDecay + effectiveFYP * (p.ryr || 0);
         broker_ry.push(ry_b);
       }
       broker = yrs.map((y, i) => {
@@ -169,16 +169,23 @@
     var taxable = annualIncome;
     var nhiSupplement = 0;
 
+    // v4.6: 勞保/勞退自付成本（承攬制需自行負擔）
+    var selfPaidInsurance = 0;
+
     if (type === 'contractor') {
-      // 執行業務所得：必要費用率 20%（保險業務員）
+      // 執行業務所得：必要費用率 20%（保險業務員，2019 年起）
       taxable = annualIncome * 0.80;
       // 二代健保補充保費（每月佣金 ≥ 28000）
       var monthlyAvg = annualIncome / 12;
       if (monthlyAvg >= 28000) {
         nhiSupplement = annualIncome * 0.0211;
       }
+      // 承攬制自付：勞保自付約 2.4 萬/年 + 勞退自提 6% 可選
+      // 透過職業工會投保，雇主負擔 = 0，全額自付
+      selfPaidInsurance = 24000;  // 勞保自付（基本級距估算）
     } else {
       // 薪資所得：薪資特別扣除額 218,000
+      // 勞保/勞退雇主負擔，不列入個人支出
       taxable = Math.max(0, annualIncome - 218000);
     }
 
@@ -193,13 +200,14 @@
     else if (netTaxable <= 4980000) tax = 590000 * 0.05 + 740000 * 0.12 + 1330000 * 0.20 + (netTaxable - 2660000) * 0.30;
     else tax = 590000 * 0.05 + 740000 * 0.12 + 1330000 * 0.20 + 2320000 * 0.30 + (netTaxable - 4980000) * 0.40;
 
-    var afterTax = annualIncome - tax - nhiSupplement;
+    var afterTax = annualIncome - tax - nhiSupplement - selfPaidInsurance;
     return {
       gross: annualIncome,
       tax: Math.round(tax),
       nhiSupplement: Math.round(nhiSupplement),
+      selfPaidInsurance: Math.round(selfPaidInsurance),
       afterTax: Math.round(afterTax),
-      effectiveRate: annualIncome > 0 ? ((tax + nhiSupplement) / annualIncome) : 0
+      effectiveRate: annualIncome > 0 ? ((tax + nhiSupplement + selfPaidInsurance) / annualIncome) : 0
     };
   }
 

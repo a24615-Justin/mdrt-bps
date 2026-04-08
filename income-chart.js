@@ -82,7 +82,7 @@
   // v4.5: renewalDecay 現為 commStepDown（傳統端佣金率遞減，預設 0.6）
   function getCompanyParams(companyId) {
     const c = COMPANY_DB[companyId];
-    if (!c) return { commRate: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 };
+    if (!c) return { commRate: 20, renewalRate: 3, renewalDecay: 0.98, orgAllowance: 0 };
 
     const persona = typeof CID !== 'undefined' ? CID : 'insurance';
     const defs = c.defaults[persona] || c.defaults.insurance || {};
@@ -90,7 +90,7 @@
     return {
       commRate: defs.commRateTrad ?? 20,
       renewalRate: defs.renewalRate ?? (defs.mgrRenewal ? (defs.mgrRenewal / BASE_FYP * 100) : 3),
-      renewalDecay: defs.renewalDecay ?? 0.6,  // commStepDown for traditional side
+      renewalDecay: defs.renewalDecay ?? 0.98,  // commStepDown for traditional side
       orgAllowance: defs.orgAllowance ?? 0,
     };
   }
@@ -176,9 +176,13 @@
           }).join('')}
         </div>
 
+        <div class="ic-mdrt-ref" style="margin:12px 0 8px;padding:10px 14px;background:rgba(154,110,0,0.06);border-left:3px solid #9a6e00;border-radius:0 8px 8px 0;font-size:13px;color:#3a5878;line-height:1.5">
+          📊 <strong>MDRT 2024 台灣門檻</strong>：FYC ≥ NT$2,280,000 或 Premium ≥ NT$4,560,000
+          <span style="color:#6a8ea8">（COT = 3 倍 / TOT = 6 倍）</span>
+        </div>
         <div class="ic-footer">
           ⚠️ 模擬數據僅供參考，基於公開佣金率估算，不含獎金、津貼等變動項目。
-          實際收入依個人業績與公司政策而定。
+          實際收入依個人業績與公司政策而定。MDRT 門檻每年調整，以 MDRT 官方公告為準。
         </div>
       </div>`;
 

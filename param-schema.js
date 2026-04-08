@@ -75,12 +75,12 @@ const PARAM_SCHEMA = [
     },
   },
   {
-    key: 'renewalDecay', label: '續佣年遞減係數', section: 'current',
-    type: 'number', default: 0.6,
-    min: 0, max: 1, step: 0.05,
+    key: 'renewalDecay', label: '續佣佣金率年留存係數', section: 'current',
+    type: 'number', default: 0.98,
+    min: 0, max: 1, step: 0.01,
     personas: ['ins'], visibility: 'advanced',
     companyOverride: true, requiresVerification: false,
-    description: '續佣每年衰減的比例係數（0-1），數值越高代表續佣衰減越慢。',
+    description: '續佣佣金率每年的留存比例（0-1），純佣金結構遞減，不含保單脫落。0.98 表示佣金率每年僅遞減 2%。保單脫落率由 persistency（預設 90%）另計。',
   },
   {
     key: 'bankFyp', label: '年度銷售保費', section: 'current',

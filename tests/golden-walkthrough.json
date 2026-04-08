@@ -300,12 +300,12 @@
         "觀察 broker 端首佣是否減少"
       ],
       "expectedResults": {
-        "expected": "broker 首佣 = FYP × (1-L) × rb × 0.8",
-        "actual": "fybDiscount 未被乘入 effectiveFYP，broker 首佣不變",
-        "severity": "P1 — 計算錯誤",
-        "status": "KNOWN_BUG"
+        "expected": "broker 首佣 = FYP × (1-L) × rb（rb 已含 fybDiscount）",
+        "actual": "v4.6 修正：移除 compute5yr 中重複的 fybDiscount 乘入，rb/ryr/or_ 已在 schemaToComputeParams 乘入",
+        "severity": "FIXED in v4.6",
+        "status": "FIXED"
       },
-      "pass": false
+      "pass": true
     }
   ],
 
