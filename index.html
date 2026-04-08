@@ -597,7 +597,11 @@ function updateCompanyNotice(){
     if(diffMonths>6)staleHtml=`<br><span class="stale-warn">⚠️ 資料可能已過時（上次驗證：${c.lastVerified}）</span>`;
   }
   const sources=Object.values(c.dataSources||{}).join('、');
-  notice.innerHTML=`⚙️ 已套用「<strong>${c.name}</strong>」預設參數 ｜ ${c.contract} ｜ ${c.benefits}${staleHtml}<br>⚠️ 數值僅供參考，請依對方實際職階與年資調整${c.note?`<br>💡 ${c.note}`:''}${sources?`<br>📎 資料來源：${sources}`:''}`;
+  // v4.6: 檢查佣金率來源是否為推估值，顯示明確標語
+  const commSource=(c.dataSources&&c.dataSources.commRate)||'';
+  const isEstimated=/推估|估計|中位數/.test(commSource);
+  const estimateWarn=isEstimated?`<br><span class="estimate-warn" style="color:#b8860b;font-weight:600">⚠️ 佣金率為業界推估值（非官方公開），面談前請務必與對方確認實際數字</span>`:'';
+  notice.innerHTML=`⚙️ 已套用「<strong>${c.name}</strong>」預設參數 ｜ ${c.contract} ｜ ${c.benefits}${staleHtml}${estimateWarn}<br>⚠️ 數值僅供參考，請依對方實際職階與年資調整${c.note?`<br>💡 ${c.note}`:''}${sources?`<br>📎 資料來源：${sources}`:''}`;
   notice.style.display='block';
 }
 
