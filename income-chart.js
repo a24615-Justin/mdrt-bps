@@ -18,11 +18,11 @@
     if (!gs) {
       const fallback = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB['gongsheng'] : null;
       const fbDefs = fallback?.defaults?.insurance || {};
-      return { comm: fbDefs.commRateTrad ?? 40, renewal: fbDefs.renewalRate ?? 5, renewalDecay: 0.95, orgRate: 5, orgMembers: 3, orgMemberFyp: 600000 };
+      return { comm: fbDefs.commRateTrad ?? 50, renewal: fbDefs.renewalRate ?? 5, renewalDecay: 0.95, orgRate: 5, orgMembers: 3, orgMemberFyp: 600000 };
     }
     const gsDefs = gs.defaults?.insurance || {};
     return {
-      comm:         gs.brokerDefaults?.brokerComm ?? gsDefs.commRateTrad ?? 40,
+      comm:         gs.brokerDefaults?.brokerComm ?? gsDefs.commRateTrad ?? 50,
       renewal:      gs.brokerDefaults?.renewalRate ?? gsDefs.renewalRate ?? 5,
       renewalDecay: 0.95,  // 保經端佣金率遞減（無內扣，較緩）
       orgRate:      gs.brokerDefaults?.orgRate ?? 5,

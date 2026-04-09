@@ -38,7 +38,7 @@ var PERSONA_PAIN_POINTS = {
     typicalIncome: { fyp: 3000000, commRate: 20, renewalIncome: 500000 },
 
     topPainPoints: [
-      '佣金率 20-35% 被壓了整個職涯，晉升只有一條窄路',
+      '壽險公司佣金率 20-35%，轉保經可達 50-82%',
       '離職那天客戶全歸公司，十年心血歸零',
       '只能賣自家商品，無法為客戶選擇市場上最好的方案',
     ],

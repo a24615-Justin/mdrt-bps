@@ -222,11 +222,11 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'brokerCommRate', label: '保經個人佣金率（職階）', section: 'advantage',
-    type: 'percent', default: 40, suffix: '%',
+    type: 'percent', default: 50, suffix: '%',
     min: 0, max: 100,
     personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
     companyOverride: false,
-    description: '加入保經後的個人佣金分潤比率。保經首年收入 = FYP × 商品佣金率 × 此比率。',
+    description: '加入保經後的個人佣金分潤比率（公勝：專員50%→事業部經理82%）。保經首年收入 = FYP × 商品佣金率 × 此比率。',
   },
   {
     key: 'brokerRenewalRate', label: '保經續期佣金率', section: 'advantage',
@@ -383,7 +383,7 @@ const PARAM_SCHEMA = [
     type: 'percent', default: 20, suffix: '%', min: 10, max: 60, step: 5,
     personas: ['realtor', 'auto'], visibility: 'advanced',
     companyOverride: false,
-    description: '保經公司給付的佣金分潤比率。新人起步約 20%，資深可達 40-60%。',
+    description: '保經公司給付的佣金分潤比率（公勝：專員50%→事業部經理82%）。',
   },
   {
     key: 'crossRenewalRate', label: '續佣率', section: 'current',
@@ -598,7 +598,7 @@ function schemaToComputeParams(values, personaId) {
   const _fybDiscount = _brokerEntry?.brokerDefaults?.fybDiscount ?? 1.0;
 
   // fybDiscount 乘入保經端所有收入（首佣、續佣、組織獎金）
-  const rb = brokerProductComm * _fybDiscount * (values.brokerCommRate ?? 40) / 100;
+  const rb = brokerProductComm * _fybDiscount * (values.brokerCommRate ?? 50) / 100;
   const ryr = _fybDiscount * (values.brokerRenewalRate ?? 5) / 100;
   const or_ = _fybDiscount * (values.orgBonusRate ?? 0) / 100;
 
