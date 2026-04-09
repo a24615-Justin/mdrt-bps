@@ -333,11 +333,93 @@ const PARAM_SCHEMA = [
     companyOverride: false,
     description: '兼職投入程度。100% = 全職，50% = 半職（FYP 按此比例縮減）。適用於評估兼職轉換的場景。',
   },
+
+  // ═══ 異業增員 — 房仲 (realtor) ═══
+  {
+    key: 'realtorClients', label: '既有客戶/人脈數', section: 'current',
+    type: 'number', default: 200, min: 10, max: 2000, step: 10,
+    personas: ['realtor'], visibility: 'always',
+    companyOverride: false,
+    description: '您累計服務過的客戶（成交+帶看+轉介紹）。這些人都可能需要保險服務。',
+  },
+  {
+    key: 'realtorNewClientsPerYear', label: '每年新增客戶', section: 'current',
+    type: 'number', default: 40, min: 5, max: 200, step: 5,
+    personas: ['realtor'], visibility: 'always',
+    companyOverride: false,
+    description: '每年新認識的客戶數（帶看、成交、轉介紹）。',
+  },
+  {
+    key: 'realtorAvgPremium', label: '客戶平均年保費', section: 'current',
+    type: 'currency', default: 40000, prefix: 'NT$', min: 10000, max: 200000, step: 5000,
+    personas: ['realtor'], visibility: 'always',
+    companyOverride: false,
+    description: '每位客戶的預估年度保費（房貸壽險+火險+家庭保障）。購屋族通常需求較高。',
+  },
+  {
+    key: 'realtorConvRate', label: '預估轉換率', section: 'current',
+    type: 'percent', default: 15, suffix: '%', min: 5, max: 50, step: 1,
+    personas: ['realtor'], visibility: 'always',
+    companyOverride: false,
+    description: '既有客戶中，您認為多少比例願意跟您購買保險。初期保守估 10-15%。',
+  },
+  {
+    key: 'crossAvgCommRate', label: '平均商品佣金率', section: 'current',
+    type: 'percent', default: 60, suffix: '%', min: 10, max: 100, step: 5,
+    personas: ['realtor', 'auto'], visibility: 'advanced',
+    companyOverride: false,
+    description: '保險商品的平均佣金率。終身壽險約 70-90%，定期壽險 30-50%，投資型 15-25%。',
+  },
+  {
+    key: 'crossPersonalCommRate', label: '個人佣金率', section: 'current',
+    type: 'percent', default: 20, suffix: '%', min: 10, max: 60, step: 5,
+    personas: ['realtor', 'auto'], visibility: 'advanced',
+    companyOverride: false,
+    description: '保經公司給付的佣金分潤比率。新人起步約 20%，資深可達 40-60%。',
+  },
+  {
+    key: 'crossRenewalRate', label: '續佣率', section: 'current',
+    type: 'percent', default: 10, suffix: '%', min: 0, max: 30, step: 1,
+    personas: ['realtor', 'auto'], visibility: 'advanced',
+    companyOverride: false,
+    description: '第 2 年起，每年續期佣金佔原始 FYP 的比例。通常 5-15%。',
+  },
+
+  // ═══ 異業增員 — 車仲 (auto) ═══
+  {
+    key: 'autoClients', label: '歷年交車客戶數', section: 'current',
+    type: 'number', default: 150, min: 10, max: 2000, step: 10,
+    personas: ['auto'], visibility: 'always',
+    companyOverride: false,
+    description: '您累計交過車的客戶總數。每位車主都需要車險，是最自然的保險切入點。',
+  },
+  {
+    key: 'autoNewUnitsPerYear', label: '每年新交車數', section: 'current',
+    type: 'number', default: 48, min: 6, max: 200, step: 6,
+    personas: ['auto'], visibility: 'always',
+    companyOverride: false,
+    description: '每年新交車的台數。每台車 = 一次自然的保險觸及機會。',
+  },
+  {
+    key: 'autoAvgPremium', label: '客戶平均年保費', section: 'current',
+    type: 'currency', default: 35000, prefix: 'NT$', min: 10000, max: 150000, step: 5000,
+    personas: ['auto'], visibility: 'always',
+    companyOverride: false,
+    description: '每位車主的預估年度保費（強制險+任意險+壽險+意外險）。',
+  },
+  {
+    key: 'autoConvRate', label: '預估轉換率', section: 'current',
+    type: 'percent', default: 20, suffix: '%', min: 5, max: 50, step: 1,
+    personas: ['auto'], visibility: 'always',
+    companyOverride: false,
+    description: '交車客戶中願意跟您買保險的比例。車險是剛需，轉換率通常較高。',
+  },
 ];
 
 // ─── Persona short ID mapping ───
 const PERSONA_IDS = {
   insurance: 'ins', banker: 'banker', manager: 'mgr', medical: 'med', newbie: 'new',
+  realtor: 'realtor', auto: 'auto',
 };
 
 // ─── XSS sanitizer ───
@@ -361,12 +443,11 @@ function renderInputs(personaId) {
   const container = document.getElementById('inputs-container');
   if (!container) return;
 
+  const isCrossIndustry = personaShort === 'realtor' || personaShort === 'auto';
   const sections = { current: [], risk: [], advantage: [] };
-  const sectionLabels = {
-    current: 'A. 現狀盤點',
-    risk: 'B. 轉職風險係數',
-    advantage: 'C. 保經優勢',
-  };
+  const sectionLabels = isCrossIndustry
+    ? { current: '您的客戶池與保險收入預估', risk: '', advantage: '' }
+    : { current: 'A. 現狀盤點', risk: 'B. 轉職風險係數', advantage: 'C. 保經優勢' };
 
   // Filter and group
   PARAM_SCHEMA.forEach(param => {

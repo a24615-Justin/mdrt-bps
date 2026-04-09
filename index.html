@@ -61,6 +61,8 @@
       <button class="id-btn" role="radio" aria-checked="false" onclick="setPainId('manager',this)">👑 壽險主管</button>
       <button class="id-btn" role="radio" aria-checked="false" onclick="setPainId('medical',this)">🩺 醫療通路</button>
       <button class="id-btn" role="radio" aria-checked="false" onclick="setPainId('newbie',this)">🌱 新人 / 考慮入行</button>
+      <button class="id-btn" role="radio" aria-checked="false" onclick="setPainId('realtor',this)">🏠 房仲</button>
+      <button class="id-btn" role="radio" aria-checked="false" onclick="setPainId('auto',this)">🚗 車仲</button>
     </div>
   </div>
 
@@ -121,6 +123,8 @@
       <button class="id-btn" onclick="setId('manager',this)">👑 壽險主管</button>
       <button class="id-btn" onclick="setId('medical',this)">🩺 醫療通路</button>
       <button class="id-btn" onclick="setId('newbie',this)">🌱 新人培育</button>
+      <button class="id-btn" onclick="setId('realtor',this)">🏠 房仲</button>
+      <button class="id-btn" onclick="setId('auto',this)">🚗 車仲</button>
     </div>
   </div>
 
@@ -152,6 +156,37 @@
 
   <!-- PARAM_SCHEMA inputs -->
   <div id="inputs-container"></div>
+
+  <!-- 異業增員：客戶池金礦試算（realtor/auto only） -->
+  <div id="gold-mine-container" style="display:none">
+    <div class="section" style="margin-top:24px;">
+      <div class="section-title" style="color:#D97706;">💎 您的客戶池裡藏著多少保費？</div>
+      <div style="background:linear-gradient(135deg,#FFF7ED,#FFFBEB);border:2px solid #F59E0B;border-radius:12px;padding:24px;margin-top:12px;">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;font-size:15px;line-height:2.2;">
+          <span style="color:#6B7280;">既有客戶</span><strong id="gm-clients" style="text-align:right;">200 人</strong>
+          <span style="color:#6B7280;">× 預估轉換率</span><strong id="gm-conv" style="text-align:right;">15%</strong>
+          <span style="color:#6B7280;">= 潛在保險客戶</span><strong id="gm-insurance-clients" style="text-align:right;color:#D97706;">30 人</strong>
+          <span style="color:#6B7280;">× 平均年保費</span><strong id="gm-premium" style="text-align:right;">NT$ 4 萬</strong>
+        </div>
+        <div style="border-top:2px solid #F59E0B;margin:16px 0;padding-top:16px;display:grid;grid-template-columns:1fr auto;gap:8px;font-size:15px;line-height:2.2;">
+          <span style="color:#92400E;font-weight:600;">潛在年保費總額</span><strong id="gm-fyp" style="text-align:right;font-size:20px;color:#D97706;">NT$ 120 萬</strong>
+          <span style="color:#92400E;font-weight:600;">您的首年額外佣金</span><strong id="gm-first-year" style="text-align:right;font-size:20px;color:#059669;">NT$ 14.4 萬</strong>
+        </div>
+        <div style="margin-top:16px;padding:12px 16px;background:#FEF2F2;border-radius:8px;font-size:13px;line-height:1.8;">
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;">
+            <span style="color:#6B7280;">第 3 年起每年續佣</span><strong id="gm-renewal-y3" style="color:#059669;">NT$ 7.2 萬</strong>
+            <span style="color:#6B7280;">第 5 年起每年續佣</span><strong id="gm-renewal-y5" style="color:#059669;">NT$ 12 萬</strong>
+          </div>
+        </div>
+        <p id="gm-tagline" style="margin-top:16px;font-size:14px;color:#92400E;font-weight:600;text-align:center;">
+          📌 這筆保費目前正在流向別的保險業務員。<br>您不需要放棄現職，只需要順手多做一步。
+        </p>
+        <p style="margin-top:8px;font-size:11px;color:#9CA3AF;text-align:center;">
+          僅供參考，實際收入依個人表現與市場狀況而定
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════ SECTION ②: 數字說話 ═══════════════════════ -->
@@ -275,7 +310,7 @@ var selectedBrokerId = 'gongsheng';     // 永遠對照公勝，不可切換
 var currentPersonaId = 'insurance';  // for param-schema.js
 
 // ─── Persona Config ──────────────────────────────────────────────────────────
-const PERSONA_MAP = { insurance:'insurance', banker:'banker', manager:'manager', medical:'medical', newbie:'newbie' };
+const PERSONA_MAP = { insurance:'insurance', banker:'banker', manager:'manager', medical:'medical', newbie:'newbie', realtor:'realtor', auto:'auto' };
 
 const ID_CONFIG = {
   insurance: { label:'🛡️ 保險同業', badge:'insurance', tradLabel:'傳統壽險',
@@ -293,6 +328,14 @@ const ID_CONFIG = {
   newbie: { label:'🌱 新人培育', badge:'newbie', tradLabel:'傳統壽險',
     scRiskLabel:'空窗期（月）', scRiskFn: sc=>'空窗期 '+Math.round(sc.L*12)+'月',
     sc:{ C:{L:.35,rb:.35}, B:{L:.25,rb:.40}, O:{L:.15,rb:.45} }},
+  realtor: { label:'🏠 房仲', badge:'realtor', tradLabel:'房仲現職',
+    crossIndustry: true,
+    scRiskLabel:'轉換率', scRiskFn: sc=>'轉換率 '+Math.round(sc.L*100)+'%',
+    sc:{ C:{L:.10,rb:.20}, B:{L:.15,rb:.30}, O:{L:.20,rb:.40} }},
+  auto: { label:'🚗 車仲', badge:'auto', tradLabel:'車仲現職',
+    crossIndustry: true,
+    scRiskLabel:'轉換率', scRiskFn: sc=>'轉換率 '+Math.round(sc.L*100)+'%',
+    sc:{ C:{L:.15,rb:.20}, B:{L:.20,rb:.30}, O:{L:.25,rb:.40} }},
 };
 
 // COMM_RANGES for boundary validation
@@ -469,11 +512,21 @@ const SCRIPTS={
     ['第二層思維｜複利效應從現在開始',(p,r)=>`模型顯示，同樣的產能，在保經的佣金結構下，5年累計比傳統公司多出 <strong>${fmtM(r.diff5)} 萬元</strong>——而您才剛開始，業績還會隨著每年 <strong>${fmtPct(p._growth)}</strong> 的成長率持續放大。<br><br><strong>複利的威力，在越早期啟動時越驚人。</strong> 同樣是五年的努力，起點的選擇決定終點差距有多大。<br><br>現在就站對位置，讓未來每一分努力的回報，都流向正確的地方。`],
     ['第三層思維｜你要建立的是事業，不是工作',(p,r)=>`從制度面觀察，傳統公司提供品牌背書與完整培訓，但客戶關係通常歸屬公司。保經制度下，客戶從第一天起即以個人名義服務，所有關係都是個人品牌的累積。<br><br>兩者各有優勢——傳統公司適合重視穩定與品牌的人，保經適合重視自主性與長期資產累積的人。<br><br><strong>入行的第一步選擇，會影響未來十年的發展方向——值得仔細思考哪種模式更適合自己。</strong>`]
   ],
+  realtor:[
+    ['第一層｜順手多賺的錢',()=>`您每成交一間房子，買方接下來會做什麼？辦房貸、買火險、規劃家庭保障。這些事客戶本來就要做，差別只在於：是跟陌生的保險業務員做，還是跟他最信任的您做。<br><br>如果是您來服務，每位客戶平均每年約 NT$ 4 萬保費，您可以額外拿到約 NT$ 4,800 的佣金——<strong>不用多花時間找客戶，因為人就在您面前。</strong>`],
+    ['第二層｜下不來的地板',()=>`賣房最辛苦的是什麼？每個月歸零重新開始。保險有一個房仲沒有的東西：<strong>續期佣金</strong>。<br><br>您今年服務的 30 位保險客戶，明年每一位續保，您自動收到佣金。後年還是。這筆錢不需要您做任何事——它是您過去服務的「利息」。<br><br>三年後，光續佣就有每年 NT$ 7 萬自動進帳。<strong>房子照賣，續佣照收。</strong>`],
+    ['第三層｜同一群人，兩份收入',()=>`您不需要「轉行」做保險。繼續做最擅長的房仲，只是在每次成交後多問一句：「房貸壽險和火險要不要一起處理？」<br><br>這一句話的價值，五年後累計超過 NT$ 100 萬。<strong>這 100 萬本來就存在——差別只在於進誰的口袋。</strong>`]
+  ],
+  auto:[
+    ['第一層｜每台車背後的保費',()=>`您每交一台車，車主接下來一定要做什麼？保強制險、買任意險、可能還需要壽險和意外險。這些事 100% 會發生。<br><br>差別只在於：這筆保費是流向某個不認識車主的業務員，還是流向車主最信任的您。<br><br>每位車主平均年保費 NT$ 3.5 萬，您經手的話每年額外收入約 NT$ 4,200。<strong>48 台車就是 NT$ 20 萬。</strong>`],
+    ['第二層｜賣完車才是開始',()=>`賣車跟賣保險最大的差別：車子交了就結束，保險交了才開始。<br><br>您今年服務的 30 位保險客戶，明年續保時您自動收到續佣——不用打電話、不用約見面、不用重新成交。這筆被動收入每年疊加：第三年起每年 NT$ 6 萬自動進帳，第五年 NT$ 10 萬。<br><br><strong>車照賣，續佣照收。</strong>`],
+    ['第三層｜最自然的開口',()=>`交車那一刻，車主心情最好、對您信任最高。這時候說一句：「車險我幫您一起處理好，順便看一下意外險有沒有需要加強？」<br><br>這不是推銷，這是<strong>服務的延伸</strong>。您不需要轉行，不需要辭職，只需要在交車流程裡多加 15 分鐘。<br><br>五年後，這 15 分鐘的累計價值超過 NT$ 80 萬。`]
+  ],
 };
 function updateScripts(p,r){
   const scripts=SCRIPTS[CID]||SCRIPTS.insurance;
   const disclaimer='<div class="script-disclaimer">⚠️ 以上為趨勢推演，非收入保證。實際收入因個人業績、公司政策、市場環境而異。</div>';
-  scripts.forEach(([tag,fn],i)=>{const idx=i+1;g('tag'+idx).textContent=tag;g('script'+idx).innerHTML=fn(p,r)+disclaimer;});
+  scripts.forEach(([tag,fn],i)=>{const idx=i+1;const el=g('tag'+idx);const sc=g('script'+idx);if(el)el.textContent=tag;if(sc)sc.innerHTML=fn(p||{},r||{})+disclaimer;});
 }
 
 // ─── Company Chips (auto-rendered from COMPANY_DB) ──────────────────────────
@@ -610,14 +663,24 @@ function setId(id,btn){
   CID=id;currentPersonaId=id;
   document.querySelectorAll('.id-btn').forEach(b=>{b.className='id-btn';});
   btn.classList.add('active','active-'+id);
+  const isCross = ID_CONFIG[id] && ID_CONFIG[id].crossIndustry;
+  toggleCrossIndustryUI(isCross);
   renderInputs(id);
-  applyCompanyDefaults(selectedCompanyId,id);
-  applyBrokerDefaults(selectedBrokerId,id);
+  if (!isCross) {
+    applyCompanyDefaults(selectedCompanyId,id);
+    applyBrokerDefaults(selectedBrokerId,id);
+  }
   recalc();
 }
 
 // ─── Main recalc ──────────────────────────────────────────────────────────────
 function recalc(){
+  const isCross = ID_CONFIG[CID] && ID_CONFIG[CID].crossIndustry;
+  if (isCross) {
+    updateGoldMine();
+    updateScripts(null, null);
+    return; // 異業不走傳統 5yr 計算
+  }
   const values=collectInputs(CID);
   const p=schemaToComputeParams(values,CID);
   const r=compute5yr(p);
@@ -627,6 +690,68 @@ function recalc(){
   updateScripts(p,r);
   // Update income chart if available
   if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container');}
+}
+
+// ─── 異業增員：客戶池金礦試算 ──────────────────────────
+function updateGoldMine() {
+  const container = document.getElementById('gold-mine-container');
+  if (!container) return;
+
+  const clients = Number(getCurrentValue(CID === 'realtor' ? 'realtorClients' : 'autoClients', CID) ?? 200);
+  const convRate = Number(getCurrentValue(CID === 'realtor' ? 'realtorConvRate' : 'autoConvRate', CID) ?? 15) / 100;
+  const avgPremium = Number(getCurrentValue(CID === 'realtor' ? 'realtorAvgPremium' : 'autoAvgPremium', CID) ?? 40000);
+  const commRate = Number(getCurrentValue('crossAvgCommRate', CID) ?? 60) / 100;
+  const personalRate = Number(getCurrentValue('crossPersonalCommRate', CID) ?? 20) / 100;
+  const renewalRate = Number(getCurrentValue('crossRenewalRate', CID) ?? 10) / 100;
+  const newPerYear = Number(getCurrentValue(CID === 'realtor' ? 'realtorNewClientsPerYear' : 'autoNewUnitsPerYear', CID) ?? 40);
+
+  const insuranceClients = Math.round(clients * convRate);
+  const fyp = insuranceClients * avgPremium;
+  const firstYearComm = fyp * commRate * personalRate;
+
+  // 續佣堆疊：第 N 年續佣 = 累計 FYP × renewalRate × personalRate
+  const newFypPerYear = Math.round(newPerYear * convRate) * avgPremium;
+  let cumulativeFyp = fyp;
+  let renewalY3 = 0, renewalY5 = 0;
+  for (let y = 2; y <= 5; y++) {
+    const renewal = cumulativeFyp * renewalRate * personalRate;
+    if (y === 3) renewalY3 = renewal;
+    if (y === 5) renewalY5 = renewal;
+    cumulativeFyp += newFypPerYear;
+  }
+
+  const fmtW = (v) => 'NT$ ' + (v / 10000).toFixed(1) + ' 萬';
+  const fmtN = (v) => v.toLocaleString() + ' 人';
+
+  const gi = (id) => document.getElementById(id);
+  if (gi('gm-clients')) gi('gm-clients').textContent = fmtN(clients);
+  if (gi('gm-conv')) gi('gm-conv').textContent = (convRate * 100).toFixed(0) + '%';
+  if (gi('gm-insurance-clients')) gi('gm-insurance-clients').textContent = fmtN(insuranceClients);
+  if (gi('gm-premium')) gi('gm-premium').textContent = fmtW(avgPremium);
+  if (gi('gm-fyp')) gi('gm-fyp').textContent = fmtW(fyp);
+  if (gi('gm-first-year')) gi('gm-first-year').textContent = fmtW(firstYearComm);
+  if (gi('gm-renewal-y3')) gi('gm-renewal-y3').textContent = fmtW(renewalY3);
+  if (gi('gm-renewal-y5')) gi('gm-renewal-y5').textContent = fmtW(renewalY5);
+
+  // 更新 tagline 依 persona
+  const tagline = gi('gm-tagline');
+  if (tagline) {
+    tagline.innerHTML = CID === 'auto'
+      ? '📌 這筆保費目前正在流向別的保險業務員。<br>每台交車順手多問一句，不需要額外找客戶。'
+      : '📌 這筆保費目前正在流向別的保險業務員。<br>您不需要放棄賣房，只需要順手多做一步。';
+  }
+}
+
+// ─── Toggle UI for cross-industry personas ──────────────────────────
+function toggleCrossIndustryUI(isCross) {
+  const goldMine = document.getElementById('gold-mine-container');
+  const tradSections = ['section-2', 'section-3', 'company-chips-container', 'comparison-table-container', 'company-notice'];
+
+  if (goldMine) goldMine.style.display = isCross ? 'block' : 'none';
+  tradSections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isCross ? 'none' : '';
+  });
 }
 
 // ─── Section Nav (IntersectionObserver) ──────────────────────────────────────
