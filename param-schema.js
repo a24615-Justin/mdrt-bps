@@ -440,7 +440,6 @@ function renderField(param, personaId) {
       </div>
       <div class="stepper-range-label"><span>${min}${_esc(suffix)}</span><span>${max}${_esc(suffix)}</span></div>`;
   } else {
-    const prefix = param.prefix ? `<span class="prefix">${_esc(param.prefix)}</span>` : '';
     const suffix = param.suffix ? `<span class="suffix">${_esc(param.suffix)}</span>` : '';
     const cls = [];
     if (!param.prefix) cls.push('no-prefix');
@@ -448,11 +447,11 @@ function renderField(param, personaId) {
     const min = param.min != null ? ` min="${param.min}"` : '';
     const max = param.max != null ? ` max="${param.max}"` : '';
     const step = param.step != null ? ` step="${param.step}"` : '';
+    const ph = param.prefix ? ` placeholder="${_esc(param.prefix)}"` : '';
     inputHtml = `
       <div class="input-wrap">
-        ${prefix}
         <input type="number" id="${inputId}" data-key="${_esc(param.key)}"
-          class="${cls.join(' ')}" value="${val}"${min}${max}${step}>
+          class="${cls.join(' ')}" value="${val}"${min}${max}${step}${ph}>
         ${suffix}
       </div>`;
   }

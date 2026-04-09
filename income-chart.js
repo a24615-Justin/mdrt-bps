@@ -156,14 +156,14 @@
               <div class="ic-bar-group">
                 <div class="ic-bar-year">第 ${d.year} 年</div>
                 <div class="ic-bar-pair">
-                  <div class="ic-bar-row" role="group" aria-label="${company.short} 第${d.year}年累計 ${formatMoney(d.cumulative)}" tabindex="0" onclick="this.classList.toggle('ic-expanded')" title="點擊看明細：年收入 ${formatMoney(d.annual)} / 累計 ${formatMoney(d.cumulative)}">
+                  <div class="ic-bar-row" role="group" aria-label="${company.short} 第${d.year}年累計 ${formatMoney(d.cumulative)}" title="年收入 ${formatMoney(d.annual)} / 累計 ${formatMoney(d.cumulative)}">
                     <span class="ic-bar-label ic-label-trad">${company.short}</span>
                     <div class="ic-bar-track">
                       <div class="ic-bar ic-bar-trad" style="width:${tradPct}%;" data-delay="${i * 150}"></div>
                     </div>
                     <span class="ic-bar-val">${formatMoney(d.cumulative)}</span>
                   </div>
-                  <div class="ic-bar-row" role="group" aria-label="${brokerCompany.short} 第${g.year}年累計 ${formatMoney(g.cumulative)}" tabindex="0" onclick="this.classList.toggle('ic-expanded')" title="點擊看明細：年收入 ${formatMoney(g.annual)} / 累計 ${formatMoney(g.cumulative)}">
+                  <div class="ic-bar-row" role="group" aria-label="${brokerCompany.short} 第${g.year}年累計 ${formatMoney(g.cumulative)}" title="年收入 ${formatMoney(g.annual)} / 累計 ${formatMoney(g.cumulative)}">
                     <span class="ic-bar-label ic-label-gs">${brokerCompany.short}</span>
                     <div class="ic-bar-track">
                       <div class="ic-bar ic-bar-gs" style="width:${gsPct}%;" data-delay="${i * 150 + 80}"></div>
