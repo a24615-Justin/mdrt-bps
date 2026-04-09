@@ -441,14 +441,7 @@ body::before {
 .verify-badge { font-size: 9px; color: var(--gold); font-weight: 400; text-transform: none; letter-spacing: 0; }
 .modified-badge { font-size: 9px; color: var(--broker); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 4px; }
 .input-wrap { position: relative; }
-.input-wrap .prefix {
-  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--text-muted); font-size: 12px; font-family: 'DM Mono', monospace; pointer-events: none;
-  transition: opacity 0.15s;
-}
-/* focus 時或輸入有值時隱藏前綴，避免與數字重疊 */
-.input-wrap:focus-within .prefix,
-.input-wrap.has-value .prefix { opacity: 0; }
+/* prefix 已改為 placeholder，不再使用 absolute span */
 .input-wrap .suffix {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   color: var(--text-muted); font-size: 11px; pointer-events: none;
@@ -2158,18 +2151,6 @@ function renderInputs(personaId) {
     inp.addEventListener('input', handleInputChange);
   });
 
-  // 前綴顯示控制：有值時隱藏 NT$ prefix（避免重疊）
-  container.querySelectorAll('.input-wrap').forEach(wrap => {
-    const inp = wrap.querySelector('input[type="number"]');
-    if (!inp || !wrap.querySelector('.prefix')) return;
-    const toggle = () => {
-      wrap.classList.toggle('has-value', inp.value !== '' && inp.value !== '0');
-    };
-    inp.addEventListener('input', toggle);
-    inp.addEventListener('focus', toggle);
-    inp.addEventListener('blur', toggle);
-    toggle(); // 初始化
-  });
 }
 
 // ─── Render single field HTML ───
@@ -2197,7 +2178,6 @@ function renderField(param, personaId) {
           oninput="document.getElementById('${inputId}_display').textContent=this.value+'${_esc(suffix)}'">
       </div>`;
   } else {
-    const prefix = param.prefix ? `<span class="prefix">${_esc(param.prefix)}</span>` : '';
     const suffix = param.suffix ? `<span class="suffix">${_esc(param.suffix)}</span>` : '';
     const cls = [];
     if (!param.prefix) cls.push('no-prefix');
@@ -2205,11 +2185,11 @@ function renderField(param, personaId) {
     const min = param.min != null ? ` min="${param.min}"` : '';
     const max = param.max != null ? ` max="${param.max}"` : '';
     const step = param.step != null ? ` step="${param.step}"` : '';
+    const ph = param.prefix ? ` placeholder="${_esc(param.prefix)}"` : '';
     inputHtml = `
       <div class="input-wrap">
-        ${prefix}
         <input type="number" id="${inputId}" data-key="${_esc(param.key)}"
-          class="${cls.join(' ')}" value="${val}"${min}${max}${step}>
+          class="${cls.join(' ')}" value="${val}"${min}${max}${step}${ph}>
         ${suffix}
       </div>`;
   }
