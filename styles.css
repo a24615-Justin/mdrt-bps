@@ -325,6 +325,8 @@ body::before {
 .id-btn.active-manager   { border-color: rgba(142,68,173,.45); background: rgba(142,68,173,.08); color: #7b2d8b; }
 .id-btn.active-medical   { border-color: rgba(15,122,58,.45);  background: rgba(15,122,58,.08);  color: var(--broker); }
 .id-btn.active-newbie    { border-color: rgba(181,42,30,.45);  background: rgba(181,42,30,.08);  color: var(--danger); }
+.id-btn.active-realtor   { border-color: rgba(217,119,6,.5);   background: rgba(217,119,6,.1);   color: #D97706; }
+.id-btn.active-auto      { border-color: rgba(14,165,233,.45); background: rgba(14,165,233,.08); color: #0EA5E9; }
 
 /* ─── Sections ───────────────────────────────────────────────────────────── */
 .section { padding: 20px 16px; animation: fadeIn .25s ease; }

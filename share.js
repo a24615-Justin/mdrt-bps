@@ -15,7 +15,7 @@
   var broker = params.get('broker');
 
   // 合法身份列表
-  var validPersonas = ['insurance', 'banker', 'manager', 'medical', 'newbie'];
+  var validPersonas = ['insurance', 'banker', 'manager', 'medical', 'newbie', 'realtor', 'auto'];
 
   if (persona && validPersonas.indexOf(persona) !== -1) {
     // 設定 Tab A 身份
