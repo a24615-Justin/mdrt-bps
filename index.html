@@ -745,15 +745,25 @@ function updateGoldMine() {
 // ─── Toggle UI for cross-industry personas ──────────────────────────
 function toggleCrossIndustryUI(isCross) {
   const goldMine = document.getElementById('gold-mine-container');
-  // 異業 persona 隱藏所有傳統對比區塊（KPI/情境/公司/對比表）
-  const tradSections = ['section-1', 'section-2', 'company-chips-container', 'comparison-table-container', 'company-notice', 'identity-inline'];
+  // 異業隱藏：公司chips + 對比表 + 公司通知 + 自訂表單 + KPI四格 + 情境模擬
+  // 注意：不隱藏 section-1 本身（金礦試算和參數在裡面）
+  const hideIds = [
+    'company-chips-container', 'comparison-table-container', 'company-notice',
+    'custom-company-form', 'identity-inline',
+    'section-2',  // KPI 四格 + 情境模擬
+  ];
 
   if (goldMine) goldMine.style.display = isCross ? 'block' : 'none';
-  tradSections.forEach(id => {
+  hideIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = isCross ? 'none' : '';
   });
 
+  // section-1 的標題也需要調整
+  const s1Title = document.querySelector('#section-1 > .section-title');
+  if (s1Title) s1Title.textContent = isCross ? '① 客戶池金礦試算' : '① 制度對照';
+
+  // persona-context 保留（顯示目前身份）
   // Section 3（深度心理腳本）保留——異業也有腳本
 }
 
