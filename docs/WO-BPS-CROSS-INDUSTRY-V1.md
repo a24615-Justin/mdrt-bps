@@ -112,7 +112,6 @@
 | `autoBaseSalary` | 月底薪 | currency | 25000 | current | 品牌經銷商基本薪 |
 | `autoMonthlyUnits` | 月均賣車數 | number | 4 | current | |
 | `autoBonusPerUnit` | 每台獎金 | currency | 12000 | current | 利潤空間逐年壓縮 |
-| `autoBonusDecay` | 獎金年遞減率 | percent | 5 | current | 電動車/直銷侵蝕（%/年） |
 | `autoClients` | 交車客戶數 | number | 150 | current | 歷年交車名單 |
 | `autoAvgPremium` | 客戶平均年保費 | currency | 35000 | advantage | 車險+壽險+意外險 |
 | `autoConvRate` | 客戶轉換率 | percent | 20 | advantage | 車主轉保險客戶比例（較高，因有車險需求） |
@@ -122,7 +121,7 @@
 **現職（車仲）**
 ```
 年收入 = autoBaseSalary × 12 + autoMonthlyUnits × 12 × autoBonusPerUnit
-第N年獎金 = 第1年獎金 × (1 - autoBonusDecay/100)^(N-1)  // 逐年遞減
+每年固定（不假設遞減——痛點是「沒有被動收入」，不是「賺更少」）
 被動收入 = 0（永遠）
 ```
 
@@ -238,10 +237,11 @@ Scenario: 房仲 persona 5 年投影
   And 保經 5 年累計 > 現職（含續佣堆疊）
   And 客戶池金礦區塊顯示潛在 FYP 和首年佣金
 
-Scenario: 車仲 persona 獎金遞減
-  Given persona = 'auto', 每台獎金 1.2 萬, 遞減率 5%/年
-  When 計算第 5 年獎金
-  Then 每台獎金 = 1.2 × 0.95^4 = 0.98 萬（自動衰減）
+Scenario: 車仲 persona 固定收入 vs 保經成長
+  Given persona = 'auto', 月底薪 2.5 萬, 月賣 4 台, 每台獎金 1.2 萬
+  When 計算 5 年累計
+  Then 現職每年固定 88 萬，被動收入永遠 0
+  And 保經第 5 年被動收入 > 0（續佣堆疊）
 
 Scenario: 客戶池金礦試算
   Given 既有客戶 200 人, 轉換率 15%, 平均保費 4 萬
