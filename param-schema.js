@@ -46,12 +46,12 @@ const PARAM_SCHEMA = [
     description: '過去一年的年化保費總額，含新契約和續期保費。',
   },
   {
-    key: 'avgProductCommRate', label: '平均商品佣金率', section: 'current',
+    key: 'tradProductCommRate', label: '傳統端商品佣金率', section: 'current',
     type: 'percent', default: 60, suffix: '%',
     min: 10, max: 100, step: 1,
     personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
-    description: '所銷售商品的平均佣金率。終身壽險約 70-90%、定期壽險約 30-50%、投資型約 15-25%。此為加權平均。雙方試算共用同一商品佣金率。',
+    description: '留在現職時銷售商品的平均佣金率。終身壽險約 70-90%、定期壽險約 30-50%、投資型約 15-25%。此為加權平均。',
   },
   {
     key: 'commRateTrad', label: '個人佣金率（職階）', section: 'current',
@@ -91,7 +91,7 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'fixedSalary', label: '年度固定薪資', section: 'current',
-    type: 'currency', default: 800000, prefix: 'NT$',
+    type: 'currency', default: 620000, prefix: 'NT$',
     personas: ['banker'], visibility: 'always',
     companyOverride: true, requiresVerification: false,
     description: '銀行支付的年度固定薪資（含底薪+固定津貼+年終獎金）。轉職後此收入歸零。',
@@ -105,7 +105,7 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'conversionRate', label: '客戶轉換率', section: 'current',
-    type: 'percent', default: 40, suffix: '%',
+    type: 'percent', default: 30, suffix: '%',
     min: 0, max: 100,
     personas: ['banker'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
@@ -113,7 +113,7 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'orgAllowance', label: '年度組織津貼', section: 'current',
-    type: 'currency', default: 1200000, prefix: 'NT$',
+    type: 'currency', default: 800000, prefix: 'NT$',
     personas: ['mgr'], visibility: 'always',
     companyOverride: true, requiresVerification: true,
     description: '每年從組織制度獲得的管理津貼。轉職後此收入歸零（沉沒成本）。',
@@ -127,21 +127,21 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'followCount', label: '預估跟隨轉職人數', section: 'current',
-    type: 'number', default: 6, min: 0, max: 100,
+    type: 'number', default: 4, min: 0, max: 100,
     personas: ['mgr'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
     description: '預估願意跟隨轉職的核心夥伴人數。此人數影響增員獎金計算。',
   },
   {
     key: 'medIncome', label: '年度醫療收入', section: 'current',
-    type: 'currency', default: 1800000, prefix: 'NT$',
+    type: 'currency', default: 1100000, prefix: 'NT$',
     personas: ['med'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
     description: '目前醫療通路的年度收入。轉職後此收入歸零（沉沒成本）。',
   },
   {
     key: 'referralClients', label: '轉介客戶數/年', section: 'current',
-    type: 'number', default: 80, min: 0,
+    type: 'number', default: 50, min: 0,
     personas: ['med'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
     description: '每年可轉介的客戶數量，影響 FYP 的計算基數。',
@@ -180,7 +180,7 @@ const PARAM_SCHEMA = [
   // ═══ Section B — 轉職風險係數 (risk) ═══
   {
     key: 'lossRate', label: '客戶流失率', section: 'risk',
-    type: 'slider', default: 15, suffix: '%',
+    type: 'slider', default: 20, suffix: '%',
     min: 5, max: 40, step: 1,
     personas: ['ins'], visibility: 'always',
     companyOverride: false,
@@ -198,7 +198,7 @@ const PARAM_SCHEMA = [
       banker:  { default: 6,  min: 3,  max: 18, label: '適應期（月）', divisor: 24, maxL: 0.9 },
       mgr:     { default: 9,  min: 3,  max: 24, label: '陣痛期（月）', divisor: 36, maxL: 0.8 },
       med:     { default: 6,  min: 2,  max: 12, label: '建立期（月）', divisor: 18, maxL: 0.7 },
-      new:     { default: 3,  min: 1,  max: 9,  label: '空窗期（月）', divisor: 12, maxL: 0.5 },
+      new:     { default: 6,  min: 1,  max: 12, label: '空窗期（月）', divisor: 12, maxL: 0.5 },
     },
     // L 計算：Math.min(adapt / divisor, maxL)
   },
@@ -212,6 +212,14 @@ const PARAM_SCHEMA = [
   // v4.2: legalReserve 已移除（保險業無競業禁止）
 
   // ═══ Section C — 保經優勢 (advantage) ═══
+  {
+    key: 'brokerProductCommRate', label: '保經端商品佣金率', section: 'advantage',
+    type: 'percent', default: 60, suffix: '%',
+    min: 10, max: 100, step: 1,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '轉到保經後銷售商品的平均佣金率。保經可自由選擇商品，通常能銷售佣金率更高的商品組合。',
+  },
   {
     key: 'brokerCommRate', label: '保經個人佣金率（職階）', section: 'advantage',
     type: 'percent', default: 40, suffix: '%',
@@ -245,7 +253,7 @@ const PARAM_SCHEMA = [
   },
   {
     key: 'recruitAvgFyp', label: '增員平均 FYP', section: 'advantage',
-    type: 'currency', default: 1500000, prefix: 'NT$',
+    type: 'currency', default: 1000000, prefix: 'NT$',
     personas: ['ins', 'mgr'], visibility: 'always',
     companyOverride: false,
     description: '每位增員夥伴的預估年化保費。組織獎金 = 增員人數 × 此數字 × 獎金率。',
@@ -577,9 +585,12 @@ function collectInputs(personaId) {
 // ─── Convert collectInputs output → compute5yr params ───
 // Bridges the schema keys to the compute5yr(p) parameter format
 // v3.0.2: 新增 avgProductCommRate — 實際佣金 = FYP × 商品佣金率 × 個人佣金率
+// v4.7: 拆分雙邊商品佣金率 — 傳統端/保經端可獨立設定
 function schemaToComputeParams(values, personaId) {
   const personaShort = PERSONA_IDS[personaId];
-  const productComm = (values.avgProductCommRate ?? 60) / 100;
+  // v4.7: 向下相容 — 優先讀新 key，fallback 到舊 avgProductCommRate
+  const tradProductComm = (values.tradProductCommRate ?? values.avgProductCommRate ?? 60) / 100;
+  const brokerProductComm = (values.brokerProductCommRate ?? values.avgProductCommRate ?? 60) / 100;
 
   // v4.2: 來佣打折率 — 公勝 1.0（不打折）、同業 0.8（保司來佣先扣 20%）
   const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
@@ -587,7 +598,7 @@ function schemaToComputeParams(values, personaId) {
   const _fybDiscount = _brokerEntry?.brokerDefaults?.fybDiscount ?? 1.0;
 
   // fybDiscount 乘入保經端所有收入（首佣、續佣、組織獎金）
-  const rb = productComm * _fybDiscount * (values.brokerCommRate ?? 40) / 100;
+  const rb = brokerProductComm * _fybDiscount * (values.brokerCommRate ?? 40) / 100;
   const ryr = _fybDiscount * (values.brokerRenewalRate ?? 5) / 100;
   const or_ = _fybDiscount * (values.orgBonusRate ?? 0) / 100;
 
@@ -607,7 +618,7 @@ function schemaToComputeParams(values, personaId) {
   if (personaId === 'insurance') {
     return {
       FYP: values.fyp ?? 3000000,
-      rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
+      rate_trad: tradProductComm * (values.commRateTrad ?? 20) / 100,
       // v4.5: 保險同業的續佣是純續佣，進衰減池
       _fixedIncome: 0,
       _renewalSunk: values.renewalIncome ?? 500000,
@@ -616,7 +627,7 @@ function schemaToComputeParams(values, personaId) {
       broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       postResignYrs: values.postResignRenewalYrs ?? 0,
-      L: (values.lossRate ?? 15) / 100,
+      L: (values.lossRate ?? 20) / 100,
       rb, ryr, or_,
       nrec: values.recruitCount ?? 0,
       rfyp: values.recruitAvgFyp ?? 0,
@@ -628,15 +639,15 @@ function schemaToComputeParams(values, personaId) {
   }
   if (personaId === 'banker') {
     const rawFYP = values.bankFyp ?? 5000000;
-    const conv = (values.conversionRate ?? 40) / 100;
+    const conv = (values.conversionRate ?? 30) / 100;
     const adapt = values.adaptMonths ?? (adaptConfig.default ?? 6);
     const divisor = adaptConfig.divisor || 24;
     const maxL = adaptConfig.maxL || 0.9;
     return {
       FYP: rawFYP * conv,
-      rate_trad: productComm * (values.commRateTrad ?? 8) / 100,
+      rate_trad: tradProductComm * (values.commRateTrad ?? 8) / 100,
       // v4.5: 底薪是固定收入，不進衰減池
-      _fixedIncome: values.fixedSalary ?? 800000,
+      _fixedIncome: values.fixedSalary ?? 620000,
       _renewalSunk: 0,  // 銀行理專無續佣
       ry_sunk: 0,
       ry_decay: 0.6,
@@ -662,7 +673,7 @@ function schemaToComputeParams(values, personaId) {
     const maxL = adaptConfig.maxL || 0.8;
     return {
       FYP,
-      rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
+      rate_trad: tradProductComm * (values.commRateTrad ?? 20) / 100,
       // v4.5: 組織津貼是固定收入，不進衰減池；續佣才進衰減池
       _fixedIncome: values.orgAllowance ?? 0,
       _renewalSunk: values.renewalIncome ?? 0,
@@ -687,7 +698,7 @@ function schemaToComputeParams(values, personaId) {
     };
   }
   if (personaId === 'medical') {
-    const clients = values.referralClients ?? 80;
+    const clients = values.referralClients ?? 50;
     const avgP = values.avgPremium ?? 150000;
     const ptRatio = (values.partTimeRatio ?? 100) / 100;  // v4.3: 兼職模式
     const FYP = clients * avgP * ptRatio;
@@ -696,9 +707,9 @@ function schemaToComputeParams(values, personaId) {
     const maxL = adaptConfig.maxL || 0.7;
     return {
       FYP,
-      rate_trad: productComm * (values.commRateTrad ?? 15) / 100,
+      rate_trad: tradProductComm * (values.commRateTrad ?? 15) / 100,
       // v4.5: 醫療收入是固定收入，不進衰減池
-      _fixedIncome: values.medIncome ?? 1800000,
+      _fixedIncome: values.medIncome ?? 1100000,
       _renewalSunk: 0,
       ry_sunk: 0,
       ry_decay: 0.6,
@@ -717,13 +728,13 @@ function schemaToComputeParams(values, personaId) {
     // v4.5: 新人 FYP 預設降為 80 萬（更貼近實際）、成長率降為 15%
     const FYP = (values.newbieFyp ?? 800000) * ptRatio;
     const growth = (values.growthRate ?? 15) / 100;
-    const adapt = values.adaptMonths ?? (adaptConfig.default ?? 3);
+    const adapt = values.adaptMonths ?? (adaptConfig.default ?? 6);
     const divisor = adaptConfig.divisor || 12;
     const maxL = adaptConfig.maxL || 0.5;
     const fyb = Math.min(1, Math.max(0.1, values.fybCoeff ?? 1));
     return {
       FYP,
-      rate_trad: productComm * (values.commRateTrad ?? 18) / 100,
+      rate_trad: tradProductComm * (values.commRateTrad ?? 18) / 100,
       ry_sunk: 0,
       ry_decay: 0.6,
       broker_comm_step: gsBrokerCommStep,

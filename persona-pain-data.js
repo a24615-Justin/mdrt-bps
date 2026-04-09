@@ -92,7 +92,7 @@ var PERSONA_PAIN_POINTS = {
       ],
     },
 
-    typicalIncome: { fyp: 1500000, commRate: 8, renewalIncome: 0, baseSalary: 800000 },
+    typicalIncome: { fyp: 1500000, commRate: 8, renewalIncome: 0, baseSalary: 620000 },
 
     topPainPoints: [
       '年薪有天花板（85-115 萬），升遷靠年資卡位',

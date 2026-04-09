@@ -559,12 +559,15 @@ function selectCompany(id,chipEl){
   }
 
   // v4.1: 自訂公司 → 展開 inline 表單（取代 prompt()）
+  var customForm=g('custom-company-form');
   if(id==='custom'){
     _pendingCustomChipEl=chipEl;
-    var form=g('custom-company-form');
-    if(form)form.style.display='block';
+    if(customForm)customForm.style.display='block';
     return; // 等使用者填完按「套用」
   }
+
+  // 切換到非自訂公司時，關閉自訂表單
+  if(customForm)customForm.style.display='none';
 
   selectedCompanyId=id;
   // 只更新壽險/自訂 chip 的 active 狀態
