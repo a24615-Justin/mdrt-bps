@@ -32,11 +32,23 @@
 <body class="insurance">
 <a href="#main-content" class="skip-link">跳到主要內容</a>
 
+<!-- ═══ QR Code 投影面板 ═══ -->
+<div id="qr-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);flex-direction:column;align-items:center;justify-content:center;cursor:pointer" onclick="closeQR()">
+  <div style="background:#fff;border-radius:20px;padding:32px 40px;text-align:center;max-width:400px;width:90%" onclick="event.stopPropagation()">
+    <div style="font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#1a2d42;margin-bottom:4px">📱 掃描加入</div>
+    <div style="font-size:13px;color:#6a8ea8;margin-bottom:16px">掃描 QR Code 開啟試算工具</div>
+    <div id="qr-img-wrap" style="display:flex;justify-content:center;margin-bottom:12px"></div>
+    <div id="qr-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:#9a6e00;word-break:break-all;padding:8px;background:#f0f4f9;border-radius:8px;margin-bottom:16px"></div>
+    <button onclick="closeQR()" style="background:#1a2d42;color:#fff;border:none;padding:10px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">關閉</button>
+  </div>
+</div>
+
 <!-- ═══ Sticky Header ═══ -->
 <header class="header" role="banner">
   <div>
     <div class="header-top">
       <div class="header-badge">⚡ 公勝保經 · BPS</div>
+      <button id="qr-toggle-btn" onclick="openQR()" style="margin-left:auto;background:var(--gold-dim);border:1px solid rgba(154,110,0,0.3);color:var(--gold);padding:3px 10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" title="顯示 QR Code 讓學員掃描">📱 QR</button>
     </div>
     <h1><span>公勝</span>MDRT 增員推演</h1>
   </div>
@@ -1033,6 +1045,34 @@ if ('serviceWorker' in navigator) {
       });
     }
   }
+</script>
+
+<!-- QR Code 產生器 -->
+<script>
+(function(){
+  window.openQR=function(){
+    var url=window.location.href;
+    if(typeof getShareUrl==='function') url=getShareUrl();
+    var overlay=document.getElementById('qr-overlay');
+    overlay.style.display='flex';
+    document.getElementById('qr-url-display').textContent=url;
+    // 使用 QR Server API 產生 QR Code 圖片
+    var img=document.getElementById('qr-img');
+    if(!img){
+      img=document.createElement('img');
+      img.id='qr-img';
+      img.width=220;img.height=220;
+      img.style.cssText='border-radius:12px;border:1px solid #e5e7eb';
+      img.alt='QR Code';
+      document.getElementById('qr-img-wrap').appendChild(img);
+    }
+    img.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(url);
+  };
+  window.closeQR=function(){
+    document.getElementById('qr-overlay').style.display='none';
+  };
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeQR()});
+})();
 </script>
 </body>
 </html>
