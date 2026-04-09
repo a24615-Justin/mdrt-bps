@@ -1,0 +1,3903 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公勝MDRT 財務推演模組</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MDRT-BPS v3.0 — Main Stylesheet
+   公勝 MDRT 財務推演模組
+   Last updated: 2026-04-01
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --navy: #f0f4f9;
+  --navy-2: #e2eaf4;
+  --navy-3: #d0dbec;
+  --gold: #9a6e00;
+  --gold-light: #b8860b;
+  --gold-dim: rgba(154,110,0,0.12);
+  --trad: #1a56b8;
+  --trad-light: rgba(26,86,184,0.10);
+  --broker: #0f7a3a;
+  --broker-light: rgba(15,122,58,0.10);
+  --danger: #b52a1e;
+  --surface: #ffffff;
+  --surface-2: #f0f4f9;
+  --border: rgba(0,0,0,0.10);
+  --text: #1a2d42;
+  --text-dim: #3a5878;
+  --text-muted: #6a8ea8;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+/* ─── Reset ──────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(154,110,0,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(15,122,58,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 60% 30%, rgba(26,86,184,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 0 40px;
+}
+
+/* ─── Sticky Header ──────────────────────────────────────────────────────── */
+.header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to bottom, rgba(240,244,249,0.98), rgba(240,244,249,0.0));
+  box-shadow: 0 1px 0 var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,162,39,0.3);
+  color: var(--gold);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.header h1 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+.header h1 span { color: var(--gold); }
+.id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: all .3s;
+  white-space: nowrap;
+}
+.id-badge.insurance { background: rgba(201,162,39,0.15); color: var(--gold); }
+.id-badge.banker    { background: rgba(26,86,184,0.12); color: var(--trad); }
+.id-badge.manager   { background: rgba(142,68,173,0.12); color: #7b2d8b; }
+.id-badge.medical   { background: rgba(15,122,58,0.12); color: var(--broker); }
+.id-badge.newbie    { background: rgba(181,42,30,0.12); color: var(--danger); }
+
+/* ─── v4.0: Main Tabs ───────────────────────────────────────────────────── */
+.main-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+.main-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.main-tab.active {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  box-shadow: 0 2px 8px rgba(154,110,0,0.12);
+}
+.main-tab:not(.active):hover {
+  border-color: rgba(154,110,0,0.3);
+  color: var(--text);
+}
+
+/* ─── v4.0: Tab Panels ──────────────────────────────────────────────────── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─── v4.1: Persona Context Hint (Tab B) ────────────────────────────────── */
+.persona-context {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+}
+.persona-context span {
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* ─── v4.1: Custom Company Inline Form ──────────────────────────────────── */
+.custom-company-form {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin: 10px 0;
+}
+.custom-form-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: var(--text-dim);
+}
+.custom-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.custom-form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  color: var(--text-muted);
+  gap: 3px;
+}
+.custom-form-grid label:first-child {
+  grid-column: 1 / -1;
+}
+.custom-form-grid input {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--surface);
+}
+.custom-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+.custom-form-apply {
+  background: var(--broker);
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.custom-form-apply:hover { opacity: 0.9; }
+.custom-form-cancel {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ─── v4.0: CTA Bridge (Tab A → Tab B) ──────────────────────────────────── */
+.cta-bridge {
+  text-align: center;
+  padding: 28px 16px;
+}
+.cta-bridge-text {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.cta-bridge-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(154,110,0,0.25);
+  transition: all .2s;
+  letter-spacing: .03em;
+}
+.cta-bridge-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(154,110,0,0.35);
+}
+.cta-bridge-btn:active {
+  transform: translateY(0);
+}
+
+/* ─── Section Nav ────────────────────────────────────────────────────────── */
+.section-nav { display: flex; gap: 4px; margin-top: 8px; }
+.section-nav a {
+  flex: none;
+  padding: 5px 11px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all .2s;
+}
+.section-nav a.active {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.section-nav a:hover { color: var(--text); }
+.section-nav a:visited { color: var(--text-muted); }
+
+/* ─── Identity Switcher (v3.0.3: 移入 Section ①) ────────────────────────── */
+.identity-bar { display: none; } /* 舊版 header bar 隱藏 */
+.identity-inline {
+  margin: 4px 0 12px;
+}
+.identity-tabs-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 2px;
+}
+.id-btn {
+  flex: none;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.id-btn.active-insurance { border-color: rgba(201,162,39,.5);  background: rgba(201,162,39,.1);  color: var(--gold); }
+.id-btn.active-banker    { border-color: rgba(26,86,184,.45);  background: rgba(26,86,184,.08);  color: var(--trad); }
+.id-btn.active-manager   { border-color: rgba(142,68,173,.45); background: rgba(142,68,173,.08); color: #7b2d8b; }
+.id-btn.active-medical   { border-color: rgba(15,122,58,.45);  background: rgba(15,122,58,.08);  color: var(--broker); }
+.id-btn.active-newbie    { border-color: rgba(181,42,30,.45);  background: rgba(181,42,30,.08);  color: var(--danger); }
+
+/* ─── Sections ───────────────────────────────────────────────────────────── */
+.section { padding: 20px 16px; animation: fadeIn .25s ease; }
+.section + .section { border-top: 2px solid var(--navy-3); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before { content: ''; display: block; width: 3px; height: 14px; border-radius: 2px; }
+.section-title.blue::before   { background: var(--trad); }
+.section-title.gold::before   { background: var(--gold); }
+.section-title.green::before  { background: var(--broker); }
+.section-title.purple::before { background: #8e44ad; }
+.section-title.red::before    { background: var(--danger); }
+
+/* ─── Company Chips ──────────────────────────────────────────────────────── */
+.company-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.company-chip {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.company-chip.active {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  font-weight: 600;
+}
+/* v3.0.3: 保經 chip active 用藍色區分 */
+.chip-broker.active {
+  border-color: #4A90D9;
+  background: rgba(74, 144, 217, 0.1);
+  color: #4A90D9;
+}
+.company-chip-section {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 8px 0 5px;
+  width: 100%;
+}
+
+/* ─── Company Notice ─────────────────────────────────────────────────────── */
+.company-notice {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.company-notice .stale-warn { color: var(--danger); font-weight: 600; }
+
+/* ─── Param Inputs (rendered by param-schema.js) ─────────────────────────── */
+.param-section { margin-bottom: 16px; }
+.param-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.param-fields { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.field { margin-bottom: 2px; }
+.field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: .06em;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+.field-desc { font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.field-warning { font-size: 10px; margin-top: 3px; padding: 3px 8px; border-radius: 4px; display: none; }
+.field-warning.warning-orange { background: rgba(255,165,0,0.1); color: #b8660d; }
+.field-warning.warning-red { background: rgba(220,20,60,0.1); color: var(--danger); }
+.verify-badge { font-size: 9px; color: var(--gold); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.modified-badge { font-size: 9px; color: var(--broker); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 4px; }
+.input-wrap { position: relative; }
+.input-wrap .prefix {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 12px; font-family: 'DM Mono', monospace; pointer-events: none;
+  transition: opacity 0.15s;
+}
+/* focus 時或輸入有值時隱藏前綴，避免與數字重疊 */
+.input-wrap:focus-within .prefix,
+.input-wrap.has-value .prefix { opacity: 0; }
+.input-wrap .suffix {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 11px; pointer-events: none;
+}
+input[type="number"] {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 11px 12px 11px 12px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+}
+input[type="number"]:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-dim); }
+input[type="number"].no-prefix { padding-left: 12px; }
+input[type="number"].has-suffix { padding-right: 32px; }
+.slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+.slider-value {
+  font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500;
+  color: var(--gold); background: var(--gold-dim); padding: 2px 9px; border-radius: 6px; align-self: flex-start;
+}
+input[type="range"] {
+  width: 100%; height: 6px; background: var(--surface-2); border: none; border-radius: 3px;
+  cursor: pointer; -webkit-appearance: none; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; background: var(--gold);
+  border-radius: 50%; box-shadow: 0 0 0 4px var(--gold-dim); cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; background: var(--gold); border-radius: 50%;
+  border: none; box-shadow: 0 0 0 4px var(--gold-dim);
+}
+.advanced-toggle { margin-top: 8px; }
+.advanced-toggle summary { font-size: 10px; color: var(--text-muted); cursor: pointer; padding: 6px 0; }
+.advanced-toggle summary:hover { color: var(--text-dim); }
+
+/* ─── Comparison Table ───────────────────────────────────────────────────── */
+.comparison-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px; }
+.comparison-table th {
+  background: var(--navy-3); color: var(--text-dim); font-weight: 600; font-size: 9px;
+  letter-spacing: .06em; text-transform: uppercase; padding: 7px 9px; text-align: left;
+}
+.comparison-table td { padding: 8px 9px; border-bottom: 1px solid var(--border); font-size: 11px; vertical-align: top; }
+.comparison-table .dual-val { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── Info Box ───────────────────────────────────────────────────────────── */
+.info-box {
+  background: var(--gold-dim); border: 1px solid rgba(201,162,39,.25); border-radius: var(--radius-sm);
+  padding: 10px 12px; font-size: 11px; color: var(--gold); line-height: 1.5; margin-bottom: 14px;
+}
+
+/* ─── Cards ──────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px;
+}
+.card.gold { border-color: rgba(201,162,39,.25); background: linear-gradient(135deg, var(--surface), rgba(201,162,39,.04)); }
+
+/* ─── KPI Grid ───────────────────────────────────────────────────────────── */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+.kpi-full  { grid-column: 1 / -1; }
+.kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 13px; text-align: center;
+}
+.kpi-label {
+  font-size: 10px; color: var(--text-muted); font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; margin-bottom: 5px;
+}
+.kpi-value  { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; }
+.kpi-sub    { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+.kpi-ref    { font-size: 9px; color: var(--text-muted); font-style: italic; }
+.kpi.trad   .kpi-value { color: var(--trad); }
+.kpi.broker .kpi-value { color: var(--broker); }
+.kpi.diff   .kpi-value { color: var(--gold); }
+.kpi.be     .kpi-value { color: var(--danger); font-size: 14px; }
+
+/* ─── Timeline ───────────────────────────────────────────────────────────── */
+.tl-wrap {
+  position: relative; height: 38px; margin: 14px 0 20px; background: var(--surface-2);
+  border-radius: 20px; overflow: visible;
+}
+.tl-track { position: absolute; top: 14px; left: 0; right: 0; height: 10px; background: var(--navy-3); border-radius: 5px; }
+.tl-fill  { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--broker), var(--gold)); transition: width .8s ease; }
+.tl-dot {
+  position: absolute; top: 10px; width: 18px; height: 18px; background: var(--gold);
+  border-radius: 50%; box-shadow: 0 0 0 4px var(--gold-dim); transform: translateX(-50%); transition: left .8s ease;
+}
+.tl-label {
+  position: absolute; top: -2px; font-size: 10px; font-weight: 600; color: var(--gold);
+  transform: translateX(-50%); white-space: nowrap;
+}
+.tl-endpoints { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── Annual Comparison ──────────────────────────────────────────────────── */
+.ac-wrap   { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.ac-header {
+  display: grid; grid-template-columns: 1fr 60px 1fr; background: var(--navy-3);
+  padding: 8px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+}
+.ac-header .ac-trad-h   { color: var(--trad); text-align: left; }
+.ac-header .ac-mid-h    { color: var(--text-muted); text-align: center; }
+.ac-header .ac-broker-h { color: var(--broker); text-align: right; }
+.ac-row {
+  display: grid; grid-template-columns: 1fr 60px 1fr; padding: 10px;
+  border-bottom: 1px solid var(--border); align-items: start;
+}
+.ac-row.ac-total    { background: var(--navy-2); font-weight: 600; }
+.ac-trad-col        { text-align: left; }
+.ac-broker-col      { text-align: right; }
+.ac-mid-col         { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ac-amount          { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; }
+.ac-amount.trad     { color: var(--trad); }
+.ac-amount.broker   { color: var(--broker); }
+.ac-year-label      { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+.ac-diff            { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+.ac-diff.pos        { color: var(--broker); background: var(--broker-light); }
+.ac-diff.neg        { color: var(--danger); background: rgba(181,42,30,0.08); }
+.ac-diff.neu        { color: var(--text-muted); }
+.ac-items           { margin-top: 4px; }
+.ac-item            { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-muted); }
+.ac-item-dot        { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ac-item-dot.trad   { background: var(--trad); }
+.ac-item-dot.broker { background: var(--broker); }
+
+/* ─── Script Disclaimer (v3.0.2) ────────────────────────────────────────── */
+.script-disclaimer {
+  margin-top: 12px; padding: 8px 10px; font-size: 10px; color: var(--text-muted);
+  background: var(--surface-2); border-radius: 6px; border-left: 3px solid var(--gold);
+  line-height: 1.5;
+}
+
+/* ─── Bar Chart (inline) ─────────────────────────────────────────────────── */
+.chart-wrap  { margin: 14px 0; }
+.chart-title {
+  font-size: 10px; color: var(--text-muted); font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.bar-group { margin-bottom: 9px; }
+.bar-track { height: 7px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 4px; transition: width .8s cubic-bezier(.22,1,.36,1); }
+.bar-fill.trad   { background: linear-gradient(90deg, #2d6ab3, var(--trad)); }
+.bar-fill.broker { background: linear-gradient(90deg, #1e9950, var(--broker)); }
+
+/* ─── Scenario (Section ③) ───────────────────────────────────────────────── */
+.scenario-section details { margin-bottom: 10px; }
+.scenario-section summary {
+  font-size: 12px; font-weight: 600; color: var(--text-dim); cursor: pointer;
+  padding: 10px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); transition: all .2s;
+}
+.scenario-section summary:hover { background: var(--surface-2); }
+.scenario-section details[open] summary { border-radius: var(--radius-sm) var(--radius-sm) 0 0; border-bottom: none; }
+.scenario-section .detail-body {
+  padding: 14px; background: var(--surface); border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.scenario-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.sc-btn {
+  flex: 1; padding: 9px 5px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-dim); font-family: 'Outfit', sans-serif;
+  font-size: 11px; font-weight: 500; cursor: pointer; text-align: center; transition: all .2s; line-height: 1.3;
+}
+.sc-btn.active-c { border-color: rgba(181,42,30,.4); color: var(--danger); background: rgba(181,42,30,.07); }
+.sc-btn.active-b { border-color: rgba(201,162,39,.4); color: var(--gold); background: var(--gold-dim); }
+.sc-btn.active-o { border-color: rgba(15,122,58,.4); color: var(--broker); background: rgba(15,122,58,.07); }
+.sc-compare { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 14px; }
+.sc-compare th {
+  font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 7px 9px; text-align: center;
+}
+.sc-compare td {
+  padding: 8px 9px; border-bottom: 1px solid var(--border); text-align: center;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+}
+.sc-compare .highlight td { font-weight: 600; background: var(--gold-dim); }
+
+/* ─── Script Cards ───────────────────────────────────────────────────────── */
+.script-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all .2s;
+}
+.script-card:hover { border-color: var(--gold); }
+.script-card .tag { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+.script-card .body { font-size: 12px; line-height: 1.7; color: var(--text-dim); display: none; }
+.script-card.open .body { display: block; }
+
+.badge { display: inline-block; font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.badge.pos { background: var(--broker-light); color: var(--broker); }
+.badge.neg { background: rgba(181,42,30,.08); color: var(--danger); }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+.footer {
+  padding: 20px 16px; border-top: 2px solid var(--navy-3);
+  font-size: 10px; color: var(--text-muted); line-height: 1.6;
+}
+.footer .disclaimer {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px; margin-top: 10px;
+}
+.footer .sources { margin-top: 8px; font-size: 9px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive Breakpoints
+   Mobile:  < 640px  — single column, compact spacing
+   Tablet:  ≥ 640px  — slightly wider spacing
+   Desktop: ≥ 800px  — dual column inputs, header flex row
+   Wide:    ≥ 1024px — max-width container, comfortable padding
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Mobile (< 640px): single column, compact ───────────────────────────── */
+@media (max-width: 639px) {
+  .section-nav {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .ac-header, .ac-row { grid-template-columns: 1fr 50px 1fr; }
+  .ac-amount { font-size: 12px; }
+  .kpi-value { font-size: 16px; }
+  .section { padding: 16px 12px; }
+  .identity-tabs { gap: 4px; }
+  .id-btn { padding: 6px 10px; font-size: 10px; }
+}
+
+/* ─── Small mobile (≤ 375px): extra compact ──────────────────────────────── */
+@media (max-width: 375px) {
+  .main-tab { font-size: 11px; padding: 8px 6px; }
+  .header h1 { font-size: 15px; }
+  .header-badge { font-size: 8px; padding: 2px 6px; }
+  .id-badge { font-size: 9px; padding: 2px 6px; }
+  .section-nav a { padding: 4px 8px; font-size: 10px; }
+  .kpi { padding: 10px; }
+  .kpi-value { font-size: 14px; }
+  .kpi-label { font-size: 9px; }
+  .ac-header, .ac-row { grid-template-columns: 1fr 46px 1fr; font-size: 10px; }
+  .ac-amount { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ac-diff { font-size: 9px; padding: 1px 3px; white-space: nowrap; }
+  .ac-year-label { font-size: 9px; }
+  .ac-items { display: none; } /* 375px 隱藏明細，避免擠壓 */
+  .company-chip { padding: 5px 8px; font-size: 10px; }
+  input[type="number"] { font-size: 13px; padding: 9px 10px 9px 24px; }
+}
+
+/* ─── Tablet+ (≥ 800px): dual column inputs, horizontal header ───────────── */
+@media (min-width: 800px) {
+  .param-fields { grid-template-columns: 1fr 1fr; }
+  .header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .header-top { margin-bottom: 0; }
+  .section-nav { margin-top: 0; }
+  .identity-bar { position: sticky; top: 65px; z-index: 99; }
+  .section { padding: 24px 20px; }
+  .kpi-grid { gap: 12px; }
+}
+
+/* ─── Desktop (≥ 1024px): comfortable spacing ────────────────────────────── */
+@media (min-width: 1024px) {
+  .container { padding: 0 16px 40px; }
+  .section { padding: 28px 24px; }
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .kpi-full { grid-column: 1 / -1; }
+  .ac-header, .ac-row { grid-template-columns: 1fr 80px 1fr; }
+  .ac-amount { font-size: 15px; }
+}
+
+/* ─── Wide (≥ 1440px): max comfort ───────────────────────────────────────── */
+@media (min-width: 1440px) {
+  .container { max-width: 1200px; }
+}
+
+</style>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MDRT-BPS v4.0 — Pain Module CSS (Tab A)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Pain Script Cards (A-4) ───────────────────────────────────────────── */
+.pain-cards-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pain-script-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.pain-script-card:hover {
+  border-color: var(--gold);
+}
+
+.pain-card-q {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.pain-card-a {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.pain-script-card.open .pain-card-a {
+  display: block;
+  animation: fadeIn .25s ease;
+}
+
+.pain-card-a-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--broker);
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+}
+
+/* ─── Responsive for Tab A ──────────────────────────────────────────────── */
+@media (max-width: 375px) {
+  .pain-card-q { font-size: 12px; }
+  .pain-card-a { font-size: 11px; }
+}
+
+</style>
+</head>
+
+<body class="insurance">
+
+<!-- ═══ Sticky Header ═══ -->
+<div class="header">
+  <div>
+    <div class="header-top">
+      <div class="header-badge">⚡ 公勝保經 · BPS</div>
+    </div>
+    <h1><span>公勝</span>MDRT 增員推演</h1>
+  </div>
+  <!-- v4.0: 主 Tab 切換（取代舊的 section-nav） -->
+  <nav class="main-tabs" id="main-tabs">
+    <button class="main-tab active" data-tab="A" onclick="switchTab('A',this)">💡 為什麼做保經？</button>
+    <button class="main-tab" data-tab="B" onclick="switchTab('B',this)">📊 制度收入試算</button>
+  </nav>
+</div>
+
+<!-- ═══════════════════════ TAB A: 為什麼做保經？ ═══════════════════════ -->
+<div class="tab-panel active" id="tab-A" style="display:block">
+<div class="container">
+
+  <!-- A-0: 身份選擇 -->
+  <div class="section" id="section-a0">
+    <div class="section-title blue">你目前的身份</div>
+    <div class="identity-tabs-inline" id="pain-identity-tabs">
+      <button class="id-btn active active-insurance" onclick="setPainId('insurance',this)">🛡️ 保險同業</button>
+      <button class="id-btn" onclick="setPainId('banker',this)">🏦 銀行理專</button>
+      <button class="id-btn" onclick="setPainId('manager',this)">👑 壽險主管</button>
+      <button class="id-btn" onclick="setPainId('medical',this)">🩺 醫療通路</button>
+      <button class="id-btn" onclick="setPainId('newbie',this)">🌱 新人 / 考慮入行</button>
+    </div>
+  </div>
+
+  <!-- A-1: 痛點雷達圖 -->
+  <div class="section" id="section-a1">
+    <div class="section-title blue">現職 vs 保經：五大關鍵差異</div>
+    <div id="radar-container"></div>
+  </div>
+
+  <!-- A-2: 生活節奏對照 -->
+  <div class="section" id="section-a2">
+    <div class="section-title blue">一天的生活節奏</div>
+    <div id="daily-schedule-container"></div>
+  </div>
+
+  <!-- A-3: 收入天花板（簡化版 income-chart） -->
+  <div class="section" id="section-a3">
+    <div class="section-title gold">收入天花板在哪裡？</div>
+    <div id="pain-income-container"></div>
+  </div>
+
+  <!-- A-4: 觀念溝通卡片 -->
+  <div class="section" id="section-a4">
+    <div class="section-title purple">面談觀點卡</div>
+    <div id="pain-scripts-container"></div>
+  </div>
+
+  <!-- A-5: CTA → Tab B -->
+  <div class="section" id="section-a5">
+    <div class="cta-bridge">
+      <div class="cta-bridge-text">想看具體數字？</div>
+      <button class="cta-bridge-btn" onclick="bridgeToTabB()">幫你算算看 →</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════ TAB B: 制度收入試算 ═══════════════════════ -->
+<div class="tab-panel" id="tab-B" style="display:none">
+<div class="container">
+
+  <!-- B-nav: section 內部導航 -->
+  <nav class="section-nav" id="section-nav">
+    <a href="#section-1" class="active" data-section="1">① 制度</a>
+    <a href="#section-2" data-section="2">② 數字</a>
+    <a href="#section-3" data-section="3">③ 進階</a>
+  </nav>
+
+<!-- ═══ SECTION ①: 制度對照 ═══ -->
+<div class="section" id="section-1">
+  <div class="section-title blue">① 制度對照</div>
+
+  <!-- v4.1: 身份語境提示（從 Tab A 帶入） -->
+  <div class="persona-context" id="persona-context">
+    目前以 <span id="persona-context-label">🛡️ 保險同業</span> 身份試算 · <a href="#" onclick="switchTab('A',document.querySelector('.main-tab[data-tab=&quot;A&quot;]'));return false" style="color:var(--accent);text-decoration:underline">← 回 Tab A 切換</a>
+  </div>
+
+  <!-- v4.0: 身份由 Tab A 帶入，不再在 Tab B 顯示。隱藏保留 DOM 供 bridgeToTabB 同步 -->
+  <div class="identity-inline" id="identity-inline" style="display:none">
+    <div class="identity-tabs-inline">
+      <button class="id-btn active active-insurance" onclick="setId('insurance',this)">🛡️ 保險同業</button>
+      <button class="id-btn" onclick="setId('banker',this)">🏦 銀行理專</button>
+      <button class="id-btn" onclick="setId('manager',this)">👑 壽險主管</button>
+      <button class="id-btn" onclick="setId('medical',this)">🩺 醫療通路</button>
+      <button class="id-btn" onclick="setId('newbie',this)">🌱 新人培育</button>
+    </div>
+  </div>
+
+  <!-- 公司 chip -->
+  <div id="company-chips-container"></div>
+
+  <!-- v4.1: 自訂公司 inline 表單 -->
+  <div id="custom-company-form" class="custom-company-form" style="display:none">
+    <div class="custom-form-title">✏️ 自訂公司資料</div>
+    <div class="custom-form-grid">
+      <label>公司名稱 <input type="text" id="custom_name" value="自訂公司" maxlength="20"></label>
+      <label>合約制度 <input type="text" id="custom_contract" value="—" placeholder="雙合約制/純承攬"></label>
+      <label>首年佣金率 (%) <input type="number" id="custom_comm" value="20" min="1" max="100" step="1"></label>
+      <label>續期佣金率 (%) <input type="number" id="custom_renewal" value="3" min="0" max="30" step="0.5"></label>
+      <label>續佣遞減係數 <input type="number" id="custom_decay" value="0.6" min="0" max="1" step="0.05"></label>
+    </div>
+    <div class="custom-form-actions">
+      <button onclick="applyCustomCompany()" class="custom-form-apply">套用</button>
+      <button onclick="cancelCustomCompany()" class="custom-form-cancel">取消</button>
+    </div>
+  </div>
+
+  <!-- Company Notice -->
+  <div id="company-notice" class="company-notice" style="display:none"></div>
+
+  <!-- Comparison Table -->
+  <div id="comparison-table-container"></div>
+
+  <!-- PARAM_SCHEMA inputs -->
+  <div id="inputs-container"></div>
+</div>
+
+<!-- ═══════════════════════ SECTION ②: 數字說話 ═══════════════════════ -->
+<div class="section" id="section-2">
+  <div class="section-title gold">② 數字說話</div>
+
+  <!-- KPI 四格 -->
+  <div class="kpi-grid">
+    <div class="kpi trad">
+      <div class="kpi-label" id="trad-label">傳統公司</div>
+      <div class="kpi-value"><span id="k_trad5">0</span></div>
+      <div class="kpi-sub">萬元（5年累計）</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+    <div class="kpi broker">
+      <div class="kpi-label" id="broker-label">公勝保經</div>
+      <div class="kpi-value"><span id="k_broker5">0</span></div>
+      <div class="kpi-sub">萬元（5年累計）</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+    <div class="kpi diff">
+      <div class="kpi-label">5年淨利差距</div>
+      <div class="kpi-value"><span id="k_diff5">0</span></div>
+      <div class="kpi-sub" id="k_diff_label">萬元</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+    <div class="kpi be">
+      <div class="kpi-label">收入超越點</div>
+      <div class="kpi-value"><span id="k_be">—</span></div>
+      <div class="kpi-sub">保經累計超越傳統</div>
+      <div class="kpi-ref">僅供參考</div>
+    </div>
+  </div>
+
+  <!-- 損益兩平時間軸 -->
+  <div class="card">
+    <div class="chart-title">損益兩平時間軸</div>
+    <div class="tl-wrap">
+      <div class="tl-track"><div class="tl-fill" id="tl_fill" style="width:0"></div></div>
+      <div class="tl-dot" id="tl_dot" style="left:0"></div>
+      <div class="tl-label" id="tl_label" style="left:0">—</div>
+    </div>
+    <div class="tl-endpoints"><span>0 月</span><span>36 月</span></div>
+  </div>
+
+  <!-- 5 年逐年對比 -->
+  <div id="annual_comparison"></div>
+
+  <!-- 十年收入差距圖（P0-8: income-chart integration） -->
+  <div id="income-chart-container"></div>
+</div>
+
+<!-- ═══════════════════════ SECTION ③: 進階探討 ═══════════════════════ -->
+<div class="section scenario-section" id="section-3">
+  <div class="section-title purple">③ 進階探討</div>
+
+  <!-- 三情境比較 (Accordion) -->
+  <details>
+    <summary>🔬 三情境比較（保守 / 基準 / 樂觀）</summary>
+    <div class="detail-body">
+      <div class="scenario-tabs">
+        <button class="sc-btn active-c" onclick="showScenario('C',this)">😰 保守</button>
+        <button class="sc-btn" onclick="showScenario('B',this)">📊 基準</button>
+        <button class="sc-btn" onclick="showScenario('O',this)">🚀 樂觀</button>
+      </div>
+      <div id="sc_detail"></div>
+      <table class="sc-compare">
+        <thead><tr>
+          <th style="text-align:left">指標</th><th>😰 保守</th><th>📊 基準</th><th>🚀 樂觀</th>
+        </tr></thead>
+        <tbody id="sc_compare_tbody"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <!-- 面談備忘（深度思維腳本） -->
+  <details>
+    <summary>🧠 面談備忘（三層思維腳本）</summary>
+    <div class="detail-body">
+      <div class="script-card" onclick="this.classList.toggle('open')">
+        <div class="tag" id="tag1">第一層思維</div>
+        <div class="body" id="script1"></div>
+      </div>
+      <div class="script-card" onclick="this.classList.toggle('open')">
+        <div class="tag" id="tag2">第二層思維</div>
+        <div class="body" id="script2"></div>
+      </div>
+      <div class="script-card" onclick="this.classList.toggle('open')">
+        <div class="tag" id="tag3">第三層思維</div>
+        <div class="body" id="script3"></div>
+      </div>
+    </div>
+  </details>
+</div>
+
+</div><!-- /.container (Tab B) -->
+</div><!-- /#tab-B -->
+
+<!-- ═══ Footer ═══ -->
+<div class="footer">
+  <div>公勝 MDRT 財務推演模組 v4.0</div>
+  <div class="disclaimer" id="footer-disclaimer">
+    本工具所有數據僅供趨勢參考，不構成任何形式之收入承諾或轉職建議。
+    實際收入因個人業績、公司政策、市場環境而異，請自行評估。
+  </div>
+  <div class="sources" id="footer-sources"></div>
+</div>
+
+<!-- ═══ External Scripts ═══ -->
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MDRT-BPS v4.0 — Persona Pain Point Data
+   教案 L1-L5 萃取：5 身份 × 痛點雷達 + 生活節奏 + 典型收入 + TOP 異議
+   Last updated: 2026-04-03
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+var PERSONA_PAIN_POINTS = {
+
+  /* ─── 保險同業（年資 3 年+）─────────────────────────────────────── */
+  insurance: {
+    label: '保險同業',
+    icon: '🛡️',
+    desc: '壽險公司資深業務，有客戶基礎但受限於公司制度',
+
+    radar: { income: 3, ownership: 2, freedom: 4, growth: 3, retirement: 2 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 10 },
+
+    dailySchedule: {
+      current: [
+        { time: '07:30', event: '早會報到、主管點名', mood: 'low' },
+        { time: '09:00', event: '主管面談 / KPI 檢討', mood: 'low' },
+        { time: '10:00', event: '外出拜訪客戶（公司指定名單）', mood: 'ok' },
+        { time: '12:00', event: '午餐（自費）', mood: 'ok' },
+        { time: '13:30', event: '客戶約訪 ×2（只能賣自家商品）', mood: 'ok' },
+        { time: '17:00', event: '回公司交日報、填系統', mood: 'low' },
+        { time: '18:30', event: '回家（疲憊）', mood: 'low' },
+      ],
+      broker: [
+        { time: '09:00', event: '自主安排第一位客戶', mood: 'high' },
+        { time: '11:00', event: '線上處理續保/理賠', mood: 'ok' },
+        { time: '12:00', event: '午餐（客戶或自由）', mood: 'high' },
+        { time: '14:00', event: '客戶約訪 ×2（自選最適商品）', mood: 'high' },
+        { time: '16:30', event: '學習/進修/經營社群', mood: 'high' },
+        { time: '18:00', event: '回家（充電）', mood: 'high' },
+      ],
+    },
+
+    typicalIncome: { fyp: 3000000, commRate: 20, renewalIncome: 500000 },
+
+    topPainPoints: [
+      '佣金率 20-35% 被壓了整個職涯，晉升只有一條窄路',
+      '離職那天客戶全歸公司，十年心血歸零',
+      '只能賣自家商品，無法為客戶選擇市場上最好的方案',
+    ],
+
+    topObjections: [
+      { q: '我現在公司待得好好的，為什麼要動？',
+        a: '十幾年功力很扎實。但同樣保額，首佣率跟保經差多少？用 MDRT-BPS 現場算一次，數字會說話。' },
+      { q: '我的客戶跟公司綁定，帶不走怎麼辦？',
+        a: '客戶信任的是「你這個人」，不是公司招牌。資深業務轉保經，實務上 40-70% 客戶主動跟過來。' },
+      { q: '年資歸零太可惜了',
+        a: '你在壽險的續佣，離職那天全部中斷。公勝的終生佣酬制度：離職後續領、身故後繼受人接手。你賺的每一分佣金永遠是你的。' },
+    ],
+
+    defaultCompany: 'cathay-life',
+  },
+
+  /* ─── 銀行理專 ────────────────────────────────────────────────── */
+  banker: {
+    label: '銀行理專',
+    icon: '🏦',
+    desc: '銀行財富管理通路，有高品質客戶但受限於 KPI 與產品線',
+
+    radar: { income: 4, ownership: 2, freedom: 3, growth: 3, retirement: 5 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 8 },
+
+    dailySchedule: {
+      current: [
+        { time: '08:30', event: '分行晨會、業績檢討', mood: 'low' },
+        { time: '09:00', event: '銀行指派客戶名單約訪', mood: 'ok' },
+        { time: '12:00', event: '午餐（輪值不一定能準時）', mood: 'ok' },
+        { time: '13:00', event: 'KPI 追蹤、合規審查、產品推銷', mood: 'low' },
+        { time: '17:00', event: '填報表、交叉行銷資料整理', mood: 'low' },
+        { time: '18:00', event: '下班（擔心輪調通知）', mood: 'low' },
+      ],
+      broker: [
+        { time: '09:00', event: '自主規劃客戶拜訪行程', mood: 'high' },
+        { time: '10:00', event: '用全市場商品做財務規劃諮詢', mood: 'high' },
+        { time: '12:00', event: '彈性午餐、經營人脈', mood: 'high' },
+        { time: '14:00', event: '深度諮詢、整合壽/健/投商品', mood: 'high' },
+        { time: '16:30', event: '提案撰寫、客戶關係維護', mood: 'ok' },
+        { time: '18:00', event: '回家（無輪調風險）', mood: 'high' },
+      ],
+    },
+
+    typicalIncome: { fyp: 1500000, commRate: 8, renewalIncome: 0, baseSalary: 800000 },
+
+    topPainPoints: [
+      '年薪有天花板（85-115 萬），升遷靠年資卡位',
+      '客戶名單是銀行的，離職那天全部收回',
+      'KPI 壓力大、產品受限只能賣自家商品',
+    ],
+
+    topObjections: [
+      { q: '銀行有底薪、有現成客戶名單',
+        a: '銀行名單是「銀行的客戶」，不是你的。離職那天全部收回。同樣客戶量在公勝，六個月內收入超越銀行年薪，而且是長期被動收入。' },
+      { q: '銀行穩定，轉保經太冒險',
+        a: 'IFRS 17 上路後，銀行正在縮編理專。保經反而是受益者——多家商品代理，商品選擇自由度高。用 MDRT-BPS 算一下，你會發現差距有多大。' },
+      { q: '銀行福利不錯，保經要自己投保',
+        a: '福利是短期安心，收入才是長期保障。你一個月多賺 3-5 萬，福利差額根本小錢。而且公勝有團保方案。' },
+    ],
+
+    defaultCompany: 'fubon-life',
+  },
+
+  /* ─── 壽險主管 ────────────────────────────────────────────────── */
+  manager: {
+    label: '壽險主管',
+    icon: '👑',
+    desc: '帶團隊的壽險主管，有組織津貼但受制度天花板限制',
+
+    radar: { income: 5, ownership: 3, freedom: 4, growth: 4, retirement: 2 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 10 },
+
+    dailySchedule: {
+      current: [
+        { time: '07:00', event: '提早到公司準備早會資料', mood: 'low' },
+        { time: '08:00', event: '主持早會、激勵團隊', mood: 'ok' },
+        { time: '09:30', event: '陪訪新人、處理團隊問題', mood: 'ok' },
+        { time: '12:00', event: '午餐（常與團隊一起）', mood: 'ok' },
+        { time: '13:30', event: '自己的客戶約訪（但常被打斷）', mood: 'low' },
+        { time: '17:00', event: '主管會議、報表檢討', mood: 'low' },
+        { time: '19:00', event: '回家（身心俱疲）', mood: 'low' },
+      ],
+      broker: [
+        { time: '09:00', event: '團隊線上同步（15分鐘）', mood: 'high' },
+        { time: '09:30', event: '個人高價值客戶經營', mood: 'high' },
+        { time: '12:00', event: '午餐（彈性）', mood: 'high' },
+        { time: '13:30', event: '團隊培訓 / 新人陪跑', mood: 'high' },
+        { time: '16:00', event: '組織發展策略規劃', mood: 'high' },
+        { time: '17:30', event: '回家（精力充沛）', mood: 'high' },
+      ],
+    },
+
+    typicalIncome: { fyp: 5000000, commRate: 25, renewalIncome: 1200000, orgAllowance: 600000 },
+
+    topPainPoints: [
+      '組織津貼被制度天花板壓住，帶再多人也升不上去',
+      '退休那天組織津貼歸零，帶出來的人被公司接管',
+      '花最多時間幫公司養兵，自己的業績反而被犧牲',
+    ],
+
+    topObjections: [
+      { q: '我的團隊跟得過來嗎？',
+        a: '團隊跟的是「你這個人」，不是公司招牌。你在哪裡，核心夥伴就在哪裡。在保經帶同樣的人，你能給他們更高佣金、更自由的商品選擇。' },
+      { q: '競業條款會不會有問題？',
+        a: '競業條款有法律上限（通常 6-12 個月）。這段期間可以做準備、建系統、談客戶。過了之後，你的團隊和客戶都是自己的。' },
+      { q: '我已經是主管了，為什麼要重來？',
+        a: '你不是重來，是升級。同樣帶人，在保經你的組織獎金沒有天花板，而且可以傳給下一代。你花了這麼多年幫公司建組織，該為自己建一個了。' },
+    ],
+
+    defaultCompany: 'cathay-life',
+  },
+
+  /* ─── 醫療通路 ────────────────────────────────────────────────── */
+  medical: {
+    label: '醫療通路',
+    icon: '🩺',
+    desc: '醫療背景的保險銷售通路，客戶信任度高但佣金結構受限',
+
+    radar: { income: 4, ownership: 3, freedom: 4, growth: 3, retirement: 3 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 9 },
+
+    dailySchedule: {
+      current: [
+        { time: '08:00', event: '門診/通路據點報到', mood: 'ok' },
+        { time: '09:00', event: '配合門診時段接觸客戶', mood: 'ok' },
+        { time: '12:00', event: '午休（依門診排班）', mood: 'ok' },
+        { time: '13:30', event: '下午門診通路經營', mood: 'ok' },
+        { time: '17:00', event: '行政作業、回報業績', mood: 'low' },
+        { time: '18:00', event: '下班（受限門診時段）', mood: 'low' },
+      ],
+      broker: [
+        { time: '09:00', event: '自主安排高信任度客戶', mood: 'high' },
+        { time: '11:00', event: '整合壽/健/長照/投資型商品規劃', mood: 'high' },
+        { time: '12:00', event: '午餐（經營醫療人脈圈）', mood: 'high' },
+        { time: '14:00', event: '深度健康財務規劃諮詢', mood: 'high' },
+        { time: '16:30', event: '醫療社群經營、轉介紹開發', mood: 'high' },
+        { time: '18:00', event: '回家（時間自主）', mood: 'high' },
+      ],
+    },
+
+    typicalIncome: { fyp: 2000000, commRate: 15, renewalIncome: 300000 },
+
+    topPainPoints: [
+      '醫療信任度高但佣金率低，專業價值被低估',
+      '商品受限、無法為客戶做完整的財務醫療規劃',
+      '門診時段綁定，時間彈性差',
+    ],
+
+    topObjections: [
+      { q: '我在醫療通路已經有穩定客源',
+        a: '你的客戶信任的是你的醫療專業背景，不是通路招牌。同樣的客戶在保經，佣金率從 15% 跳到 50%+，而且能提供全市場最適合的商品。' },
+      { q: '保經沒有醫療通路的品牌加持',
+        a: '你的醫療背景本身就是最強品牌。客戶看的是你的專業、你的信任，不是門診外面掛哪家保險公司的招牌。' },
+      { q: '轉過去要重新建立客戶關係',
+        a: '醫療背景的轉介紹效率遠高於一般業務。你的客戶網絡會跟著你走——因為在健康議題上，他們只信任你。' },
+    ],
+
+    defaultCompany: 'nanshan-life',
+  },
+
+  /* ─── 新人 / 考慮入行 ─────────────────────────────────────────── */
+  newbie: {
+    label: '新人 / 考慮入行',
+    icon: '🌱',
+    desc: '剛入行或考慮從其他行業轉職進入保險業',
+
+    radar: { income: 4, ownership: 2, freedom: 3, growth: 2, retirement: 3 },
+    brokerRadar: { income: 9, ownership: 10, freedom: 8, growth: 9, retirement: 8 },
+
+    dailySchedule: {
+      current: [
+        { time: '08:30', event: '壽險公司教室培訓 / 制式教材演練', mood: 'ok' },
+        { time: '10:00', event: '主管帶出去陌生拜訪', mood: 'low' },
+        { time: '12:00', event: '午餐（跟組學長吃）', mood: 'ok' },
+        { time: '13:30', event: '指定名單電話約訪', mood: 'low' },
+        { time: '17:00', event: '回公司寫日報、被檢討', mood: 'low' },
+        { time: '18:00', event: '回家（懷疑自己的選擇）', mood: 'low' },
+      ],
+      broker: [
+        { time: '09:00', event: '線上自學課程 + 數位工具培訓', mood: 'high' },
+        { time: '10:30', event: '師傅帶領實戰陪訪', mood: 'high' },
+        { time: '12:00', event: '午餐（團隊氛圍）', mood: 'high' },
+        { time: '13:30', event: '模擬演練 + 案例討論', mood: 'high' },
+        { time: '16:00', event: '社群經營、個人品牌建立', mood: 'high' },
+        { time: '17:30', event: '回家（對未來有期待）', mood: 'high' },
+      ],
+    },
+
+    typicalIncome: { fyp: 1000000, commRate: 15, renewalIncome: 0 },
+
+    topPainPoints: [
+      '底薪即將歸零，缺乏系統化培訓支持',
+      '壽險公司制度不透明，不知道自己的佣金被抽了多少',
+      '第一步就決定未來十年——選錯公司代價很高',
+    ],
+
+    topObjections: [
+      { q: '保經沒有底薪，我會不會餓死？',
+        a: '保經沒底薪，但佣金率是壽險的 2-3 倍。準備 3-6 個月生活費緩衝，積極經營的新人首年 60-80 萬。關鍵是第一步就站對位置，讓每一分努力的回報流向正確的地方。' },
+      { q: '家人覺得壽險公司比較穩',
+        a: 'IFRS 17 上路後，壽險公司正在縮編業務員。保經反而是受益者。而且公勝有完整的新人 90 天啟動計畫，不會丟你自己摸。' },
+      { q: '我零基礎，什麼都不懂',
+        a: '新人本來就零基礎，這不是問題。九堂培訓課程、數位輔銷工具、師傅陪跑制度——三個月內你會懂產品、會銷售、會服務。' },
+    ],
+
+    defaultCompany: 'cathay-life',
+  },
+};
+
+/* ─── 雷達圖維度標籤 ───────────────────────────────────────────── */
+var RADAR_DIMS = [
+  { key: 'income',     label: '收入天花板' },
+  { key: 'ownership',  label: '客戶歸屬權' },
+  { key: 'freedom',    label: '工作自主權' },
+  { key: 'growth',     label: '職涯成長' },
+  { key: 'retirement', label: '退休保障' },
+];
+
+</script>
+<script>
+// ─── Company Data Model v3.0 ────────────────────────────────────────────────
+// 公司制度資料庫 — 所有預設數值均標註來源，供使用者查核
+// v3.0 變更：defaults key 統一為 PARAM_SCHEMA schemaKey + GONGSHENG_COMPARE 合併
+// 新增公司：複製任一物件，修改 id/name/defaults 即可
+// lastUpdated: 2026-04-01
+// dataDisclaimer: 數值為公開資訊整理，實際依個人職階與年資有所不同
+
+/**
+ * @typedef {Object} PersonaDefaults
+ * @property {number} [commRateTrad]    - 傳統公司首年佣金率 (%)（統一 key）
+ * @property {number} [renewalRate]     - 續期佣金率 (%)
+ * @property {number} [renewalDecay]    - 續佣年遞減係數 (0-1)
+ * @property {number} [orgAllowance]    - 組織津貼 (NT$)
+ * @property {number} [fixedSalary]     - 固定薪資 (NT$)
+ * @property {number} [mgrRenewal]      - 個人續期佣金 (NT$)（原 personalRenewal）
+ */
+
+/**
+ * @typedef {Object} CompanyEntry
+ * @property {string} name              - 公司全名
+ * @property {string} short             - 簡稱（Chip 顯示）
+ * @property {string} [icon]            - Emoji 圖標
+ * @property {'life'|'broker'|'custom'} type - 公司類別
+ * @property {string} contract          - 合約制度
+ * @property {string} benefits          - 勞健保說明
+ * @property {string} marketShare       - 市占率
+ * @property {string} lastVerified      - 資料最後驗證日期（YYYY-MM-DD）
+ * @property {Object} [dataSources]     - 各欄位資料來源
+ * @property {Object.<string, PersonaDefaults>} defaults - 各身份別預設值（key = PARAM_SCHEMA schemaKey）
+ * @property {Object} [brokerDefaults]  - 保經端預設（僅 broker 類型）
+ * @property {Object} comparison        - 制度對照文字
+ * @property {Object[]} [ranks]         - 職級晉升表（僅公勝）
+ * @property {Object[]} [perfBonusTiers]- 績效獎金門檻（僅公勝）
+ * @property {number} [maxComm]         - 最高佣金率（僅公勝）
+ * @property {string} [note]            - 備註
+ */
+
+/** @type {Object.<string, CompanyEntry>} */
+
+const COMPANY_DB = {
+  // ═══ 壽險公司 ═══
+  'cathay-life': {
+    name: '國泰人壽', short: '國泰', icon: '🌳', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '21.3%',
+    lastVerified: '2026-03-30',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '業務員支給暨管理辦法 11313V2（業績津貼率2-32%）',
+      contract: '國泰人壽官網業務合作專區',
+    },
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 8, fixedSalary: 800000 },
+      manager:   { commRateTrad: 22, orgAllowance: 800000, mgrRenewal: 200000 },
+      medical:   { commRateTrad: 15 },
+      newbie:    { commRateTrad: 18 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓體系',
+      brand: '大型品牌光環',
+      orgDev: '固定晉升階梯，需達組織人力門檻',
+    },
+    annualBonusPct: 5, // 年終+季獎金估計（FYP 比例）
+    note: '雙合約制（承攬+僱傭），提供勞健保、勞退、團險',
+  },
+  'fubon-life': {
+    name: '富邦人壽', short: '富邦', icon: '🦁', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '14.8%',
+    lastVerified: '2026-03-30',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '同仁手冊(菁英版-行銷專員CA) 1120630修改版',
+      bonusTable: '同仁手冊(菁英版-通則) 1131212修訂',
+      contract: '富邦人壽官網業務招募專區',
+    },
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 8, fixedSalary: 850000 },
+      manager:   { commRateTrad: 21, orgAllowance: 900000, mgrRenewal: 200000 },
+      medical:   { commRateTrad: 15 },
+      newbie:    { commRateTrad: 18 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓體系',
+      brand: '金融集團整合優勢',
+      orgDev: '固定晉升階梯，需達組織人力門檻',
+    },
+    annualBonusPct: 5,
+    note: '金控體系，銀行保險通路強',
+  },
+  'nanshan-life': {
+    name: '南山人壽', short: '南山', icon: '⛰️', type: 'life',
+    contract: '純承攬制', benefits: '自行投保',
+    marketShare: '12.4%',
+    lastVerified: '2026-03-30',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '2024 業界公開徵才資訊中位數',
+      contract: '南山人壽官網增員專區',
+    },
+    defaults: {
+      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      banker:    { commRateTrad: 0, fixedSalary: 0 },
+      manager:   { commRateTrad: 25, orgAllowance: 600000, mgrRenewal: 250000 },
+      medical:   { commRateTrad: 18 },
+      newbie:    { commRateTrad: 22 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受組織架構限制',
+      training: '完整培訓體系',
+      brand: '老牌聲譽',
+      orgDev: '組織層級多，晉升路徑長',
+    },
+    annualBonusPct: 3,
+    note: '純承攬制，佣金率較高但無勞健保',
+  },
+  'shin-kong-life': {
+    name: '新光人壽', short: '新光', icon: '✨', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '7.7%',
+    lastVerified: '2026-03-30',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '2024 業界公開徵才資訊中位數',
+      contract: '新光人壽官網業務專區',
+    },
+    defaults: {
+      insurance: { commRateTrad: 19, renewalRate: 2.5, renewalDecay: 0.55, orgAllowance: 0 },
+      banker:    { commRateTrad: 7, fixedSalary: 750000 },
+      manager:   { commRateTrad: 20, orgAllowance: 700000, mgrRenewal: 180000 },
+      medical:   { commRateTrad: 14 },
+      newbie:    { commRateTrad: 17 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓體系',
+      brand: '老牌品牌',
+      orgDev: '固定晉升階梯，需達組織人力門檻',
+    },
+    annualBonusPct: 4,
+    note: '雙合約制，新人財務補助計畫',
+  },
+  'allianz-life': {
+    name: '安聯人壽', short: '安聯', icon: '🛡️', type: 'life',
+    contract: '雙合約制', benefits: '有勞健保',
+    marketShare: '3.2%',
+    lastVerified: '2026-03-30',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '安聯人壽業務規則 2022/12/21修訂',
+      bonusTable: '安聯佣金表',
+    },
+    defaults: {
+      insurance: { commRateTrad: 25, renewalRate: 4, renewalDecay: 0.65, orgAllowance: 0 },
+      banker:    { commRateTrad: 10, fixedSalary: 700000 },
+      manager:   { commRateTrad: 27, orgAllowance: 600000, mgrRenewal: 220000 },
+      medical:   { commRateTrad: 18 },
+      newbie:    { commRateTrad: 22 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '受職階與公司政策限制',
+      training: '完整培訓體系',
+      brand: '外商品牌、投資型商品強',
+      orgDev: '固定晉升階梯，業績獎金月FYP>10K→FYC 10%',
+    },
+    annualBonusPct: 8,
+    note: '雙合約制（僱傭+承攬），WL1N首佣20-39%、ND10首佣38%、年終3-15%',
+  },
+  'taishin-life': {
+    name: '台新人壽', short: '台新', icon: '🌟', type: 'life',
+    contract: '承攬制', benefits: '自行投保',
+    marketShare: '1.8%',
+    lastVerified: '2026-03-30',
+    dataSources: {
+      marketShare: '2024 壽險公會年報',
+      commRate: '台新佣金表 113年11月04日修訂',
+    },
+    defaults: {
+      insurance: { commRateTrad: 30, renewalRate: 4, renewalDecay: 0.7, orgAllowance: 0 },
+      banker:    { commRateTrad: 0, fixedSalary: 0 },
+      manager:   { commRateTrad: 30, orgAllowance: 400000, mgrRenewal: 250000 },
+      medical:   { commRateTrad: 20 },
+      newbie:    { commRateTrad: 28 },
+    },
+    comparison: {
+      productChoice: '限自家產品',
+      ceiling: '依個人能力',
+      training: '自主學習為主',
+      brand: '獨立經營、佣金率較高',
+      orgDev: '無組織負擔，個人導向',
+    },
+    annualBonusPct: 2,
+    note: '獨立經營壽險，NWLB首佣15-55%、TLA首佣35-55%、集繳件折扣-2~-5%',
+  },
+
+  // ═══ 公勝保經（教材主角）═══
+  // GONGSHENG_COMPARE 已合併至此，v3.0 不再有獨立常數
+  'gongsheng': {
+    name: '公勝保經', short: '公勝', icon: '🏅', type: 'broker',
+    contract: '承攬制（純C計佣）', benefits: '自行投保（職業工會）',
+    marketShare: '連續 7 年保經業第一（2024 營收 44.7 億 / MDRT 710 人）',
+    lastVerified: '2026-04-01',
+    dataSources: {
+      marketShare: '鉅亨網 2025/2：2024 營收 44.7 億（YoY +47%）、千大企業第 583 名→連續 7 年中華徵信所保經業第一',
+      commRate: '公勝保經 2026 制度架構圖',
+      contract: '公勝保經官方制度說明',
+      mdrt: '2024 MDRT 710 人（達成率 118%）、2026 目標 1,000 人',
+    },
+    defaults: {
+      // 以「專員」為預設起點，使用者可依實際職級調整
+      insurance: { commRateTrad: 50, renewalRate: 5, renewalDecay: 0.85, orgAllowance: 0 },
+      banker:    { commRateTrad: 50, fixedSalary: 0 },
+      manager:   { commRateTrad: 68, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 50 },
+      newbie:    { commRateTrad: 50 },
+    },
+    brokerDefaults: { brokerComm: 50, renewalRate: 5, orgRate: 5, deskFee: 4000 },
+    comparison: {
+      productChoice: '多家保司產品，各家來佣100%FYC',
+      ceiling: '無上限（累積晉升，永不歸零）',
+      training: 'MDRT 系統培訓 + Legacy Grid 輔銷武器庫',
+      brand: '連續七年保經業第一',
+      orgDev: '六職級（專員50%→事業部經理82%+）+ 三代加發8% + 績效獎金4%',
+    },
+    // 職級晉升門檻（整組累計FYC）— 原 GONGSHENG_COMPARE.ranks
+    ranks: [
+      { title: '專員',     commRate: 50, fycThreshold: 0,       orgAllowance: 5 },
+      { title: '主任',     commRate: 60, fycThreshold: 150000,  orgAllowance: 5 },
+      { title: '襄理',     commRate: 68, fycThreshold: 400000,  orgAllowance: 4 },
+      { title: '副理',     commRate: 74, fycThreshold: 1000000, orgAllowance: 2 },
+      { title: '經理',     commRate: 78, fycThreshold: 1800000, orgAllowance: 1.5 },
+      { title: '事業部經理', commRate: 82, fycThreshold: 3000000, orgAllowance: 0, perfBonus: '1-4%', threeGen: '5%+2%+1%=8%' },
+    ],
+    // 事業部月績效獎金 — 原 GONGSHENG_COMPARE.perfBonusTiers
+    perfBonusTiers: [
+      { fycMin: 300000,  bonus: 1 },
+      { fycMin: 600000,  bonus: 2 },
+      { fycMin: 1500000, bonus: 3 },
+      { fycMin: 2000000, bonus: 4 },
+    ],
+    maxComm: 94, // 82% + 8%(三代) + 4%(績效)
+    renewalDecay: 0.85, // 公勝續佣遞減（原 income-chart.js GONGSHENG_RENEWAL_DECAY）
+    note: '專員50% → 主任60% → 襄理68% → 副理74% → 經理78% → 事業部經理82%+，最高94%',
+  },
+
+  // ═══ 保經公司（競品）═══
+  'yongda': {
+    name: '永達保經', short: '永達', icon: '🏛️', type: 'broker',
+    contract: '承攬制', benefits: '自行投保（職業工會）',
+    marketShare: '2024 新契約保費 24 億 / 業務 2,520 人',
+    lastVerified: '2026-04-01',
+    dataSources: {
+      marketShare: '永達保經 2025/1 經濟日報：2024 新契約保費 24 億、營收 25.37 億、業務 2,520 人',
+      commRate: '2024 公開增員說明會資料＋業界中位數推估',
+      mdrt: '2024 MDRT 307 位（平均每 2 人有 1 位 MDRT）',
+    },
+    defaults: {
+      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 22, fixedSalary: 0 },
+      manager:   { commRateTrad: 28, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 22 },
+      newbie:    { commRateTrad: 20 },
+    },
+    brokerDefaults: { brokerComm: 38, renewalRate: 4.5, orgRate: 3, deskFee: 3500 },
+    comparison: {
+      productChoice: '多家保司產品',
+      ceiling: '依個人能力',
+      training: 'MDRT 導師傳承制（2024 終身會員 111 位）',
+      brand: '上市公司（興櫃）、兩岸布局、保單繼續率 97%',
+      orgDev: '增員獎 2.4 萬/人＋晉級獎最高 310 萬，2025 目標 3,000 人',
+    },
+    note: '2024 新契約保費 24 億、MDRT 307 位；2025 目標保費 37 億、業務 3,000 人',
+  },
+  'leishan': {
+    name: '磊山保經', short: '磊山', icon: '🪨', type: 'broker',
+    contract: '承攬制（雙制度：系統制＋事業部制）', benefits: '自行投保（職業工會）',
+    marketShare: '2024 實收保費 83.8 億（YoY +86%）',
+    lastVerified: '2026-04-01',
+    dataSources: {
+      marketShare: '鉅亨網 2025/1：2024 實收保費 83.8 億、佣金成長 4 成（連續 4 年）',
+      commRate: '業界中位數推估＋2024 增員說明會',
+      system: '經濟日報 2026/3：業界唯一雙制度（系統制＋事業部制）相互融合',
+    },
+    defaults: {
+      insurance: { commRateTrad: 22, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 22, fixedSalary: 0 },
+      manager:   { commRateTrad: 28, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 22 },
+      newbie:    { commRateTrad: 20 },
+    },
+    brokerDefaults: { brokerComm: 38, renewalRate: 4.5, orgRate: 3, deskFee: 3500 },
+    comparison: {
+      productChoice: '多家保司產品',
+      ceiling: '依個人能力',
+      training: '分階段模組化培訓＋數據輔導工具＋實戰模擬',
+      brand: '2024 實收保費 83.8 億（YoY +86%）、IDA 200+人',
+      orgDev: '雙制度（系統制＋事業部制）可並行選擇，2025 目標 2,000 人',
+    },
+    note: '業界唯一雙制度融合；2024 新增近 500 人；2025 目標保費 120 億、新增保額 2,500 億',
+  },
+  'dinglv': {
+    name: '錠嵂保經', short: '錠嵂', icon: '💎', type: 'broker',
+    contract: '承攬制（來佣不打折、佣金表不後製）', benefits: '自行投保（職業工會）',
+    marketShare: '網路口碑領先品牌',
+    lastVerified: '2026-04-01',
+    dataSources: {
+      marketShare: '2024 保險經紀人公會統計',
+      commRate: '錠嵂官網＋業務成長營公開資料：來佣全發、7-20 年服務津貼',
+      system: '中央社 2025/2：2025 目標 300 位藍鵲企業家、40+ 區經理',
+    },
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 20, fixedSalary: 0 },
+      manager:   { commRateTrad: 26, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 20 },
+      newbie:    { commRateTrad: 18 },
+    },
+    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5, deskFee: 0 },
+    comparison: {
+      productChoice: '多家保司產品',
+      ceiling: '職階只升不降、不綁出勤',
+      training: '網路口碑佳、保險平台整合查詢',
+      brand: '網路聲量高、行動理賠聯盟鏈',
+      orgDev: '組織利益終身制（底下組員首續佣一輩子相關）、無桌費無考核',
+    },
+    note: '來佣全發＋佣金表不後製＋7-20 年服務津貼；無強制出勤、無桌費',
+  },
+  'dacheng': {
+    name: '大誠保經', short: '大誠', icon: '🏆', type: 'broker',
+    contract: '承攬制（開放事業體制度）', benefits: '自行投保（職業工會）',
+    marketShare: '全台最大保經（2024 業務 7,700 人 / 保費 220 億）',
+    lastVerified: '2026-04-01',
+    dataSources: {
+      marketShare: '經濟日報 2025/1：2024 產壽險保費 220 億、業務 7,700 人、連續 5 年全國第一',
+      commRate: '業界估計中位數＋大誠官網「優於業界佣金給付」說明',
+      system: '中央社 2025/3：夢想飛翔計畫、夫妻同階同職、終身合約、世襲合約',
+    },
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 20, fixedSalary: 0 },
+      manager:   { commRateTrad: 26, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 20 },
+      newbie:    { commRateTrad: 18 },
+    },
+    brokerDefaults: { brokerComm: 36, renewalRate: 4, orgRate: 2.5, deskFee: 3000 },
+    comparison: {
+      productChoice: '多家保司產品',
+      ceiling: '依個人能力',
+      training: '企業通路強、集體經營利潤共享',
+      brand: '連續 5 年全國最大保經、百億保經',
+      orgDev: '開放事業體制度＋夫妻同階＋終身合約＋世襲合約，2025 目標破萬人',
+    },
+    note: '全台最大保經（7,700人）；2024 保費 220 億；2025 目標保費 300 億、業務破萬人',
+  },
+  'other-broker': {
+    name: '其他保經', short: '其他', icon: '📋', type: 'broker',
+    contract: '承攬制', benefits: '自行投保',
+    marketShare: '—',
+    lastVerified: '2026-03-30',
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 20, fixedSalary: 0 },
+      manager:   { commRateTrad: 25, orgAllowance: 0, mgrRenewal: 0 },
+      medical:   { commRateTrad: 20 },
+      newbie:    { commRateTrad: 18 },
+    },
+    brokerDefaults: { brokerComm: 35, renewalRate: 4, orgRate: 2, deskFee: 3000 },
+    comparison: {
+      productChoice: '多家保司產品',
+      ceiling: '依個人能力',
+      training: '—',
+      brand: '—',
+      orgDev: '—',
+    },
+    note: '手動輸入實際數值',
+  },
+
+  // ═══ 自訂 ═══
+  'custom': {
+    name: '自訂公司', short: '自訂', icon: '✏️', type: 'custom',
+    contract: '—', benefits: '—',
+    marketShare: '—',
+    lastVerified: '—',
+    defaults: {
+      insurance: { commRateTrad: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 },
+      banker:    { commRateTrad: 8, fixedSalary: 800000 },
+      manager:   { commRateTrad: 22, orgAllowance: 800000, mgrRenewal: 200000 },
+      medical:   { commRateTrad: 15 },
+      newbie:    { commRateTrad: 18 },
+    },
+    comparison: {
+      productChoice: '—',
+      ceiling: '—',
+      training: '—',
+      brand: '—',
+      orgDev: '—',
+    },
+    note: '所有欄位手動輸入',
+  },
+};
+
+// ═══ 共用收入計算函式 ═══
+// company-selector.js 和 income-chart.js 都會呼叫，避免公式分散兩處
+// params: { commRate(%), renewalRate(%), renewalDecay(0-1), baseFYP(NT$), years(int), orgAllowance(NT$, optional) }
+// 回傳: [{ year, annual, cumulative }]
+function calcIncomeShared(params) {
+  const commRate = Math.max(0, Math.min(100, Number(params.commRate) || 0));
+  const renewalRate = Math.max(0, Math.min(100, Number(params.renewalRate) || 0));
+  const renewalDecay = Math.max(0, Math.min(1, Number(params.renewalDecay) || 0));
+  const baseFYP = Math.max(0, Number(params.baseFYP) || 1000000);
+  const years = Math.max(1, Math.min(30, Number(params.years) || 10));
+  const orgAllowance = Math.max(0, Number(params.orgAllowance) || 0);
+
+  const result = [];
+  let cumulative = 0;
+  for (let y = 1; y <= years; y++) {
+    let annual = baseFYP * (commRate / 100);
+    for (let prev = 1; prev < y; prev++) {
+      annual += baseFYP * (renewalRate / 100) * Math.pow(renewalDecay, y - prev - 1);
+    }
+    if (orgAllowance > 0) annual += orgAllowance;
+    cumulative += annual;
+    result.push({ year: y, annual: Math.round(annual), cumulative: Math.round(cumulative) });
+  }
+  return result;
+}
+
+// 全站數據免責聲明與來源總表
+const DATA_DISCLAIMER = {
+  lastUpdated: '2026-04-01',
+  disclaimer: '本站數值均來自公開資訊整理，為代表性中位數估計值，僅供參考比較用途，不構成任何承諾或保證。實際佣金因商品類別、繳費年期、職級等因素有巨大差異，請依各公司最新公告為準。',
+  primarySources: [
+    '壽險公會 2024 年度統計年報',
+    '保險經紀人公會 2024 年度統計',
+    '國泰人壽業務員支給暨管理辦法 11313V2',
+    '富邦人壽同仁手冊(菁英版-行銷專員CA) 1120630修改版',
+    '富邦人壽同仁手冊(菁英版-通則) 1131212修訂',
+    '安聯人壽業務規則 2022/12/21修訂',
+    '安聯佣金表',
+    '台新佣金表 113年11月04日修訂',
+    '各公司官網公開招募/增員資訊（2024–2025）',
+    '鉅亨網/經濟日報/中央社 2025 各保經公司業績新聞稿',
+    '錠嵂官網＋業務成長營公開資料',
+    '中華徵信所千大企業排名',
+  ],
+};
+
+</script>
+<script>
+// ─── PARAM_SCHEMA v3.0 ───────────────────────────────────────────────────────
+// 唯一真相來源：所有輸入欄位的定義、渲染、收集均由此 schema 驅動
+// 新增欄位：只需在此加一條 → UI 自動出現 → 值自動收集
+// 最後更新：2026-04-01
+
+/**
+ * @typedef {Object} PersonaConfig
+ * @property {number} [default]    - 覆寫該身份的預設值
+ * @property {number} [min]        - slider min
+ * @property {number} [max]        - slider max
+ * @property {number} [step]       - slider step
+ * @property {string} [label]      - 覆寫 label
+ * @property {string} [labelSuffix]- slider 顯示後綴
+ * @property {number} [divisor]    - L 換算除數（adaptMonths 專用）
+ * @property {number} [maxL]       - L 換算上限（adaptMonths 專用）
+ */
+
+/**
+ * @typedef {Object} ParamDef
+ * @property {string} key          - 統一命名（schemaKey）
+ * @property {string} label        - 顯示名稱
+ * @property {string} section      - 'current' | 'risk' | 'advantage'
+ * @property {string} type         - 'currency' | 'percent' | 'number' | 'slider'
+ * @property {number} default      - 預設值
+ * @property {string[]} personas   - 適用身份 ['ins','banker','mgr','med','new']
+ * @property {'always'|'advanced'|'hidden'} visibility
+ * @property {boolean} companyOverride - 公司可覆寫
+ * @property {boolean} [requiresVerification] - 顯示「請與對方核實」
+ * @property {string} [description]- 欄位說明（禁止處方性語言）
+ * @property {string} [prefix]     - 輸入前綴（如 'NT$'）
+ * @property {string} [suffix]     - 輸入後綴（如 '%'）
+ * @property {number} [min]        - 最小值
+ * @property {number} [max]        - 最大值
+ * @property {number} [step]       - 步進
+ * @property {Object.<string, PersonaConfig>} [personaConfig] - 身份別覆寫
+ */
+
+/** @type {ParamDef[]} */
+const PARAM_SCHEMA = [
+  // ═══ Section A — 現狀盤點 (current) ═══
+  {
+    key: 'fyp', label: '年化保費 FYP', section: 'current',
+    type: 'currency', default: 3000000, prefix: 'NT$',
+    personas: ['ins', 'mgr'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '過去一年的年化保費總額，含新契約和續期保費。',
+  },
+  {
+    key: 'avgProductCommRate', label: '平均商品佣金率', section: 'current',
+    type: 'percent', default: 60, suffix: '%',
+    min: 10, max: 100, step: 1,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '所銷售商品的平均佣金率。終身壽險約 70-90%、定期壽險約 30-50%、投資型約 15-25%。此為加權平均。雙方試算共用同一商品佣金率。',
+  },
+  {
+    key: 'commRateTrad', label: '個人佣金率（職階）', section: 'current',
+    type: 'percent', default: 20, suffix: '%',
+    min: 0, max: 100,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: true, requiresVerification: true,
+    description: '依個人職階與年資，公司給付的佣金分潤比率。實際首年收入 = FYP × 商品佣金率 × 此比率。',
+    personaConfig: {
+      banker: { default: 8, description: '銀行給付的保費佣金分潤比率，通常為保經公司的 1/4 ~ 1/5。' },
+    },
+  },
+  {
+    key: 'renewalIncome', label: '年度續期佣金', section: 'current',
+    type: 'currency', default: 500000, prefix: 'NT$',
+    personas: ['ins', 'mgr'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '每年從過往保單收到的續期佣金。轉職後此收入歸零（沉沒成本）。',
+    personaConfig: {
+      mgr: { default: 200000, label: '個人續期佣金', description: '主管個人端的年度續期佣金收入。' },
+    },
+  },
+  {
+    key: 'renewalDecay', label: '續佣年遞減係數', section: 'current',
+    type: 'number', default: 0.6,
+    min: 0, max: 1, step: 0.05,
+    personas: ['ins'], visibility: 'advanced',
+    companyOverride: true, requiresVerification: false,
+    description: '續佣每年衰減的比例係數（0-1），數值越高代表續佣衰減越慢。',
+  },
+  {
+    key: 'bankFyp', label: '年度銷售保費', section: 'current',
+    type: 'currency', default: 5000000, prefix: 'NT$',
+    personas: ['banker'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '在銀行通路年度銷售的保險保費總額。',
+  },
+  {
+    key: 'fixedSalary', label: '年度固定薪資', section: 'current',
+    type: 'currency', default: 800000, prefix: 'NT$',
+    personas: ['banker'], visibility: 'always',
+    companyOverride: true, requiresVerification: false,
+    description: '銀行支付的年度固定薪資（含底薪+固定津貼）。轉職後此收入歸零。',
+  },
+  {
+    key: 'clientAum', label: '客戶 AUM 規模', section: 'current',
+    type: 'currency', default: 50000000, prefix: 'NT$',
+    personas: ['banker'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '管理的客戶資產總規模，用於估算可轉移的客戶價值。',
+  },
+  {
+    key: 'conversionRate', label: '客戶轉換率', section: 'current',
+    type: 'percent', default: 40, suffix: '%',
+    min: 0, max: 100,
+    personas: ['banker'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '預估離開銀行後願意跟隨的客戶比例。',
+  },
+  {
+    key: 'orgAllowance', label: '年度組織津貼', section: 'current',
+    type: 'currency', default: 1200000, prefix: 'NT$',
+    personas: ['mgr'], visibility: 'always',
+    companyOverride: true, requiresVerification: true,
+    description: '每年從組織制度獲得的管理津貼。轉職後此收入歸零（沉沒成本）。',
+  },
+  {
+    key: 'teamSize', label: '現有組織人數', section: 'current',
+    type: 'number', default: 15, min: 0, max: 200,
+    personas: ['mgr'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '目前帶領的團隊總人數。',
+  },
+  {
+    key: 'followCount', label: '預估跟隨轉職人數', section: 'current',
+    type: 'number', default: 6, min: 0, max: 100,
+    personas: ['mgr'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '預估願意跟隨轉職的核心夥伴人數。此人數影響增員獎金計算。',
+  },
+  {
+    key: 'medIncome', label: '年度醫療收入', section: 'current',
+    type: 'currency', default: 1800000, prefix: 'NT$',
+    personas: ['med'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '目前醫療通路的年度收入。轉職後此收入歸零（沉沒成本）。',
+  },
+  {
+    key: 'referralClients', label: '轉介客戶數/年', section: 'current',
+    type: 'number', default: 80, min: 0,
+    personas: ['med'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '每年可轉介的客戶數量，影響 FYP 的計算基數。',
+  },
+  {
+    key: 'avgPremium', label: '平均客戶保費', section: 'current',
+    type: 'currency', default: 150000, prefix: 'NT$',
+    personas: ['med'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '每位客戶的平均年化保費，與客戶數相乘得出 FYP。',
+  },
+  {
+    key: 'newbieFyp', label: '預估第一年 FYP', section: 'current',
+    type: 'currency', default: 1200000, prefix: 'NT$',
+    personas: ['new'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '估計入行第一年能達成的年化保費總額，後續每年以成長率複利累積。',
+  },
+  {
+    key: 'growthRate', label: '每年業績成長率', section: 'current',
+    type: 'percent', default: 20, suffix: '%',
+    min: 0, max: 100,
+    personas: ['new'], visibility: 'always',
+    companyOverride: false, requiresVerification: false,
+    description: '預估每年業績成長的比率，影響 5 年複利試算的累積差距。',
+  },
+  {
+    key: 'fybCoeff', label: 'FYB 制度係數', section: 'current',
+    type: 'number', default: 1.0,
+    min: 0.3, max: 1, step: 0.05, suffix: 'FYB',
+    personas: ['new'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '首年度佣金制度調整係數，數值越低代表首年佣金折減越多。',
+  },
+
+  // ═══ Section B — 轉職風險係數 (risk) ═══
+  {
+    key: 'lossRate', label: '客戶流失率', section: 'risk',
+    type: 'slider', default: 15, suffix: '%',
+    min: 5, max: 40, step: 1,
+    personas: ['ins'], visibility: 'always',
+    companyOverride: false,
+    description: '轉職後預估的客戶流失比例。L 換算：L = lossRate / 100。',
+    // L 計算：直接 lossRate / 100
+  },
+  {
+    key: 'adaptMonths', label: '適應期', section: 'risk',
+    type: 'slider', default: 6,
+    min: 1, max: 24, step: 1,
+    personas: ['banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: false,
+    description: '轉職後需要的適應/陣痛期月數，影響客戶流失率 L 的計算。',
+    personaConfig: {
+      banker:  { default: 6,  min: 3,  max: 18, label: '適應期（月）', divisor: 24, maxL: 0.9 },
+      mgr:     { default: 9,  min: 3,  max: 24, label: '陣痛期（月）', divisor: 36, maxL: 0.8 },
+      med:     { default: 6,  min: 2,  max: 12, label: '建立期（月）', divisor: 18, maxL: 0.7 },
+      new:     { default: 3,  min: 1,  max: 9,  label: '空窗期（月）', divisor: 12, maxL: 0.5 },
+    },
+    // L 計算：Math.min(adapt / divisor, maxL)
+  },
+  {
+    key: 'transitionSubsidy', label: '過渡期底薪補貼', section: 'risk',
+    type: 'currency', default: 480000, prefix: 'NT$',
+    personas: ['banker'], visibility: 'always',
+    companyOverride: false,
+    description: '保經公司提供的第一年底薪支援，用於抵銷適應期的收入缺口。直接加入第 1 年保經收入。',
+  },
+  {
+    key: 'legalReserve', label: '法律顧問預備金', section: 'risk',
+    type: 'currency', default: 200000, prefix: 'NT$',
+    personas: ['mgr'], visibility: 'always',
+    companyOverride: false,
+    description: '轉職可能涉及的法律費用預備金，於第 1 年保經收入中扣除。',
+  },
+
+  // ═══ Section C — 保經優勢 (advantage) ═══
+  {
+    key: 'brokerCommRate', label: '保經個人佣金率（職階）', section: 'advantage',
+    type: 'percent', default: 40, suffix: '%',
+    min: 0, max: 100,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: false,
+    description: '加入保經後的個人佣金分潤比率。保經首年收入 = FYP × 商品佣金率 × 此比率。',
+  },
+  {
+    key: 'brokerRenewalRate', label: '保經續期佣金率', section: 'advantage',
+    type: 'percent', default: 5, suffix: '%',
+    min: 0, max: 30,
+    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    companyOverride: false,
+    description: '保經公司的續期佣金比率，每年從續期保費中獲得。',
+  },
+  {
+    key: 'orgBonusRate', label: '組織代數獎金率', section: 'advantage',
+    type: 'percent', default: 3, suffix: '%',
+    min: 0, max: 20,
+    personas: ['ins', 'mgr'], visibility: 'always',
+    companyOverride: false,
+    description: '增員組織的代數獎金比率，依增員人數和其業績計算。',
+  },
+  {
+    key: 'recruitCount', label: '增員人數', section: 'advantage',
+    type: 'number', default: 3, min: 0, max: 50,
+    personas: ['ins', 'mgr'], visibility: 'always',
+    companyOverride: false,
+    description: '預計增員的人數，影響組織獎金的計算。',
+  },
+  {
+    key: 'recruitAvgFyp', label: '增員平均 FYP', section: 'advantage',
+    type: 'currency', default: 1500000, prefix: 'NT$',
+    personas: ['ins', 'mgr'], visibility: 'always',
+    companyOverride: false,
+    description: '每位增員夥伴的預估年化保費。組織獎金 = 增員人數 × 此數字 × 獎金率。',
+  },
+
+  // ═══ v3.0.2 新增：離職後續佣年數 ═══
+  {
+    key: 'postResignRenewalYrs', label: '離職後續佣年數', section: 'current',
+    type: 'number', default: 0, min: 0, max: 5, step: 1,
+    personas: ['ins', 'mgr'], visibility: 'advanced',
+    companyOverride: true, requiresVerification: true,
+    description: '離職後仍可領取續佣的年數（0-5年）。部分公司會在離職後繼續發放 2-5 年的續佣。設為 0 表示離職即歸零。',
+  },
+
+  // ═══ v3.0.1 新增：可信度強化欄位 ═══
+  {
+    key: 'tradGrowthRate', label: '傳統端年成長率', section: 'current',
+    type: 'percent', default: 0, suffix: '%',
+    min: 0, max: 30, step: 1,
+    personas: ['ins', 'banker', 'mgr', 'med'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '在傳統公司每年 FYP 的預估成長率。設為 0 表示維持不變（保守估計）。',
+  },
+  {
+    key: 'fypShrink', label: '保費轉移係數', section: 'risk',
+    type: 'slider', default: 80, suffix: '%',
+    min: 50, max: 100, step: 5,
+    personas: ['banker'], visibility: 'advanced',
+    companyOverride: false, requiresVerification: false,
+    description: '客戶跟隨轉職後，實際轉移的保費占原保費的比例。80% 表示每 100 萬只帶走 80 萬。',
+  },
+
+  // ═══ 預留擴充（visibility: 'hidden'，v3.0 暫不渲染） ═══
+  {
+    key: 'performanceBonus', label: '年度績效獎金', section: 'current',
+    type: 'currency', default: 0, prefix: 'NT$',
+    personas: ['ins', 'banker', 'mgr'], visibility: 'hidden',
+    companyOverride: false,
+    description: '傳統端每季或每年的績效獎金。',
+  },
+  {
+    key: 'nonCompeteMonths', label: '競業禁止期限', section: 'risk',
+    type: 'slider', default: 0, min: 0, max: 24, step: 1,
+    personas: ['ins', 'mgr'], visibility: 'hidden',
+    companyOverride: false,
+    description: '競業條款限制的月數，影響轉職時間規劃。',
+  },
+  {
+    key: 'trainingStipend', label: '培訓津貼', section: 'risk',
+    type: 'currency', default: 0, prefix: 'NT$',
+    personas: ['new'], visibility: 'hidden',
+    companyOverride: false,
+    description: '保經新人前 6 個月的培訓津貼。',
+  },
+  {
+    key: 'secondGenRenewal', label: '二代續佣率', section: 'advantage',
+    type: 'percent', default: 0, suffix: '%',
+    personas: ['ins', 'mgr'], visibility: 'hidden',
+    companyOverride: false,
+    description: '客戶轉介帶來的續佣比率。',
+  },
+  {
+    key: 'benefitsValue', label: '福利年度價值', section: 'current',
+    type: 'currency', default: 0, prefix: 'NT$',
+    personas: ['banker'], visibility: 'hidden',
+    companyOverride: false,
+    description: '團保+福利的隱形年度價值。',
+  },
+  {
+    key: 'retirementPenalty', label: '退職金損失', section: 'current',
+    type: 'currency', default: 0, prefix: 'NT$',
+    personas: ['mgr'], visibility: 'hidden',
+    companyOverride: false,
+    description: '離職將喪失的退職金總額。',
+  },
+];
+
+// ─── Persona short ID mapping ───
+const PERSONA_IDS = {
+  insurance: 'ins', banker: 'banker', manager: 'mgr', medical: 'med', newbie: 'new',
+};
+
+// ─── XSS sanitizer ───
+function _esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ─── Helper: get param def with persona config merged ───
+function getParamDef(paramDef, personaShort) {
+  const pc = paramDef.personaConfig && paramDef.personaConfig[personaShort];
+  if (!pc) return paramDef;
+  return { ...paramDef, ...pc, _baseDefault: paramDef.default };
+}
+
+// ─── renderInputs(persona): PARAM_SCHEMA → DOM ───
+// Renders input fields into #inputs-container, grouped by section
+function renderInputs(personaId) {
+  const personaShort = PERSONA_IDS[personaId];
+  const container = document.getElementById('inputs-container');
+  if (!container) return;
+
+  const sections = { current: [], risk: [], advantage: [] };
+  const sectionLabels = {
+    current: 'A. 現狀盤點',
+    risk: 'B. 轉職風險係數',
+    advantage: 'C. 保經優勢',
+  };
+
+  // Filter and group
+  PARAM_SCHEMA.forEach(param => {
+    if (!param.personas.includes(personaShort)) return;
+    if (param.visibility === 'hidden') return;
+    const merged = getParamDef(param, personaShort);
+    sections[param.section].push(merged);
+  });
+
+  let html = '';
+  for (const [sectionKey, fields] of Object.entries(sections)) {
+    if (fields.length === 0) continue;
+
+    const alwaysFields = fields.filter(f => f.visibility === 'always');
+    const advancedFields = fields.filter(f => f.visibility === 'advanced');
+
+    html += `<div class="param-section">`;
+    html += `<div class="param-section-label">${_esc(sectionLabels[sectionKey])}</div>`;
+
+    // Always-visible fields
+    html += `<div class="param-fields">`;
+    alwaysFields.forEach(f => { html += renderField(f, personaId); });
+    html += `</div>`;
+
+    // Advanced fields (collapsible)
+    if (advancedFields.length > 0) {
+      html += `<details class="advanced-toggle"><summary>更多選項（${advancedFields.length} 項）</summary>`;
+      html += `<div class="param-fields">`;
+      advancedFields.forEach(f => { html += renderField(f, personaId); });
+      html += `</div></details>`;
+    }
+
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Attach event listeners for recalc
+  container.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', handleInputChange);
+  });
+
+  // 前綴顯示控制：有值時隱藏 NT$ prefix（避免重疊）
+  container.querySelectorAll('.input-wrap').forEach(wrap => {
+    const inp = wrap.querySelector('input[type="number"]');
+    if (!inp || !wrap.querySelector('.prefix')) return;
+    const toggle = () => {
+      wrap.classList.toggle('has-value', inp.value !== '' && inp.value !== '0');
+    };
+    inp.addEventListener('input', toggle);
+    inp.addEventListener('focus', toggle);
+    inp.addEventListener('blur', toggle);
+    toggle(); // 初始化
+  });
+}
+
+// ─── Render single field HTML ───
+function renderField(param, personaId) {
+  const inputId = `param_${param.key}`;
+  const val = getCurrentValue(param.key, personaId) ?? param.default;
+  const verifyBadge = param.requiresVerification
+    ? '<span class="verify-badge" title="此數值因人而異，面談時請與對方確認">⚠️ 請與對方核實</span>'
+    : '';
+  const modifiedBadge = isUserModified(param.key)
+    ? '<span class="modified-badge">✏️ 已手動調整</span>'
+    : '';
+
+  let inputHtml = '';
+  if (param.type === 'slider') {
+    const min = param.min || 0;
+    const max = param.max || 100;
+    const step = param.step || 1;
+    const suffix = param.suffix || '';
+    inputHtml = `
+      <div class="slider-wrap">
+        <div class="slider-value" id="${inputId}_display">${val}${_esc(suffix)}</div>
+        <input type="range" id="${inputId}" data-key="${_esc(param.key)}"
+          min="${min}" max="${max}" step="${step}" value="${val}"
+          oninput="document.getElementById('${inputId}_display').textContent=this.value+'${_esc(suffix)}'">
+      </div>`;
+  } else {
+    const prefix = param.prefix ? `<span class="prefix">${_esc(param.prefix)}</span>` : '';
+    const suffix = param.suffix ? `<span class="suffix">${_esc(param.suffix)}</span>` : '';
+    const cls = [];
+    if (!param.prefix) cls.push('no-prefix');
+    if (param.suffix) cls.push('has-suffix');
+    const min = param.min != null ? ` min="${param.min}"` : '';
+    const max = param.max != null ? ` max="${param.max}"` : '';
+    const step = param.step != null ? ` step="${param.step}"` : '';
+    inputHtml = `
+      <div class="input-wrap">
+        ${prefix}
+        <input type="number" id="${inputId}" data-key="${_esc(param.key)}"
+          class="${cls.join(' ')}" value="${val}"${min}${max}${step}>
+        ${suffix}
+      </div>`;
+  }
+
+  const desc = param.description
+    ? `<div class="field-desc">${_esc(param.description)}</div>`
+    : '';
+
+  return `
+    <div class="field" data-key="${_esc(param.key)}">
+      <label for="${inputId}">${_esc(param.label)} ${verifyBadge} ${modifiedBadge}</label>
+      ${inputHtml}
+      ${desc}
+      <div class="field-warning" id="${inputId}_warning" style="display:none"></div>
+    </div>`;
+}
+
+// ─── collectInputs(): PARAM_SCHEMA → values object ───
+// Returns { schemaKey: value, ... } for the current persona
+function collectInputs(personaId) {
+  const personaShort = PERSONA_IDS[personaId];
+  const values = {};
+
+  PARAM_SCHEMA.forEach(param => {
+    if (!param.personas.includes(personaShort)) return;
+    if (param.visibility === 'hidden') return;
+
+    const inputId = `param_${param.key}`;
+    const el = document.getElementById(inputId);
+    const merged = getParamDef(param, personaShort);
+
+    if (el) {
+      values[param.key] = parseFloat(el.value) || 0;
+    } else {
+      values[param.key] = merged.default;
+    }
+  });
+
+  return values;
+}
+
+// ─── Convert collectInputs output → compute5yr params ───
+// Bridges the schema keys to the compute5yr(p) parameter format
+// v3.0.2: 新增 avgProductCommRate — 實際佣金 = FYP × 商品佣金率 × 個人佣金率
+function schemaToComputeParams(values, personaId) {
+  const personaShort = PERSONA_IDS[personaId];
+  const productComm = (values.avgProductCommRate ?? 60) / 100;
+  const rb = productComm * (values.brokerCommRate ?? 40) / 100;
+  const ryr = (values.brokerRenewalRate ?? 5) / 100;
+  const or_ = (values.orgBonusRate ?? 0) / 100;
+
+  // Get adaptMonths config
+  const adaptParam = PARAM_SCHEMA.find(p => p.key === 'adaptMonths');
+  const adaptConfig = adaptParam?.personaConfig?.[personaShort] || {};
+
+  // v3.0.3: 保經端續佣遞減從 selectedBrokerId 動態讀取
+  const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
+  const _brokerEntry = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB[brokerId] : null;
+  const gsBrokerDecay = _brokerEntry ? (_brokerEntry.renewalDecay ?? 0.85) : 0.85;
+  // v4.1: 保經端月桌費
+  const _deskFee = _brokerEntry?.brokerDefaults?.deskFee ?? 0;
+  // v4.1: 壽險端年度績效獎金（% of FYP）
+  const companyId = (typeof selectedCompanyId !== 'undefined') ? selectedCompanyId : 'cathay-life';
+  const _companyEntry = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB[companyId] : null;
+  const _annualBonusPct = (_companyEntry?.annualBonusPct ?? 0) / 100;
+
+  if (personaId === 'insurance') {
+    return {
+      FYP: values.fyp ?? 3000000,
+      rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
+      ry_sunk: values.renewalIncome ?? 500000,
+      ry_decay: values.renewalDecay ?? 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      postResignYrs: values.postResignRenewalYrs ?? 0,
+      L: (values.lossRate ?? 15) / 100,
+      rb, ryr, or_,
+      nrec: values.recruitCount ?? 0,
+      rfyp: values.recruitAvgFyp ?? 0,
+      fyb: 1,
+      deskFee: _deskFee,
+      annualBonusPct: _annualBonusPct,
+    };
+  }
+  if (personaId === 'banker') {
+    const rawFYP = values.bankFyp ?? 5000000;
+    const conv = (values.conversionRate ?? 40) / 100;
+    const adapt = values.adaptMonths ?? (adaptConfig.default ?? 6);
+    const divisor = adaptConfig.divisor || 24;
+    const maxL = adaptConfig.maxL || 0.9;
+    return {
+      FYP: rawFYP * conv,
+      rate_trad: productComm * (values.commRateTrad ?? 8) / 100,
+      ry_sunk: values.fixedSalary ?? 800000,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      fypShrink: (values.fypShrink ?? 80) / 100,
+      L: Math.min(adapt / divisor, maxL),
+      rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb: 1,
+      _rawFYP: rawFYP, _conv: conv, _aum: values.clientAum ?? 0,
+      _subsidy: values.transitionSubsidy ?? 0,
+      _adapt: adapt, _id: 'banker',
+      deskFee: _deskFee,
+      annualBonusPct: _annualBonusPct,
+    };
+  }
+  if (personaId === 'manager') {
+    const FYP = values.fyp ?? 3000000;
+    const follow = values.followCount ?? 0;
+    const adapt = values.adaptMonths ?? (adaptConfig.default ?? 9);
+    const divisor = adaptConfig.divisor || 36;
+    const maxL = adaptConfig.maxL || 0.8;
+    return {
+      FYP,
+      rate_trad: productComm * (values.commRateTrad ?? 20) / 100,
+      ry_sunk: values.orgAllowance ?? 0,
+      _mRySunk: values.renewalIncome ?? 0,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      postResignYrs: values.postResignRenewalYrs ?? 0,
+      L: Math.min(adapt / divisor, maxL),
+      rb, ryr, or_,
+      nrec: follow,
+      rfyp: values.recruitAvgFyp ?? (FYP * 0.8),
+      fyb: 1,
+      _legal: values.legalReserve ?? 0,
+      _follow: follow,
+      _teamSize: values.teamSize ?? 0,
+      _id: 'manager',
+      deskFee: _deskFee,
+      annualBonusPct: _annualBonusPct,
+    };
+  }
+  if (personaId === 'medical') {
+    const clients = values.referralClients ?? 80;
+    const avgP = values.avgPremium ?? 150000;
+    const FYP = clients * avgP;
+    const adapt = values.adaptMonths ?? (adaptConfig.default ?? 6);
+    const divisor = adaptConfig.divisor || 18;
+    const maxL = adaptConfig.maxL || 0.7;
+    return {
+      FYP,
+      rate_trad: productComm * (values.commRateTrad ?? 15) / 100,
+      ry_sunk: values.medIncome ?? 1800000,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      tradGrowth: (values.tradGrowthRate ?? 0) / 100,
+      L: Math.min(adapt / divisor, maxL),
+      rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb: 1,
+      _clients: clients, _avgP: avgP, _id: 'medical',
+      deskFee: _deskFee,
+      annualBonusPct: _annualBonusPct,
+    };
+  }
+  if (personaId === 'newbie') {
+    const FYP = values.newbieFyp ?? 1200000;
+    const growth = (values.growthRate ?? 20) / 100;
+    const adapt = values.adaptMonths ?? (adaptConfig.default ?? 3);
+    const divisor = adaptConfig.divisor || 12;
+    const maxL = adaptConfig.maxL || 0.5;
+    const fyb = Math.min(1, Math.max(0.1, values.fybCoeff ?? 1));
+    return {
+      FYP,
+      rate_trad: productComm * (values.commRateTrad ?? 18) / 100,
+      ry_sunk: 0,
+      ry_decay: 0.6,
+      broker_ry_decay: gsBrokerDecay,
+      L: Math.min(adapt / divisor, maxL),
+      rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb,
+      _growth: growth, _id: 'newbie',
+      deskFee: _deskFee,
+      annualBonusPct: _annualBonusPct,
+    };
+  }
+  return {};
+}
+
+// ─── userModified tracking ───
+const _userModified = {};
+
+function markUserModified(key) {
+  _userModified[key] = true;
+}
+
+function isUserModified(key) {
+  return !!_userModified[key];
+}
+
+function clearUserModified() {
+  Object.keys(_userModified).forEach(k => delete _userModified[k]);
+}
+
+function clearUserModifiedForKey(key) {
+  delete _userModified[key];
+}
+
+// ─── Store/retrieve current values (for cross-identity persistence) ───
+const _currentValues = {};
+
+function setCurrentValue(key, value, personaId) {
+  if (!_currentValues[personaId]) _currentValues[personaId] = {};
+  _currentValues[personaId][key] = value;
+}
+
+function getCurrentValue(key, personaId) {
+  return _currentValues[personaId]?.[key];
+}
+
+// ─── Handle input change (event listener) ───
+function handleInputChange(e) {
+  const key = e.target.dataset.key;
+  if (!key) return;
+  const value = parseFloat(e.target.value) || 0;
+
+  // Check if this is a companyOverride field
+  const paramDef = PARAM_SCHEMA.find(p => p.key === key);
+  if (paramDef?.companyOverride) {
+    markUserModified(key);
+    // Update modified badge
+    const fieldEl = e.target.closest('.field');
+    if (fieldEl && !fieldEl.querySelector('.modified-badge')) {
+      const label = fieldEl.querySelector('label');
+      if (label) {
+        const badge = document.createElement('span');
+        badge.className = 'modified-badge';
+        badge.textContent = '✏️ 已手動調整';
+        label.appendChild(badge);
+      }
+    }
+  }
+
+  // Store value
+  if (typeof currentPersonaId !== 'undefined') {
+    setCurrentValue(key, value, currentPersonaId);
+  }
+
+  // Validate boundaries
+  validateField(key, value, e.target);
+
+  // Trigger recalc
+  if (typeof recalc === 'function') recalc();
+}
+
+// ─── Boundary validation ───
+function validateField(key, value, inputEl) {
+  const warningEl = document.getElementById(`param_${key}_warning`);
+  if (!warningEl) return;
+
+  // Check COMM_RANGES if applicable
+  if (key === 'commRateTrad' && typeof COMM_RANGES !== 'undefined' && typeof selectedCompanyId !== 'undefined') {
+    const range = COMM_RANGES[selectedCompanyId];
+    if (range && (value < range[0] || value > range[1])) {
+      const companyName = typeof COMPANY_DB !== 'undefined' ? COMPANY_DB[selectedCompanyId]?.short : '';
+      warningEl.textContent = `此數值超出 ${companyName} 已知範圍（${range[0]}-${range[1]}%），請確認`;
+      warningEl.style.display = 'block';
+      warningEl.className = 'field-warning warning-orange';
+      return;
+    }
+  }
+
+  // General: zero or negative check
+  if (value < 0) {
+    warningEl.textContent = '數值可能不合理';
+    warningEl.style.display = 'block';
+    warningEl.className = 'field-warning warning-orange';
+    return;
+  }
+
+  // NaN check
+  if (isNaN(value)) {
+    warningEl.textContent = '請輸入有效數字';
+    warningEl.style.display = 'block';
+    warningEl.className = 'field-warning warning-red';
+    return;
+  }
+
+  warningEl.style.display = 'none';
+}
+
+// ─── Apply company defaults（傳統端 Section A 欄位）───
+// v3.0: COMPANY_DB defaults key 已統一為 PARAM_SCHEMA schemaKey，不需 keyMap 轉換
+// v3.0.3: brokerDefaults 邏輯移至 index.html applyBrokerDefaults()，此處只處理傳統端
+function applyCompanyDefaults(companyId, personaId) {
+  if (typeof COMPANY_DB === 'undefined' || !COMPANY_DB[companyId]) return;
+
+  const company = COMPANY_DB[companyId];
+  const defaults = company.defaults?.[personaId] || {};
+
+  for (const [schemaKey, value] of Object.entries(defaults)) {
+    // Skip if user has manually modified this field
+    if (isUserModified(schemaKey)) continue;
+
+    const inputEl = document.getElementById(`param_${schemaKey}`);
+    if (inputEl) {
+      inputEl.value = value;
+      setCurrentValue(schemaKey, value, personaId);
+    }
+  }
+}
+
+</script>
+<script>
+// ─── BPS Calculator Module ──────────────────────────────────────────────────
+// 純計算邏輯，不依賴 DOM。由 param-schema.js 的 schemaToComputeParams() 提供參數。
+// lastUpdated: 2026-04-01
+
+(function() {
+  'use strict';
+
+  // ─── 格式化工具 ─────────────────────────────────────────────────────────────
+  const fmtM   = v => (Math.round(v) / 10000).toFixed(0);
+  const fmtNT  = v => 'NT$ ' + Math.round(v).toLocaleString();
+  const fmtPct = v => (v * 100).toFixed(0) + '%';
+
+  // ─── 5 年累計收入計算（核心引擎） ────────────────────────────────────────────
+  // p: compute params from schemaToComputeParams()
+  // 回傳 { trad[], broker[], cumT[], cumB[], net[], beMonth, sum5trad, sum5broker, diff5 }
+  //
+  // v3.0.1 修正：
+  //  - 傳統端續佣遞減用 ry_decay（公司端，如 0.6）
+  //  - 保經端續佣遞減用 broker_ry_decay（公勝端，預設 0.85）
+  //  - 傳統端加入年成長率 tradGrowth（預設 0 = 不成長）
+  //  - 組織獎金加入增員脫落率 attrition（預設 20%/年）
+  //  - 銀行理專加入保費縮水係數 fypShrink（預設 0.8）
+  function compute5yr(p) {
+    const yrs = [1, 2, 3, 4, 5];
+    let trad, broker;
+
+    // v3.0.1: 傳統端 vs 保經端分別使用不同續佣遞減
+    const tradDecay   = p.ry_decay || 0.6;
+    const brokerDecay = p.broker_ry_decay || 0.85;
+
+    // v3.0.1: 傳統端年成長率（非 newbie 身份也適用）
+    const tradGrowth = p.tradGrowth || 0;
+
+    // v3.0.1: 增員年脫落率（組織獎金修正）
+    const attrition = p.attrition ?? 0.20;
+
+    // v3.0.2: 離職後續佣年數（傳統端沉沒續佣在轉職後仍持續 N 年）
+    const postResignYrs = p.postResignYrs ?? 0;
+
+    // v3.0.1: 銀行理專保費縮水係數
+    const fypShrink = p._id === 'banker' ? (p.fypShrink ?? 0.8) : 1;
+
+    // v4.1: 保經端月桌費（年度扣除）
+    const annualDeskFee = (p.deskFee || 0) * 12;
+
+    // v4.1: 壽險端年度績效獎金（% of FYP，加入傳統端收入）
+    const tradBonusPct = p.annualBonusPct || 0;
+
+    if (p._id === 'newbie') {
+      const fyb_n = p.fyb || 1;
+      trad = yrs.map(y => {
+        const base = p.FYP * Math.pow(1 + p._growth, y - 1) * fyb_n;
+        return base * p.rate_trad + base * tradBonusPct;
+      });
+      broker = yrs.map(y => {
+        const base = p.FYP * Math.pow(1 + p._growth, y - 1) * fyb_n;
+        // newbie 保經端也用 brokerDecay
+        let ry_nb = 0;
+        for (let prev = 1; prev < y; prev++) {
+          ry_nb += base * (1 - p.L) * (p.ryr || 0) * Math.pow(brokerDecay, y - prev - 1);
+        }
+        return base * (1 - p.L) * p.rb + ry_nb - annualDeskFee;
+      });
+    } else {
+      // ─── 傳統端 ───
+      let ry_t = p.ry_sunk + (p._mRySunk || 0);
+      const trad_ry = [ry_t];
+      for (let y = 2; y <= 5; y++) {
+        ry_t = ry_t * tradDecay + p.FYP * Math.pow(1 + tradGrowth, y - 1) * (p.ryr || 0);
+        trad_ry.push(ry_t);
+      }
+      trad = yrs.map((_, i) => {
+        const growthFYP = p.FYP * Math.pow(1 + tradGrowth, i);
+        return growthFYP * p.rate_trad + trad_ry[i] + growthFYP * tradBonusPct;
+      });
+
+      // ─── 保經端 ───
+      const effectiveFYP = p.FYP * (1 - p.L) * fypShrink;
+      let ry_b = 0;
+      const broker_ry = [0];
+      for (let y = 2; y <= 5; y++) {
+        ry_b = ry_b * brokerDecay + effectiveFYP * (p.ryr || 0);
+        broker_ry.push(ry_b);
+      }
+      broker = yrs.map((y, i) => {
+        const fyp_i = effectiveFYP * p.rb;
+        // 組織獎金：增員人數逐年因脫落而減少
+        const surviving = Math.max(0, (p.nrec || 0) * Math.pow(1 - attrition, Math.max(0, y - 1)));
+        const or_i  = surviving * (p.rfyp || 0) * (p.or_ || 0) * (y === 1 ? 0.5 : 1);
+        // v3.0.2: 離職後續佣（舊公司仍支付的續佣，逐年遞減）
+        const postRenewal = (y <= postResignYrs)
+          ? (p.ry_sunk + (p._mRySunk || 0)) * Math.pow(tradDecay, y)
+          : 0;
+        return fyp_i + broker_ry[i] + or_i + postRenewal - annualDeskFee;
+      });
+    }
+
+    // 主管競業成本扣除
+    if (p._id === 'manager' && p._legal) {
+      broker[0] = Math.max(0, broker[0] - p._legal);
+    }
+    // 銀行理專轉換補貼
+    if (p._id === 'banker' && p._subsidy) {
+      broker[0] += p._subsidy;
+    }
+
+    const cumT = trad.reduce((a, v, i) => { a.push((a[i - 1] || 0) + v); return a; }, []);
+    const cumB = broker.reduce((a, v, i) => { a.push((a[i - 1] || 0) + v); return a; }, []);
+    const net  = cumB.map((b, i) => b - cumT[i]);
+
+    // v3.0.2: 收入超越點用結構性收入計算，排除一次性項目（_subsidy/_legal）
+    // 一次性項目只影響 Y1，不影響結構性趨勢判斷
+    const structBroker = broker.slice();
+    if (p._id === 'manager' && p._legal) {
+      structBroker[0] = structBroker[0] + p._legal; // 還原扣除的法律費
+    }
+    if (p._id === 'banker' && p._subsidy) {
+      structBroker[0] = structBroker[0] - p._subsidy; // 還原加入的補貼
+    }
+    const structCumB = structBroker.reduce((a, v, i) => { a.push((a[i - 1] || 0) + v); return a; }, []);
+    const structNet = structCumB.map((b, i) => b - cumT[i]);
+
+    // 收入超越點月數（基於結構性收入）
+    let beMonth = null;
+    if (structNet[0] > 0) {
+      beMonth = 1;
+    } else {
+      for (let i = 1; i < 5; i++) {
+        if (structNet[i] > 0) {
+          const frac = Math.abs(structNet[i - 1]) / (structNet[i] - structNet[i - 1]);
+          beMonth = Math.round((i + frac) * 12);
+          break;
+        }
+      }
+    }
+
+    return {
+      trad, broker, cumT, cumB, net, beMonth,
+      sum5trad:  cumT[4],
+      sum5broker: cumB[4],
+      diff5:     net[4],
+    };
+  }
+
+  // ─── 匯出全域 ─────────────────────────────────────────────────────────────
+  window.compute5yr = compute5yr;
+  window.fmtM   = fmtM;
+  window.fmtNT  = fmtNT;
+  window.fmtPct = fmtPct;
+
+  console.log('[Calculator] ✅ 初始化完成');
+})();
+
+</script>
+
+<script>
+// ─── Global State ─────────────────────────────────────────────────────────────
+var CID = 'insurance';              // current persona
+var selectedCompanyId = 'cathay-life';  // 壽險/自訂公司（傳統端）
+var selectedBrokerId = 'gongsheng';     // 永遠對照公勝，不可切換
+var currentPersonaId = 'insurance';  // for param-schema.js
+
+// ─── Persona Config ──────────────────────────────────────────────────────────
+const PERSONA_MAP = { insurance:'insurance', banker:'banker', manager:'manager', medical:'medical', newbie:'newbie' };
+
+const ID_CONFIG = {
+  insurance: { label:'🛡️ 保險同業', badge:'insurance', tradLabel:'傳統壽險',
+    scRiskLabel:'客戶流失率', scRiskFn: sc=>'流失率 '+(sc.L*100).toFixed(0)+'%',
+    sc:{ C:{L:.20,rb:.35}, B:{L:.15,rb:.40}, O:{L:.10,rb:.45} }},
+  banker: { label:'🏦 銀行理專', badge:'banker', tradLabel:'銀行通路',
+    scRiskLabel:'適應期（月）', scRiskFn: sc=>'適應期 '+Math.round(sc.L*24)+'月',
+    sc:{ C:{L:.50,rb:.40}, B:{L:.25,rb:.45}, O:{L:.15,rb:.50} }},
+  manager: { label:'👑 壽險主管', badge:'manager', tradLabel:'傳統壽險',
+    scRiskLabel:'陣痛期（月）', scRiskFn: sc=>'陣痛期 '+Math.round(sc.L*36)+'月',
+    sc:{ C:{L:.40,rb:.55}, B:{L:.25,rb:.60}, O:{L:.15,rb:.65} }},
+  medical: { label:'🩺 醫療通路', badge:'medical', tradLabel:'醫療通路',
+    scRiskLabel:'建立期（月）', scRiskFn: sc=>'建立期 '+Math.round(sc.L*18)+'月',
+    sc:{ C:{L:.45,rb:.40}, B:{L:.33,rb:.45}, O:{L:.20,rb:.50} }},
+  newbie: { label:'🌱 新人培育', badge:'newbie', tradLabel:'傳統壽險',
+    scRiskLabel:'空窗期（月）', scRiskFn: sc=>'空窗期 '+Math.round(sc.L*12)+'月',
+    sc:{ C:{L:.35,rb:.35}, B:{L:.25,rb:.40}, O:{L:.15,rb:.45} }},
+};
+
+// COMM_RANGES for boundary validation
+const COMM_RANGES = {
+  'cathay-life': [15,55], 'fubon-life': [15,55], 'nanshan-life': [18,50],
+  'shin-kong-life': [15,45], 'allianz-life': [10,39], 'taishin-life': [15,55],
+};
+
+// ─── Helpers (fmtM/fmtNT/fmtPct/compute5yr from calculator.js) ──────────────
+const g = id => document.getElementById(id);
+
+// ─── COMPARISON_DIMS（制度對照表資料驅動定義）──────────────────────────────
+// AC-031: 新增維度只需加一條，不需改 updateComparisonTable()
+// v3.0.3: gsFn 改為從 selectedBrokerId 動態讀取，不再硬編碼 gongsheng
+const COMPARISON_DIMS = [
+  { key:'commRateTrad', label:'首年佣金率', personas:['insurance','banker','manager','medical','newbie'],
+    tradFn:(c,p,defs)=> defs.commRateTrad!=null ? defs.commRateTrad+'%' : '—',
+    gsFn:(c,p,defs,gs)=>{ const gd=gs.brokerDefaults?.brokerComm??gs.defaults?.[p]?.commRateTrad??40; return gd+'%+'; },
+    schemaKey:'commRateTrad' },
+  { key:'renewalRate', label:'續期佣金率', personas:['insurance'],
+    tradFn:(c,p,defs)=> (defs.renewalRate||'—')+'%'+(defs.renewalDecay?` (×${defs.renewalDecay})`:''),
+    gsFn:(c,p,defs,gs)=>{ const r=gs.brokerDefaults?.renewalRate??gs.defaults?.insurance?.renewalRate??5; const d=gs.renewalDecay??0.85; return r+'% (×'+d+')'; } },
+  { key:'annualBonus', label:'年度績效獎金',
+    tradFn:(c)=>{ const pct=c.annualBonusPct; return pct ? '約 FYP '+pct+'%' : '—'; },
+    gsFn:(c,p,defs,gs)=>{ const t=gs.perfBonusTiers; return t ? '月績效 1-4% + 三代加發 8%' : '—'; } },
+  { key:'contract', label:'合約制度',
+    tradFn:(c)=>c.contract, gsFn:(c,p,defs,gs)=>gs.contract },
+  { key:'productChoice', label:'產品選擇',
+    tradFn:(c)=>c.comparison?.productChoice||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.productChoice||'多家保司產品' },
+  { key:'ceiling', label:'收入天花板',
+    tradFn:(c)=>c.comparison?.ceiling||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.ceiling||'依個人能力' },
+  { key:'benefits', label:'勞健保',
+    tradFn:(c)=>c.benefits, gsFn:(c,p,defs,gs)=>gs.benefits },
+  { key:'deskFee', label:'月桌費',
+    tradFn:(c)=>c.type==='life'?'通常無（含在雙合約制中）':'—',
+    gsFn:(c,p,defs,gs)=>{ const df=gs.brokerDefaults?.deskFee; return df!=null?(df===0?'無桌費':'NT$'+df.toLocaleString()+'/月'):'—'; } },
+  { key:'training', label:'培訓體系',
+    tradFn:(c)=>c.comparison?.training||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.training||'—' },
+  { key:'orgDev', label:'組織發展支援',
+    tradFn:(c)=>c.comparison?.orgDev||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.orgDev||'—' },
+  { key:'brand', label:'品牌特色',
+    tradFn:(c)=>c.comparison?.brand||'—', gsFn:(c,p,defs,gs)=>gs.comparison?.brand||'—' },
+];
+
+// ─── 制度對照表渲染（AC-030: 雙行值顯示）───────────────────────────────────
+// v3.0.3: 右欄改用 selectedBrokerId（不再硬編碼 gongsheng）
+function updateComparisonTable(){
+  const container=g('comparison-table-container');if(!container)return;
+  const c=COMPANY_DB[selectedCompanyId];const gs=COMPANY_DB[selectedBrokerId];
+  if(!c||!gs){container.innerHTML='';return;}
+  const persona=CID;const defs=c.defaults[persona]||c.defaults.insurance||{};
+
+  // 篩選適用當前身份的維度
+  const dims=COMPARISON_DIMS.filter(d=>!d.personas||d.personas.includes(persona));
+
+  const rows=dims.map(d=>{
+    let tradVal=d.tradFn(c,persona,defs);
+    let gsVal=d.gsFn(c,persona,defs,gs);
+
+    // AC-030: 若用戶已修改對應 schemaKey，顯示雙行值
+    let dualHtml='';
+    if(d.schemaKey && typeof _userModified!=='undefined' && _userModified[d.schemaKey]){
+      const userVal=document.getElementById('param_'+d.schemaKey)?.value;
+      if(userVal!=null){
+        const defaultVal=defs[d.schemaKey];
+        dualHtml=`<div class="dual-val">公司預設：${defaultVal}% ｜ 您輸入：${userVal}%</div>`;
+        tradVal=userVal+'%';
+      }
+    }
+
+    return `<tr>
+      <td class="cs-label">${d.label}</td>
+      <td>${tradVal}${dualHtml}</td>
+      <td>${gsVal}</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML=`
+    <table class="comparison-table">
+      <thead><tr>
+        <th>比較項目</th>
+        <th>🏢 ${c.short||c.name}</th>
+        <th>🏅 ${gs.short||gs.name}</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+      ⚠️ 數值僅供參考，實際佣金因商品、職級、年資有異。
+    </div>`;
+}
+
+// ─── Annual Comparison Renderer ──────────────────────────────────────────────
+function renderAnnualComparison(p,r){
+  const yrs=[1,2,3,4,5]; const cfg=ID_CONFIG[CID]; const tradLabel=cfg.tradLabel||'傳統公司';
+  function tradItems(y){
+    const items=[]; const fyb_eff=(p._id==='newbie')?(p.fyb||1):1;
+    const fyc=p.FYP*fyb_eff*p.rate_trad; if(fyc>0)items.push({label:'首年佣金',val:fyc,cls:'trad'});
+    {const decay=p.ry_decay||0.6;const base=(p.ry_sunk||0)+(p._mRySunk||0);let ry=base;for(let i=2;i<=y;i++)ry=ry*decay+p.FYP*(p.ryr||0);
+    if(ry>0){const lbl=CID==='banker'?'底薪收入':CID==='medical'?'現有醫療收入':CID==='manager'?'津貼＋續佣':'續期佣金';items.push({label:lbl,val:ry,cls:'trad'});}}
+    return items;
+  }
+  function brokerItems(y){
+    const items=[]; const _fyb=(p._id==='newbie')?(p.fyb||1):1;
+    const fyp_i=p.FYP*_fyb*(1-p.L)*p.rb;const decay=p.ry_decay||0.6;let ry_i=0;
+    for(let i=2;i<=y;i++)ry_i=ry_i*decay+p.FYP*_fyb*(1-p.L)*(p.ryr||0);
+    const or_i=(p.nrec||0)*(p.rfyp||0)*(p.or_||0)*(y===1?.5:1);
+    if(fyp_i>0)items.push({label:'首年佣金',val:fyp_i,cls:'broker'});
+    if(ry_i>0)items.push({label:`累積續佣(Y${y})`,val:ry_i,cls:'broker'});
+    if(or_i>0)items.push({label:'組織獎金',val:or_i,cls:'broker'});
+    return items;
+  }
+  function itemsHtml(arr){if(!arr.length)return'';return'<div class="ac-items">'+arr.map(it=>`<div class="ac-item"><span class="ac-item-dot ${it.cls}"></span><span>${it.label}</span><span style="font-family:'DM Mono',monospace;margin-left:auto;padding-left:6px">${fmtM(it.val)}萬</span></div>`).join('')+'</div>';}
+  function itemsHtmlR(arr){if(!arr.length)return'';return'<div class="ac-items">'+arr.map(it=>`<div class="ac-item"><span style="font-family:'DM Mono',monospace;margin-right:auto;padding-right:6px">${fmtM(it.val)}萬</span><span>${it.label}</span><span class="ac-item-dot ${it.cls}" style="margin-left:3px"></span></div>`).join('')+'</div>';}
+  const rows=yrs.map((y,i)=>{const tVal=r.trad[i];const bVal=r.broker[i];const diff=bVal-tVal;const diffCls=diff>100?'pos':diff<-100?'neg':'neu';const diffIcon=diff>=0?'▲':'▼';const diffStr=`${diffIcon} ${diff>=0?'+':''}${fmtM(diff)}萬`;return`<div class="ac-row"><div class="ac-trad-col"><div class="ac-amount trad">${fmtM(tVal)}萬</div>${itemsHtml(tradItems(y))}</div><div class="ac-mid-col"><div class="ac-year-label">第${y}年</div><div class="ac-diff ${diffCls}">${diffStr}</div></div><div class="ac-broker-col"><div class="ac-amount broker">${fmtM(bVal)}萬</div>${itemsHtmlR(brokerItems(y))}</div></div>`;});
+  const diff5=r.diff5;const diffCls5=diff5>100?'pos':diff5<-100?'neg':'neu';const diffStr5=`${diff5>=0?'▲':'▼'} ${diff5>=0?'+':''}${fmtM(diff5)}萬`;
+  const totalRow=`<div class="ac-row ac-total"><div class="ac-trad-col"><div class="ac-amount trad">${fmtM(r.sum5trad)}萬</div><div class="ac-items"><div class="ac-item"><span class="ac-item-dot trad"></span>5年累計</div></div></div><div class="ac-mid-col"><div class="ac-year-label">5年總計</div><div class="ac-diff ${diffCls5}">${diffStr5}</div></div><div class="ac-broker-col"><div class="ac-amount broker">${fmtM(r.sum5broker)}萬</div><div class="ac-items"><div class="ac-item"><span class="ac-item-dot broker"></span>5年累計</div></div></div></div>`;
+  const brokerLabel2=(COMPANY_DB[selectedBrokerId]||{}).short||'公勝保經';
+  g('annual_comparison').innerHTML=`<div class="ac-wrap"><div class="ac-header"><div class="ac-trad-h">← ${tradLabel}</div><div class="ac-mid-h">比較</div><div class="ac-broker-h">${brokerLabel2} →</div></div>${rows.join('')}${totalRow}</div>`;
+}
+
+// ─── Update result panel (Section ②) ──────────────────────────────────────
+function updateResult(p,r){
+  g('trad-label').textContent=(ID_CONFIG[CID]||{}).tradLabel||'傳統公司';
+  // v3.0.3: 動態更新保經名稱
+  const brokerName=(COMPANY_DB[selectedBrokerId]||{}).short||'公勝保經';
+  if(g('broker-label'))g('broker-label').textContent=brokerName;
+  g('k_trad5').textContent=fmtM(r.sum5trad);g('k_broker5').textContent=fmtM(r.sum5broker);
+  const d=r.diff5;g('k_diff5').textContent=(d>=0?'+':'')+fmtM(d);
+  g('k_diff_label').textContent=d>=0?'✅ 保經5年累計領先':'⚠ 請重新確認假設';
+  if(!r.beMonth)g('k_be').textContent='3年以上';
+  else if(r.beMonth<=1)g('k_be').textContent='第1年內即回本';
+  else g('k_be').textContent=`約第 ${r.beMonth} 個月`;
+  const bePct=r.beMonth?Math.min(r.beMonth/36*100,100):100;
+  g('tl_fill').style.width=bePct+'%';g('tl_dot').style.left=bePct+'%';
+  g('tl_label').style.left=bePct+'%';g('tl_label').textContent=r.beMonth?(r.beMonth<=1?'<1月':r.beMonth+'月'):'>36月';
+  renderAnnualComparison(p,r);
+}
+
+// ─── Scenarios ───────────────────────────────────────────────────────────────
+let curSc='C';
+function getScParams(key){
+  const base=schemaToComputeParams(collectInputs(CID),CID);
+  const sc=ID_CONFIG[CID].sc[key];
+  return{...base,L:sc.L,rb:sc.rb,nrec:key==='C'?1:key==='B'?3:5,rfyp:base.rfyp||0};
+}
+function updateScenario(){showScenario(curSc,null);}
+function showScenario(key,btnEl){
+  curSc=key;const cfg=ID_CONFIG[CID];const sc=cfg.sc[key];const sp=getScParams(key);const r=compute5yr(sp);
+  const colors={C:'#ff7a6a',B:'#e8c04a',O:'#5dd990'};const borders={C:'rgba(231,76,60,.4)',B:'rgba(201,162,39,.4)',O:'rgba(39,174,96,.4)'};const cl=colors[key],bo=borders[key];
+  // Scenario tabs highlight
+  document.querySelectorAll('.sc-btn').forEach(b=>b.className='sc-btn');
+  if(btnEl)btnEl.classList.add('active-'+key.toLowerCase());
+  else document.querySelector(`.sc-btn:nth-child(${key==='C'?1:key==='B'?2:3})`).classList.add('active-'+key.toLowerCase());
+
+  g('sc_detail').innerHTML=`<div class="card" style="border-color:${bo}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div><div style="font-size:14px;font-weight:700;color:${cl}">${{C:'😰 保守情境',B:'📊 基準情境',O:'🚀 樂觀情境'}[key]}</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px">${cfg.scRiskFn(sc)} · 保經首佣 ${fmtPct(sc.rb)} · 增員 ${{C:1,B:3,O:5}[key]} 人</div></div><div class="badge ${r.diff5>=0?'pos':'neg'}">${r.diff5>=0?'保經勝出':'需調整'}</div></div><div class="kpi-grid"><div class="kpi broker"><div class="kpi-label">保經5年</div><div class="kpi-value">${fmtM(r.sum5broker)}</div><div class="kpi-sub">萬元</div></div><div class="kpi trad"><div class="kpi-label">傳統5年</div><div class="kpi-value">${fmtM(r.sum5trad)}</div><div class="kpi-sub">萬元</div></div><div class="kpi diff kpi-full"><div class="kpi-label">5年淨利差距</div><div class="kpi-value" style="color:${cl}">${(r.diff5>=0?'+':'')+fmtM(r.diff5)}</div><div class="kpi-sub">萬元 <span class="kpi-ref">僅供參考</span></div></div></div><div style="margin-top:10px;font-size:11px;color:var(--text-muted)">📌 收入超越點：<strong style="color:${cl}">${r.beMonth?(r.beMonth<=1?'第1年內即回本':r.beMonth+'個月內回本'):'>3年後回本'}</strong></div></div>`;
+  // Compare table
+  const items=[{label:cfg.scRiskLabel,fn:k=>cfg.scRiskFn(cfg.sc[k])},{label:'保經首佣率',fn:k=>fmtPct(cfg.sc[k].rb)},{label:'增員人數',fn:k=>({C:1,B:3,O:5}[k])+'人'},{label:'保經5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5broker)+'萬'},{label:'傳統5年累計',fn:k=>fmtM(compute5yr(getScParams(k)).sum5trad)+'萬'},{label:'★ 5年淨利差距',fn:k=>{const d2=compute5yr(getScParams(k)).diff5;return(d2>=0?'+':'')+fmtM(d2)+'萬';},hl:true},{label:'收入超越點',fn:k=>{const bm=compute5yr(getScParams(k)).beMonth;return bm?(bm<=1?'<1月':bm+'月'):'>36月';}}];
+  g('sc_compare_tbody').innerHTML=items.map(it=>`<tr class="${it.hl?'highlight':''}"><td style="text-align:left">${it.label}</td>${['C','B','O'].map(k=>`<td>${it.fn(k)}</td>`).join('')}</tr>`).join('');
+}
+
+// ─── Deep Mindset Scripts ────────────────────────────────────────────────────
+const SCRIPTS={
+  insurance:[
+    ['第一層思維｜我在保護什麼？',(p,r)=>`每一個在這個時刻猶豫的人，心裡保護的往往不是「錢」，而是「安全感」。<br><br>那筆每年 <strong>${fmtNT(p.ry_sunk)}</strong> 的續期佣金，代表的是您多年來用努力換來的「已知」。放棄已知，是人類本能上最難跨越的關卡——這不是軟弱，這是人性。<br><br>但請問自己：<strong>我現在保護的這份安全感，是在幫助我走向真正想要的生活，還是只是讓我留在原地感覺比較不害怕？</strong><br><br>真正的安全感，來自您相信自己有能力在任何環境中創造價值的那份底氣。`],
+    ['第二層思維｜時間站在誰那邊？',(p,r)=>`這份模型顯示，即使設定了 <strong>${fmtPct(p.L)}</strong> 的客戶流失率，您最快只需 <strong>${r.beMonth?(r.beMonth<=1?'不到1個月':r.beMonth+'個月'):'3年以上'}</strong> 就能完全補回放棄的一切——之後每一年，差距持續擴大。<br><br>五年後的您，會是哪一個版本？留在原地的那個，仍在同樣的天花板下努力。選擇跨出的那個，擁有以您名字命名、可以傳承的事業體系。<br><br><strong>時間不會等人。差別只在於，這段時間是在為誰的夢想工作。</strong>`],
+    ['第三層思維｜我真正想留下什麼？',(p,r)=>`從制度面觀察，${p.nrec>0?`您身邊有 <strong>${p.nrec} 位夥伴</strong>，他們信任您、願意跟著您走。`:'您這些年累積的，不只是客戶，而是一群信任您這個「人」的關係網絡。'}<br><br>在傳統體制下，退休時組織津貼歸零是常見的制度設計。而保經的承攬合約則以個人名義登記客戶與組織。<strong>兩種制度各有取捨，關鍵在於哪一種更符合您對未來十年的規劃。</strong><br><br>這不是對錯的選擇——而是您對下一階段人生方向的思考。`]
+  ],
+  banker:[
+    ['第一層思維｜客戶認識誰？',(p,r)=>`您在銀行累積的客戶，AUM 高達 <strong>${fmtNT(p._aum)}</strong>——但請問一個殘酷的問題：<br><br><strong>這些客戶，認識的是「您」，還是銀行這塊招牌？</strong><br><br>如果有一天您離開，銀行會把這些客戶帳戶直接轉給下一位理專。您多年建立的信任，會成為另一個人的業績。<br><br>而在保經，每一份保單上，永遠只有您的名字。<strong>這才是真正屬於您的資產。</strong>`],
+    ['第二層思維｜底薪消失後怎麼了？',(p,r)=>`許多理專猶豫，來自「底薪消失」的恐懼。但讓我們看數字：即使只有 <strong>${fmtPct(p._conv)}</strong> 的客戶跟著您走，模型顯示最快 <strong>${r.beMonth?(r.beMonth<=1?'第1年內':r.beMonth+'個月'):'>3年'}</strong> 就能補回放棄的一切。<br><br>之後每一年，收入持續成長，而不是被 KPI 壓著跑。<br><br><strong>銀行給您的是「工作」，保經給您的是「事業」。五年後，這兩個字的差距會讓您看得非常清楚。</strong>`],
+    ['第三層思維｜您的初衷是什麼？',(p,r)=>`從制度面觀察，銀行理專的 KPI 壓力與商品限制是產業結構使然，而非個人能力問題。<br><br>保經制度的設計，讓業務員可以跨公司挑選商品，站在客戶需求這一側做規劃。<br><br>兩種模式各有優缺——銀行提供穩定底薪與品牌背書，保經則提供商品自由度與更高佣金。<strong>選擇哪一種，取決於您更看重哪些面向。</strong>`]
+  ],
+  manager:[
+    ['第一層思維｜您的團隊跟的是誰？',(p,r)=>`您帶了 <strong>${p._teamSize} 人</strong> 的團隊，每年組織津貼 <strong>${fmtNT(p.ry_sunk)}</strong>——這是您花了多少年心血換來的成果。<br><br>但請問自己一個問題：<strong>您的團隊，跟的是「公司」，還是跟的是「您」？</strong><br><br>如果答案是後者，那麼您在哪裡，他們就會在哪裡。而在保經，帶著這支團隊，您能給他們更高的佣金、更自由的商品選擇、更真實的個人品牌。<strong>這才是領導人真正的資產。</strong>`],
+    ['第二層思維｜天花板在哪裡？',(p,r)=>`在傳統公司，主管的收入被組織架構限制——您能帶多少人、晉升到哪個層級，公司的制度已經替您畫好了邊界。<br><br>模型顯示，即使扣除競業緩衝期成本，<strong>${r.beMonth?(r.beMonth<=1?'第1年內就能':r.beMonth+'個月後就能'):'預計'}</strong> 讓您的收入回到原點——之後沒有天花板。<br><br><strong>您花了這麼多年幫公司建立組織，是時候為自己建立一個了。</strong>`],
+    ['第三層思維｜留下的是制度，還是傳承？',(p,r)=>`從制度面觀察，傳統壽險的組織津貼在離職或退休時通常歸零——這是制度設計，不是個人問題。<br><br>${p._follow>0?`您預估有 <strong>${p._follow} 位核心夥伴</strong> 願意跟著您走。`:'您身邊的核心夥伴，信任的是您這個人。'}<br><br>保經的承攬制度下，合約、組織、客戶以個人名義登記，具備傳承可能性。<strong>兩種制度的差異，值得在做決定前仔細評估。</strong>`]
+  ],
+  medical:[
+    ['第一層思維｜您的信任值多少錢？',(p,r)=>`醫療背景賦予您一件普通業務員花十年都買不到的東西——<strong>客戶的高度信任。</strong><br><br>您每年服務的 <strong>${p._clients} 位客戶</strong>，在聽到「醫療專業背景」時，成交率和保費規模都遠高於市場平均。<br><br>問題不是您有沒有能力，而是：<strong>您現在的制度，有沒有讓這份信任變成您應得的收入？</strong>`],
+    ['第二層思維｜平台決定天花板',(p,r)=>`在現有通路，佣金率 <strong>${fmtPct(p.rate_trad)}</strong>，且商品選擇受限。在保經，同樣的客戶、同樣的信任，佣金可達 <strong>${fmtPct(p.rb)}</strong>，且能為客戶選擇市場上最適合的商品。<br><br>模型顯示，光是佣金結構的差異，5年累計多出 <strong>${fmtM(r.diff5)} 萬元</strong>。<br><br><strong>您的專業沒有變，變的只是平台——而平台決定了您的天花板在哪裡。</strong>`],
+    ['第三層思維｜成為客戶的終身顧問',(p,r)=>`從制度面觀察，醫療通路的核心優勢在於客戶對專業背景的高度信任。<br><br>保經制度允許整合壽險、健康險、長照險、投資型等跨公司商品，在商品選擇上具有更大彈性。<br><br>醫療背景結合保經平台，有機會從單一轉介擴展為全方位財務健康規劃。<strong>這是否符合您的職涯方向，取決於您對專業發展的定位。</strong>`]
+  ],
+  newbie:[
+    ['第一層思維｜第一步決定未來十年',(p,r)=>`剛入行的您，沉沒成本幾乎是零——這是一個極其珍貴的優勢，因為您可以從一開始就做出最正確的選擇，而不需要像許多前輩一樣，花十年才看清楚。<br><br>傳統公司 vs 保經公司，差異不只是佣金率。<strong>差異是：十年後，您的客戶是「屬於公司的」，還是「屬於您個人的」？</strong><br><br>入行第一步，就選擇讓自己的努力永遠為自己所有。`],
+    ['第二層思維｜複利效應從現在開始',(p,r)=>`模型顯示，同樣的產能，在保經的佣金結構下，5年累計比傳統公司多出 <strong>${fmtM(r.diff5)} 萬元</strong>——而您才剛開始，業績還會隨著每年 <strong>${fmtPct(p._growth)}</strong> 的成長率持續放大。<br><br><strong>複利的威力，在越早期啟動時越驚人。</strong> 同樣是五年的努力，起點的選擇決定終點差距有多大。<br><br>現在就站對位置，讓未來每一分努力的回報，都流向正確的地方。`],
+    ['第三層思維｜你要建立的是事業，不是工作',(p,r)=>`從制度面觀察，傳統公司提供品牌背書與完整培訓，但客戶關係通常歸屬公司。保經制度下，客戶從第一天起即以個人名義服務，所有關係都是個人品牌的累積。<br><br>兩者各有優勢——傳統公司適合重視穩定與品牌的人，保經適合重視自主性與長期資產累積的人。<br><br><strong>入行的第一步選擇，會影響未來十年的發展方向——值得仔細思考哪種模式更適合自己。</strong>`]
+  ],
+};
+function updateScripts(p,r){
+  const scripts=SCRIPTS[CID]||SCRIPTS.insurance;
+  const disclaimer='<div class="script-disclaimer">⚠️ 以上為趨勢推演，非收入保證。實際收入因個人業績、公司政策、市場環境而異。</div>';
+  scripts.forEach(([tag,fn],i)=>{const idx=i+1;g('tag'+idx).textContent=tag;g('script'+idx).innerHTML=fn(p,r)+disclaimer;});
+}
+
+// ─── Company Chips (auto-rendered from COMPANY_DB) ──────────────────────────
+// v3.0.3: 壽險公司與保經公司分為兩組獨立選擇
+//   壽險/自訂 → selectedCompanyId（填入傳統端 Section A）
+//   保經     → selectedBrokerId （填入保經端 Section C + 比較表右欄）
+function renderCompanyChips(){
+  const container=g('company-chips-container');if(!container)return;
+  const lifes=Object.entries(COMPANY_DB).filter(([k,v])=>v.type==='life');
+  const brokers=Object.entries(COMPANY_DB).filter(([k,v])=>v.type==='broker');
+  const customs=Object.entries(COMPANY_DB).filter(([k,v])=>v.type==='custom');
+  let html='<div class="company-chips">';
+  html+='<div class="company-chip-section">🏢 對照公司制度</div>';
+  lifes.forEach(([k,v])=>{html+=`<button class="company-chip chip-life${k===selectedCompanyId?' active':''}" data-id="${k}" data-type="life" onclick="selectCompany('${k}',this)">${v.icon} ${v.short}</button>`;});
+  customs.forEach(([k,v])=>{html+=`<button class="company-chip chip-life${k===selectedCompanyId?' active':''}" data-id="${k}" data-type="custom" onclick="selectCompany('${k}',this)">${v.icon} ${v.short}</button>`;});
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function selectCompany(id,chipEl){
+  // v3.0.3: 只處理壽險/自訂公司（傳統端）
+  const company=COMPANY_DB[id];
+  if(!company)return;
+
+  // userModified confirmation dialog (AC-022)
+  const hasModified=Object.keys(_userModified||{}).length>0;
+  if(hasModified&&id!==selectedCompanyId){
+    if(!confirm('切換公司將重置傳統端參數，是否繼續？'))return;
+    clearUserModified();
+  }
+
+  // v4.1: 自訂公司 → 展開 inline 表單（取代 prompt()）
+  if(id==='custom'){
+    _pendingCustomChipEl=chipEl;
+    var form=g('custom-company-form');
+    if(form)form.style.display='block';
+    return; // 等使用者填完按「套用」
+  }
+
+  selectedCompanyId=id;
+  // 只更新壽險/自訂 chip 的 active 狀態
+  document.querySelectorAll('.chip-life').forEach(c=>c.classList.remove('active'));
+  if(chipEl)chipEl.classList.add('active');
+  if(id==='custom'&&chipEl){chipEl.textContent='✏️ '+COMPANY_DB['custom'].short;}
+  updateCompanyNotice();
+  renderInputs(CID);
+  applyCompanyDefaults(selectedCompanyId,CID);
+  applyBrokerDefaults(selectedBrokerId,CID);
+  recalc();
+}
+
+// v4.1: 自訂公司 inline 表單邏輯
+var _pendingCustomChipEl=null;
+function applyCustomCompany(){
+  var name=g('custom_name').value.trim()||'自訂公司';
+  var contract=g('custom_contract').value.trim()||'—';
+  var comm=parseFloat(g('custom_comm').value)||20;
+  var renewal=parseFloat(g('custom_renewal').value)||3;
+  var decay=parseFloat(g('custom_decay').value)||0.6;
+
+  COMPANY_DB['custom'].name=name;
+  COMPANY_DB['custom'].short=name.length>4?name.slice(0,4):name;
+  COMPANY_DB['custom'].contract=contract;
+  Object.keys(COMPANY_DB['custom'].defaults).forEach(function(p){
+    COMPANY_DB['custom'].defaults[p].commRateTrad=comm;
+    COMPANY_DB['custom'].defaults[p].renewalRate=renewal;
+    COMPANY_DB['custom'].defaults[p].renewalDecay=decay;
+  });
+
+  selectedCompanyId='custom';
+  document.querySelectorAll('.chip-life').forEach(function(c){c.classList.remove('active');});
+  if(_pendingCustomChipEl){_pendingCustomChipEl.classList.add('active');_pendingCustomChipEl.textContent='✏️ '+COMPANY_DB['custom'].short;}
+  g('custom-company-form').style.display='none';
+  updateCompanyNotice();
+  renderInputs(CID);
+  applyCompanyDefaults(selectedCompanyId,CID);
+  applyBrokerDefaults(selectedBrokerId,CID);
+  recalc();
+}
+function cancelCustomCompany(){
+  g('custom-company-form').style.display='none';
+}
+
+// v3.0.3: 套用公勝保經預設值到 Section C
+function applyBrokerDefaults(brokerId,personaId){
+  const broker=COMPANY_DB[brokerId];
+  if(!broker)return;
+  const bdMap={brokerComm:'brokerCommRate',renewalRate:'brokerRenewalRate',orgRate:'orgBonusRate'};
+  const bd=broker.brokerDefaults||{};
+  // 若保經沒有 brokerDefaults，從 defaults 推算
+  const defs=broker.defaults?.[personaId]||broker.defaults?.insurance||{};
+  const fallback={
+    brokerCommRate: defs.commRateTrad||40,
+    brokerRenewalRate: defs.renewalRate||5,
+    orgBonusRate: 5,
+  };
+  for(const [bdKey,schemaKey] of Object.entries(bdMap)){
+    if(isUserModified(schemaKey))continue;
+    const val=bd[bdKey]!=null?bd[bdKey]:fallback[schemaKey];
+    if(val==null)continue;
+    const inputEl=document.getElementById(`param_${schemaKey}`);
+    if(inputEl){
+      inputEl.value=val;
+      setCurrentValue(schemaKey,val,personaId);
+    }
+  }
+}
+
+function updateCompanyNotice(){
+  const c=COMPANY_DB[selectedCompanyId];const b=COMPANY_DB[selectedBrokerId];const notice=g('company-notice');
+  if(!c||!notice)return;
+  // Check lastVerified staleness (>6 months or '—' = stale)
+  let staleHtml='';
+  if(!c.lastVerified||c.lastVerified==='—'){
+    staleHtml=`<br><span class="stale-warn">⚠️ 資料尚未驗證，請與對方確認實際數值</span>`;
+  } else {
+    const verified=new Date(c.lastVerified);const now=new Date();const diffMs=now-verified;const diffMonths=diffMs/(1000*60*60*24*30);
+    if(diffMonths>6)staleHtml=`<br><span class="stale-warn">⚠️ 資料可能已過時（上次驗證：${c.lastVerified}）</span>`;
+  }
+  const sources=Object.values(c.dataSources||{}).join('、');
+  notice.innerHTML=`⚙️ 已套用「<strong>${c.name}</strong>」預設參數 ｜ ${c.contract} ｜ ${c.benefits}${staleHtml}<br>⚠️ 數值僅供參考，請依對方實際職階與年資調整${c.note?`<br>💡 ${c.note}`:''}${sources?`<br>📎 資料來源：${sources}`:''}`;
+  notice.style.display='block';
+}
+
+// ─── Identity switcher ───────────────────────────────────────────────────────
+function setId(id,btn){
+  CID=id;currentPersonaId=id;
+  document.querySelectorAll('.id-btn').forEach(b=>{b.className='id-btn';});
+  btn.classList.add('active','active-'+id);
+  renderInputs(id);
+  applyCompanyDefaults(selectedCompanyId,id);
+  applyBrokerDefaults(selectedBrokerId,id);
+  recalc();
+}
+
+// ─── Main recalc ──────────────────────────────────────────────────────────────
+function recalc(){
+  const values=collectInputs(CID);
+  const p=schemaToComputeParams(values,CID);
+  const r=compute5yr(p);
+  updateResult(p,r);
+  updateComparisonTable();
+  updateScenario();
+  updateScripts(p,r);
+  // Update income chart if available
+  if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container');}
+}
+
+// ─── Section Nav (IntersectionObserver) ──────────────────────────────────────
+function initSectionNav(){
+  const navLinks=document.querySelectorAll('.section-nav a');
+  const sections=document.querySelectorAll('#tab-B .section[id]');
+  if(!sections.length)return;
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      const active=document.querySelector(`.section-nav a[href="#${e.target.id}"]`);
+      if(active)active.classList.add('active');
+    }});
+  },{rootMargin:'-30% 0px -60% 0px'});
+  sections.forEach(s=>obs.observe(s));
+}
+
+// ─── v4.1: Persona Context Hint ──────────────────────────────────────────────
+function updatePersonaContext() {
+  var label = g('persona-context-label');
+  if (!label) return;
+  var cfg = ID_CONFIG[CID];
+  if (cfg) label.textContent = cfg.label;
+}
+
+// ─── v4.0: Tab Switching ─────────────────────────────────────────────────────
+var currentTab = 'A';
+var painPersonaId = 'insurance'; // Tab A 的獨立身份狀態
+
+function switchTab(tab, btnEl) {
+  if (tab === currentTab) return;
+  currentTab = tab;
+
+  // Tab button active state
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  // Panel visibility (no animation for mobile performance)
+  document.querySelectorAll('.tab-panel').forEach(function(p) {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  var panel = document.getElementById('tab-' + tab);
+  if (panel) {
+    panel.classList.add('active');
+    panel.style.display = 'block';
+  }
+
+  // URL hash
+  if (tab === 'B') {
+    window.location.hash = '#calculator';
+    // v4.0: 同步 Tab A 身份到 Tab B（若不同）
+    if (painPersonaId !== CID) {
+      CID = painPersonaId;
+      currentPersonaId = painPersonaId;
+      renderInputs(CID);
+      applyCompanyDefaults(selectedCompanyId, CID);
+      applyBrokerDefaults(selectedBrokerId, CID);
+    }
+    // v4.1: 更新身份語境提示
+    updatePersonaContext();
+    // 確保 Tab B 在切換後立即計算
+    recalc();
+  } else {
+    window.location.hash = '#why-broker';
+    // Tab A 渲染（P2 實作）
+    if (typeof renderTabA === 'function') renderTabA(painPersonaId);
+  }
+}
+
+function setPainId(id, btn) {
+  painPersonaId = id;
+  // 更新 Tab A 的身份 button active 狀態
+  document.querySelectorAll('#pain-identity-tabs .id-btn').forEach(b => {
+    b.className = 'id-btn';
+  });
+  if (btn) btn.classList.add('active', 'active-' + id);
+
+  // Tab A 內容重新渲染（P2 實作）
+  if (typeof renderTabA === 'function') renderTabA(id);
+}
+
+function bridgeToTabB() {
+  // 切換到 Tab B（switchTab 會自動同步 painPersonaId → CID）
+  var tabBButton = document.querySelector('.main-tab[data-tab="B"]');
+  switchTab('B', tabBButton);
+
+  // 滾動到頂部
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 支援 hash 導航（直連 #calculator 或 #why-broker）
+function checkHashRoute() {
+  if (typeof recalc === 'undefined' || typeof collectInputs === 'undefined') return;
+  var hash = window.location.hash;
+  if (hash === '#calculator') {
+    var btn = document.querySelector('.main-tab[data-tab="B"]');
+    switchTab('B', btn);
+  }
+}
+
+// ─── Footer data sources ────────────────────────────────────────────────────
+function renderFooter(){
+  if(typeof DATA_DISCLAIMER==='undefined')return;
+  g('footer-disclaimer').textContent=DATA_DISCLAIMER.disclaimer;
+  g('footer-sources').innerHTML='📎 資料來源：'+DATA_DISCLAIMER.primarySources.join(' ｜ ')+'<br>最後更新：'+DATA_DISCLAIMER.lastUpdated;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderCompanyChips();
+updateCompanyNotice();
+renderInputs(CID);
+applyCompanyDefaults(selectedCompanyId,CID);
+applyBrokerDefaults(selectedBrokerId,CID);
+recalc();
+initSectionNav();
+renderFooter();
+checkHashRoute();
+window.addEventListener('hashchange', checkHashRoute);
+</script>
+
+<!-- Pain Module (Tab A renderer) -->
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MDRT-BPS v4.0 — Pain Module (Tab A)
+   渲染：雷達圖 + 生活節奏 + 收入天花板 + 觀念溝通卡片
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── renderTabA: Tab A 主入口 ─────────────────────────────────────────── */
+function renderTabA(personaId) {
+  var p = PERSONA_PAIN_POINTS[personaId];
+  if (!p) return;
+  renderRadar(p, personaId);
+  renderDailySchedule(p);
+  renderPainIncome(p, personaId);
+  renderPainScripts(p);
+}
+
+/* ─── A-1: 痛點雷達圖（純 SVG）──────────────────────────────────────── */
+function renderRadar(p, personaId) {
+  var container = document.getElementById('radar-container');
+  if (!container) return;
+
+  var dims = RADAR_DIMS;
+  var n = dims.length;
+  var cx = 150, cy = 140, R = 110;
+  var angleOffset = -Math.PI / 2; // 從正上方開始
+
+  function polar(i, r) {
+    var a = angleOffset + (2 * Math.PI * i) / n;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+
+  function polygon(scores, maxScore) {
+    return dims.map(function(d, i) {
+      var val = (scores[d.key] || 0) / maxScore * R;
+      var pt = polar(i, val);
+      return pt.x + ',' + pt.y;
+    }).join(' ');
+  }
+
+  // 背景網格（3 層）
+  var gridLines = '';
+  [0.33, 0.66, 1].forEach(function(ratio) {
+    var pts = [];
+    for (var i = 0; i < n; i++) {
+      var pt = polar(i, R * ratio);
+      pts.push(pt.x + ',' + pt.y);
+    }
+    gridLines += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>';
+  });
+
+  // 軸線 + 標籤
+  var axes = '';
+  dims.forEach(function(d, i) {
+    var pt = polar(i, R);
+    var labelPt = polar(i, R + 22);
+    axes += '<line x1="' + cx + '" y1="' + cy + '" x2="' + pt.x + '" y2="' + pt.y + '" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>';
+    axes += '<text x="' + labelPt.x + '" y="' + labelPt.y + '" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#3a5878" font-weight="600">' + d.label + '</text>';
+  });
+
+  // 兩個多邊形
+  var currentPoly = polygon(p.radar, 10);
+  var brokerPoly = polygon(p.brokerRadar, 10);
+
+  // 分數標記點
+  var currentDots = '', brokerDots = '';
+  dims.forEach(function(d, i) {
+    var cVal = (p.radar[d.key] || 0) / 10 * R;
+    var bVal = (p.brokerRadar[d.key] || 0) / 10 * R;
+    var cPt = polar(i, cVal);
+    var bPt = polar(i, bVal);
+    currentDots += '<circle cx="' + cPt.x + '" cy="' + cPt.y + '" r="3.5" fill="#e74c3c" stroke="#fff" stroke-width="1.5"/>';
+    brokerDots += '<circle cx="' + bPt.x + '" cy="' + bPt.y + '" r="3.5" fill="#27ae60" stroke="#fff" stroke-width="1.5"/>';
+  });
+
+  var svg = '<svg viewBox="0 0 300 300" style="width:100%;max-width:360px;margin:0 auto;display:block">'
+    + gridLines + axes
+    + '<polygon points="' + currentPoly + '" fill="rgba(231,76,60,0.12)" stroke="#e74c3c" stroke-width="1.5" stroke-linejoin="round"/>'
+    + '<polygon points="' + brokerPoly + '" fill="rgba(39,174,96,0.12)" stroke="#27ae60" stroke-width="1.5" stroke-linejoin="round"/>'
+    + currentDots + brokerDots
+    + '</svg>';
+
+  // 圖例
+  var legend = '<div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:11px">'
+    + '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;display:inline-block"></span><span style="color:#e74c3c;font-weight:600">現職</span></span>'
+    + '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#27ae60;display:inline-block"></span><span style="color:#27ae60;font-weight:600">保經</span></span>'
+    + '</div>';
+
+  // 痛點清單
+  var painList = '<div style="margin-top:14px">';
+  p.topPainPoints.forEach(function(pt, i) {
+    painList += '<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);font-size:12px;color:#3a5878;line-height:1.5">'
+      + '<span style="color:#e74c3c;font-weight:700;flex-shrink:0">' + (i + 1) + '.</span>'
+      + '<span>' + pt + '</span></div>';
+  });
+  painList += '</div>';
+
+  container.innerHTML = svg + legend + painList;
+}
+
+/* ─── A-2: 生活節奏對照 ────────────────────────────────────────────── */
+function renderDailySchedule(p) {
+  var container = document.getElementById('daily-schedule-container');
+  if (!container) return;
+
+  var sched = p.dailySchedule;
+  var moodColors = { high: '#27ae60', ok: '#f0ad4e', low: '#e74c3c' };
+  var moodEmoji = { high: '😊', ok: '😐', low: '😩' };
+
+  function renderColumn(items, label, accentColor) {
+    var html = '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + accentColor + ';margin-bottom:8px;text-align:center">' + label + '</div>';
+    items.forEach(function(item) {
+      var mc = moodColors[item.mood] || '#999';
+      var me = moodEmoji[item.mood] || '';
+      html += '<div style="display:flex;gap:6px;padding:6px 4px;border-bottom:1px solid rgba(0,0,0,0.04);font-size:11px;line-height:1.4">'
+        + '<span style="flex-shrink:0;font-family:\'DM Mono\',monospace;font-size:10px;color:#6a8ea8;min-width:38px">' + item.time + '</span>'
+        + '<span style="flex:1;color:#3a5878">' + item.event + '</span>'
+        + '<span style="flex-shrink:0" title="' + item.mood + '">' + me + '</span>'
+        + '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  var html = '<div style="display:flex;gap:12px">'
+    + renderColumn(sched.current, '現職的一天', '#e74c3c')
+    + '<div style="width:1px;background:rgba(0,0,0,0.08);flex-shrink:0"></div>'
+    + renderColumn(sched.broker, '保經的一天', '#27ae60')
+    + '</div>';
+
+  container.innerHTML = html;
+}
+
+/* ─── A-3: 收入天花板視覺化 ────────────────────────────────────────── */
+function renderPainIncome(p, personaId) {
+  var container = document.getElementById('pain-income-container');
+  if (!container) return;
+
+  var inc = p.typicalIncome;
+  var currentAnnual = inc.fyp * (inc.commRate / 100) + (inc.renewalIncome || 0) + (inc.baseSalary || 0);
+  // 從 COMPANY_DB 讀取公勝佣金率，避免魔術數字
+  var brokerCommPct = 50;
+  if (typeof COMPANY_DB !== 'undefined' && COMPANY_DB['gongsheng']) {
+    var bd = COMPANY_DB['gongsheng'].brokerDefaults;
+    if (bd && bd.brokerComm != null) brokerCommPct = bd.brokerComm;
+  }
+  var brokerAnnual = inc.fyp * (brokerCommPct / 100) + (inc.renewalIncome || 0) * 1.2;
+  if (inc.baseSalary) {
+    // 銀行理專：保經第一年靠佣金補底薪（無底薪加成）
+    brokerAnnual = inc.fyp * (brokerCommPct / 100) + (inc.renewalIncome || 0);
+  }
+
+  var maxVal = Math.max(currentAnnual, brokerAnnual);
+  var currentPct = Math.round((currentAnnual / maxVal) * 100);
+  var brokerPct = 100;
+
+  var fmtW = function(v) { return (v / 10000).toFixed(0) + ' 萬'; };
+  var diffPct = Math.round(((brokerAnnual - currentAnnual) / currentAnnual) * 100);
+
+  var html = '<div class="card">';
+  html += '<div style="font-size:11px;color:#6a8ea8;margin-bottom:12px">以' + p.label + '典型產能估算（僅供趨勢參考）</div>';
+
+  // 現職 bar
+  html += '<div style="margin-bottom:12px">';
+  html += '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span style="color:#e74c3c;font-weight:600">現職年收入</span><span style="font-family:\'DM Mono\',monospace;color:#e74c3c">' + fmtW(currentAnnual) + '</span></div>';
+  html += '<div class="bar-track"><div class="bar-fill trad" style="width:' + currentPct + '%"></div></div>';
+  html += '</div>';
+
+  // 保經 bar
+  html += '<div style="margin-bottom:12px">';
+  html += '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px"><span style="color:#27ae60;font-weight:600">保經年收入</span><span style="font-family:\'DM Mono\',monospace;color:#27ae60">' + fmtW(brokerAnnual) + '</span></div>';
+  html += '<div class="bar-track"><div class="bar-fill broker" style="width:' + brokerPct + '%"></div></div>';
+  html += '</div>';
+
+  // 差距標記
+  if (diffPct > 0) {
+    html += '<div style="text-align:center;padding:8px;background:rgba(39,174,96,0.08);border-radius:8px;font-size:12px;color:#27ae60;font-weight:600">';
+    html += '保經收入約為現職的 ' + (diffPct + 100) + '%（高出 ' + fmtW(brokerAnnual - currentAnnual) + '）';
+    html += '</div>';
+  }
+
+  html += '<div style="margin-top:8px;font-size:10px;color:#6a8ea8">⚠️ 實際收入因個人業績、商品組合、市場環境而異。以上數字僅供趨勢參考。</div>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+/* ─── A-4: 觀念溝通卡片 ─────────────────────────────────────────── */
+function renderPainScripts(p) {
+  var container = document.getElementById('pain-scripts-container');
+  if (!container) return;
+
+  var objs = p.topObjections;
+  if (!objs || !objs.length) { container.innerHTML = ''; return; }
+
+  var html = '<div class="pain-cards-wrap">';
+  objs.forEach(function(obj, i) {
+    html += '<div class="pain-script-card" onclick="this.classList.toggle(\'open\')">';
+    html += '<div class="pain-card-q">❓ ' + obj.q + '</div>';
+    html += '<div class="pain-card-a"><div class="pain-card-a-label">💡 參考回應</div>' + obj.a + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="script-disclaimer">⚠️ 以上內容僅供面談參考，請依對方實際狀況調整。不構成任何形式之收入承諾或轉職建議。</div>';
+
+  container.innerHTML = html;
+}
+
+</script>
+<script>
+// v4.0: Tab A 初始渲染
+if (typeof renderTabA === 'function') renderTabA(painPersonaId || 'insurance');
+</script>
+
+<!-- Income Chart Module (P0-8 will migrate GONGSHENG constants) -->
+<style>
+/* ─── Income Chart — 10-Year Gap Visualization ───────────────────────────── */
+/* 同時支援 v1 dark 與 v2 light 主題，用 CSS 變數回退 */
+
+.ic-container {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  margin: 16px 0 0 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  color: #1a1a2e;
+}
+
+/* Dark theme override (when inside a dark parent) */
+.dark .ic-container,
+[data-theme="dark"] .ic-container {
+  background: var(--bg-card, #1e2a3a);
+  border: 1px solid rgba(201,168,76,.2);
+  color: var(--text, #ecf0f1);
+  box-shadow: none;
+}
+
+/* ─── Header ────────────────────────────────────────────────────────────── */
+.ic-header {
+  margin-bottom: 16px;
+}
+
+.ic-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.ic-subtitle {
+  font-size: 11.5px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* ─── Highlight Box (Gap Number) ─────────────────────────────────────── */
+.ic-highlight {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+[data-theme="dark"] .ic-highlight,
+.dark .ic-highlight {
+  background: rgba(99,102,241,.1);
+  border-color: rgba(99,102,241,.25);
+}
+
+.ic-gap-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: #4f46e5;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+[data-theme="dark"] .ic-gap-number,
+.dark .ic-gap-number {
+  color: #a5b4fc;
+}
+
+.ic-gap-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.ic-gap-label strong {
+  color: #4f46e5;
+}
+
+[data-theme="dark"] .ic-gap-label {
+  color: var(--text-muted, #95a5a6);
+}
+
+[data-theme="dark"] .ic-gap-label strong {
+  color: #a5b4fc;
+}
+
+/* ─── Bar Groups ─────────────────────────────────────────────────────── */
+.ic-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ic-bar-group {
+  position: relative;
+}
+
+.ic-bar-year {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+[data-theme="dark"] .ic-bar-year,
+.dark .ic-bar-year {
+  color: var(--text, #ecf0f1);
+}
+
+.ic-bar-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ic-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ic-bar-label {
+  font-size: 11px;
+  font-weight: 600;
+  width: 36px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.ic-label-trad {
+  color: #6366f1;
+}
+
+.ic-label-gs {
+  color: #475569;
+}
+
+[data-theme="dark"] .ic-label-trad { color: #a5b4fc; }
+[data-theme="dark"] .ic-label-gs { color: #cbd5e1; }
+
+.ic-bar-track {
+  flex: 1;
+  height: 22px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+[data-theme="dark"] .ic-bar-track,
+.dark .ic-bar-track {
+  background: rgba(255,255,255,.06);
+}
+
+.ic-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s cubic-bezier(.25,.46,.45,.94);
+  position: relative;
+}
+
+.ic-bar-trad {
+  background: linear-gradient(90deg, #818cf8 0%, #6366f1 100%);
+}
+
+.ic-bar-gs {
+  background: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
+}
+
+[data-theme="dark"] .ic-bar-trad {
+  background: linear-gradient(90deg, rgba(129,140,248,.6) 0%, rgba(99,102,241,.8) 100%);
+}
+
+[data-theme="dark"] .ic-bar-gs {
+  background: linear-gradient(90deg, rgba(148,163,184,.5) 0%, rgba(100,116,139,.7) 100%);
+}
+
+.ic-bar-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  width: 70px;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+[data-theme="dark"] .ic-bar-val,
+.dark .ic-bar-val {
+  color: var(--text-muted, #95a5a6);
+}
+
+/* Diff badge */
+.ic-bar-diff {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 2px 8px;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .ic-bar-diff,
+.dark .ic-bar-diff {
+  background: rgba(99,102,241,.15);
+  border-color: rgba(99,102,241,.3);
+  color: #a5b4fc;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────── */
+.ic-footer {
+  font-size: 10.5px;
+  color: #9ca3af;
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .ic-footer,
+.dark .ic-footer {
+  border-top-color: rgba(255,255,255,.06);
+  color: var(--text-muted, #95a5a6);
+}
+
+/* ─── Loading Skeleton (v3.0.2) ─────────────────────────────────────── */
+.ic-skeleton {
+  padding: 24px; border-radius: 20px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.ic-sk-title {
+  height: 20px; width: 60%; border-radius: 6px; margin-bottom: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ic-shimmer 1.5s infinite;
+}
+.ic-sk-bar {
+  height: 18px; border-radius: 6px; margin-bottom: 10px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ic-shimmer 1.5s infinite;
+}
+@keyframes ic-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Responsive: Mobile ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .ic-container {
+    padding: 16px 14px;
+    border-radius: 14px;
+    margin-top: 12px;
+  }
+  .ic-title {
+    font-size: 14px;
+  }
+  .ic-gap-number {
+    font-size: 24px;
+  }
+  .ic-highlight {
+    padding: 12px 16px;
+  }
+  .ic-bar-track {
+    height: 18px;
+  }
+  .ic-bar-label {
+    width: 30px;
+    font-size: 10px;
+  }
+  .ic-bar-val {
+    width: 60px;
+    font-size: 10px;
+  }
+  .ic-bar-diff {
+    display: none; /* 手機上隱藏差距 badge 避免擁擠 */
+  }
+}
+
+</style>
+<script>
+// ─── 10-Year Income Gap Chart Module ─────────────────────────────────────────
+// 依賴：companies.js（COMPANY_DB — 公勝參數從 COMPANY_DB['gongsheng'] 讀取）
+// 用純 CSS + DOM 繪製橫條動畫圖表，不依賴外部 charting library
+// lastUpdated: 2026-04-01
+
+(function() {
+  'use strict';
+
+  // ─── 收入模型參數 ──────────────────────────────────────────────────────────
+  // 假設：年繳保費 100 萬（FYP），每年新增相同保費
+  const BASE_FYP = 1000000; // 年繳保費 100 萬
+
+  // v3.0.3: 保經參數從 selectedBrokerId 動態讀取（不再硬編碼 gongsheng）
+  function getGsParams() {
+    const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
+    const gs = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB[brokerId] : null;
+    if (!gs) {
+      const fallback = (typeof COMPANY_DB !== 'undefined') ? COMPANY_DB['gongsheng'] : null;
+      const fbDefs = fallback?.defaults?.insurance || {};
+      return { comm: fbDefs.commRateTrad ?? 40, renewal: fbDefs.renewalRate ?? 5, renewalDecay: fallback?.renewalDecay ?? 0.85, orgRate: 5, orgMembers: 3, orgMemberFyp: 600000 };
+    }
+    const gsDefs = gs.defaults?.insurance || {};
+    return {
+      comm:         gs.brokerDefaults?.brokerComm ?? gsDefs.commRateTrad ?? 40,
+      renewal:      gs.brokerDefaults?.renewalRate ?? gsDefs.renewalRate ?? 5,
+      renewalDecay: gs.renewalDecay ?? 0.85,
+      orgRate:      gs.brokerDefaults?.orgRate ?? 5,
+      orgMembers:   3,
+      orgMemberFyp: 600000,
+    };
+  }
+
+  // ─── 計算 10 年累計收入 ─────────────────────────────────────────────────────
+  function calc10YearIncome(commRate, renewalRate, renewalDecay, hasOrg, orgAllowance) {
+    // 邊界值防護：避免異常輸入導致荒謬結果
+    commRate = Math.max(0, Math.min(100, Number(commRate) || 0));
+    renewalRate = Math.max(0, Math.min(100, Number(renewalRate) || 0));
+    renewalDecay = Math.max(0, Math.min(1, Number(renewalDecay) || 0));
+    orgAllowance = Math.max(0, Number(orgAllowance) || 0);
+
+    const years = [];
+    let cumulative = 0;
+
+    for (let y = 1; y <= 10; y++) {
+      // 首佣：每年新保單
+      let yearIncome = BASE_FYP * (commRate / 100);
+
+      // 續佣：之前每年保單的續佣（遞減）
+      for (let prev = 1; prev < y; prev++) {
+        const decayFactor = Math.pow(renewalDecay, y - prev - 1);
+        yearIncome += BASE_FYP * (renewalRate / 100) * decayFactor;
+      }
+
+      // 組織津貼
+      if (hasOrg && orgAllowance > 0) {
+        yearIncome += orgAllowance;
+      } else if (hasOrg && y >= 3) {
+        // 公勝端：第 3 年起有組織津貼（從 COMPANY_DB 動態讀取）
+        const gsp = getGsParams();
+        yearIncome += gsp.orgMembers * gsp.orgMemberFyp * (gsp.orgRate / 100);
+      }
+
+      cumulative += yearIncome;
+      years.push({
+        year: y,
+        annual: Math.round(yearIncome),
+        cumulative: Math.round(cumulative),
+      });
+    }
+    return years;
+  }
+
+  // ─── 取得對方公司的佣金參數 ────────────────────────────────────────────────
+  function getCompanyParams(companyId) {
+    const c = COMPANY_DB[companyId];
+    if (!c) return { commRate: 20, renewalRate: 3, renewalDecay: 0.6, orgAllowance: 0 };
+
+    const persona = typeof CID !== 'undefined' ? CID : 'insurance';
+    const defs = c.defaults[persona] || c.defaults.insurance || {};
+
+    return {
+      commRate: defs.commRateTrad ?? 20,
+      renewalRate: defs.renewalRate ?? (defs.mgrRenewal ? (defs.mgrRenewal / BASE_FYP * 100) : 3),
+      renewalDecay: defs.renewalDecay ?? 0.6,
+      orgAllowance: defs.orgAllowance ?? 0,
+    };
+  }
+
+  // ─── 格式化金額 ──────────────────────────────────────────────────────────
+  function formatMoney(n) {
+    if (n >= 10000000) return (n / 10000000).toFixed(1) + ' 千萬';
+    if (n >= 10000) return Math.round(n / 10000).toLocaleString() + ' 萬';
+    return n.toLocaleString();
+  }
+
+  // ─── 渲染圖表 ──────────────────────────────────────────────────────────────
+  function renderChart(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const companyId = (typeof selectedCompanyId !== 'undefined')
+      ? selectedCompanyId
+      : (window.CompanySelector ? window.CompanySelector.getSelectedId() : 'cathay-life');
+    const company = COMPANY_DB[companyId];
+    if (!company) return;
+
+    // v3.0.3: 保經端讀取 selectedBrokerId
+    const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
+    const brokerCompany = COMPANY_DB[brokerId] || COMPANY_DB['gongsheng'];
+
+    const params = getCompanyParams(companyId);
+    const tradData = calc10YearIncome(params.commRate, params.renewalRate || 3, params.renewalDecay, true, params.orgAllowance);
+    const gsp = getGsParams();
+    const gsData = calc10YearIncome(gsp.comm, gsp.renewal, gsp.renewalDecay, true, 0);
+
+    const maxVal = Math.max(gsData[9].cumulative, tradData[9].cumulative);
+    const gap = gsData[9].cumulative - tradData[9].cumulative;
+    const gapPercent = tradData[9].cumulative > 0 ? ((gap / tradData[9].cumulative) * 100).toFixed(0) : '—';
+
+    // Highlight years: 1, 3, 5, 10
+    const keyYears = [0, 2, 4, 9]; // indices
+
+    container.innerHTML = `
+      <div class="ic-container">
+        <div class="ic-header">
+          <div class="ic-title">📈 十年累計收入差距模擬</div>
+          <div class="ic-subtitle">
+            假設每年新增 FYP ${formatMoney(BASE_FYP)}，第 3 年起帶組織 ${gsp.orgMembers} 人
+          </div>
+        </div>
+
+        <div class="ic-highlight">
+          <div class="ic-gap-number">${formatMoney(Math.abs(gap))}</div>
+          <div class="ic-gap-label">
+            十年累計差距｜${brokerCompany.short}多出 <strong>${gapPercent}%</strong>
+          </div>
+        </div>
+
+        <div class="ic-bars">
+          ${keyYears.map(i => {
+            const d = tradData[i];
+            const g = gsData[i];
+            const tradPct = (d.cumulative / maxVal * 100).toFixed(1);
+            const gsPct = (g.cumulative / maxVal * 100).toFixed(1);
+            const yearGap = g.cumulative - d.cumulative;
+            return `
+              <div class="ic-bar-group">
+                <div class="ic-bar-year">第 ${d.year} 年</div>
+                <div class="ic-bar-pair">
+                  <div class="ic-bar-row">
+                    <span class="ic-bar-label ic-label-trad">${company.short}</span>
+                    <div class="ic-bar-track">
+                      <div class="ic-bar ic-bar-trad" style="width:${tradPct}%;" data-delay="${i * 150}"></div>
+                    </div>
+                    <span class="ic-bar-val">${formatMoney(d.cumulative)}</span>
+                  </div>
+                  <div class="ic-bar-row">
+                    <span class="ic-bar-label ic-label-gs">${brokerCompany.short}</span>
+                    <div class="ic-bar-track">
+                      <div class="ic-bar ic-bar-gs" style="width:${gsPct}%;" data-delay="${i * 150 + 80}"></div>
+                    </div>
+                    <span class="ic-bar-val">${formatMoney(g.cumulative)}</span>
+                  </div>
+                </div>
+                ${yearGap > 0 ? `<div class="ic-bar-diff">+${formatMoney(yearGap)}</div>` : ''}
+              </div>`;
+          }).join('')}
+        </div>
+
+        <div class="ic-footer">
+          ⚠️ 模擬數據僅供參考，基於公開佣金率估算，不含獎金、津貼等變動項目。
+          實際收入依個人業績與公司政策而定。
+        </div>
+      </div>`;
+
+    // 動畫觸發
+    requestAnimationFrame(() => {
+      container.querySelectorAll('.ic-bar').forEach(bar => {
+        const delay = parseInt(bar.dataset.delay) || 0;
+        const targetWidth = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+          bar.style.width = targetWidth;
+        }, 100 + delay);
+      });
+    });
+  }
+
+  // ─── v3.0: 直接使用 index.html 中的 #income-chart-container ─────────────
+  // 不再需要 injectChartContainer()，容器已寫在 HTML 中
+
+  // ─── 防止重複初始化 ──────────────────────────────────────────────────────
+  let initialized = false;
+
+  // ─── 初始化 ────────────────────────────────────────────────────────────────
+  const CHART_CONTAINER_ID = 'income-chart-container';
+
+  // v3.0.2: loading skeleton
+  function showSkeleton() {
+    const container = document.getElementById(CHART_CONTAINER_ID);
+    if (!container || container.querySelector('.ic-skeleton')) return;
+    container.innerHTML = `
+      <div class="ic-skeleton">
+        <div class="ic-sk-title"></div>
+        <div class="ic-sk-bar" style="width:60%"></div>
+        <div class="ic-sk-bar" style="width:80%"></div>
+        <div class="ic-sk-bar" style="width:45%"></div>
+        <div class="ic-sk-bar" style="width:90%"></div>
+      </div>`;
+  }
+
+  function initChart() {
+    if (initialized) return;
+    if (typeof COMPANY_DB === 'undefined') { showSkeleton(); return; }
+    initialized = true;
+
+    renderChart(CHART_CONTAINER_ID);
+
+    // v3.0: recalc() 已統一呼叫 IncomeChart.render()，不需額外監聽
+    console.log('[Income Chart] ✅ 初始化完成');
+  }
+
+  // DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initChart, 200));
+  } else {
+    setTimeout(initChart, 200);
+  }
+
+  // 匯出（v3.0: render + refresh 均指向同一函式，相容新舊呼叫）
+  window.IncomeChart = {
+    render:  (id) => renderChart(id || CHART_CONTAINER_ID),
+    refresh: ()   => renderChart(CHART_CONTAINER_ID),
+  };
+
+})();
+
+</script>
+</body>
+</html>
