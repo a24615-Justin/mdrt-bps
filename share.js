@@ -128,10 +128,10 @@ function captureAndShare(targetSelector, filename) {
     // 嘗試用 Web Share API（手機原生分享）
     if (navigator.share && navigator.canShare) {
       canvas.toBlob(function(blob) {
-        var file = new File([blob], (filename || 'mdrt-推演結果') + '.png', { type: 'image/png' });
+        var file = new File([blob], (filename || '推演結果') + '.png', { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
           navigator.share({
-            title: 'MDRT 推演結果',
+            title: '收入推演結果',
             text: '五年收入推演結果 — ' + getShareUrl(),
             files: [file]
           }).catch(function() {
@@ -155,7 +155,7 @@ function captureAndShare(targetSelector, filename) {
 
 function downloadCanvas(canvas, filename) {
   var link = document.createElement('a');
-  link.download = (filename || 'mdrt-推演結果') + '.png';
+  link.download = (filename || '推演結果') + '.png';
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
