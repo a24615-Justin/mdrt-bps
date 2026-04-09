@@ -266,7 +266,7 @@ const PARAM_SCHEMA = [
     min: 0, max: 20, step: 1,
     personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'advanced',
     companyOverride: false, requiresVerification: false,
-    description: '保經公司年度總佣金的年終獎金比率。公勝平均約 6%，直接加入保經端年收入。',
+    description: '保經公司年度總佣金的年終獎金比率。業界平均約 6%，直接加入保經端年收入。',
   },
 
   // ═══ v3.0.2 新增：離職後續佣年數 ═══

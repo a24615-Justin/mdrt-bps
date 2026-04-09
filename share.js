@@ -131,7 +131,7 @@ function captureAndShare(targetSelector, filename) {
         var file = new File([blob], (filename || 'mdrt-推演結果') + '.png', { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
           navigator.share({
-            title: '公勝MDRT 推演結果',
+            title: 'MDRT 推演結果',
             text: '五年收入推演結果 — ' + getShareUrl(),
             files: [file]
           }).catch(function() {
