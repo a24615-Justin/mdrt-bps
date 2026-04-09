@@ -745,13 +745,16 @@ function updateGoldMine() {
 // ─── Toggle UI for cross-industry personas ──────────────────────────
 function toggleCrossIndustryUI(isCross) {
   const goldMine = document.getElementById('gold-mine-container');
-  const tradSections = ['section-2', 'section-3', 'company-chips-container', 'comparison-table-container', 'company-notice'];
+  // 異業 persona 隱藏所有傳統對比區塊（KPI/情境/公司/對比表）
+  const tradSections = ['section-1', 'section-2', 'company-chips-container', 'comparison-table-container', 'company-notice', 'identity-inline'];
 
   if (goldMine) goldMine.style.display = isCross ? 'block' : 'none';
   tradSections.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = isCross ? 'none' : '';
   });
+
+  // Section 3（深度心理腳本）保留——異業也有腳本
 }
 
 // ─── Section Nav (IntersectionObserver) ──────────────────────────────────────
@@ -816,9 +819,13 @@ function switchTab(tab, btnEl) {
     if (painPersonaId !== CID) {
       CID = painPersonaId;
       currentPersonaId = painPersonaId;
+      var isCross = ID_CONFIG[CID] && ID_CONFIG[CID].crossIndustry;
+      toggleCrossIndustryUI(isCross);
       renderInputs(CID);
-      applyCompanyDefaults(selectedCompanyId, CID);
-      applyBrokerDefaults(selectedBrokerId, CID);
+      if (!isCross) {
+        applyCompanyDefaults(selectedCompanyId, CID);
+        applyBrokerDefaults(selectedBrokerId, CID);
+      }
     }
     // v4.1: 更新身份語境提示
     updatePersonaContext();
