@@ -41,6 +41,11 @@
         document.querySelectorAll('.id-bar .id-btn').forEach(function(b) { b.className = 'id-btn'; });
         idBtn.classList.add('active', 'active-' + persona);
       }
+      // v4.8: 異業身份 UI 切換（URL 直連場景）
+      if (typeof ID_CONFIG !== 'undefined' && typeof toggleCrossIndustryUI === 'function') {
+        var isCross = ID_CONFIG[persona] && ID_CONFIG[persona].crossIndustry;
+        toggleCrossIndustryUI(!!isCross);
+      }
       // 渲染
       if (typeof renderInputs === 'function') renderInputs(persona);
       if (typeof renderTabA === 'function') renderTabA(persona);

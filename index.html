@@ -676,6 +676,8 @@ function updateCompanyNotice(){
 // ─── Identity switcher ───────────────────────────────────────────────────────
 function setId(id,btn){
   CID=id;currentPersonaId=id;
+  painPersonaId=id; // v4.8: 同步 Tab A 身份，避免切回 Tab A 時不一致
+  clearUserModified(); // v4.8: 身份切換清除手動修改，確保新身份套用正確預設
   document.querySelectorAll('.id-btn').forEach(b=>{b.className='id-btn';});
   btn.classList.add('active','active-'+id);
   const isCross = ID_CONFIG[id] && ID_CONFIG[id].crossIndustry;
@@ -685,6 +687,7 @@ function setId(id,btn){
     applyCompanyDefaults(selectedCompanyId,id);
     applyBrokerDefaults(selectedBrokerId,id);
   }
+  updatePersonaContext(); // v4.8: 更新語境提示
   recalc();
 }
 
@@ -762,9 +765,10 @@ function toggleCrossIndustryUI(isCross) {
   const goldMine = document.getElementById('gold-mine-container');
   // 異業隱藏：公司chips + 對比表 + 公司通知 + 自訂表單 + KPI四格 + 情境模擬
   // 注意：不隱藏 section-1 本身（金礦試算和參數在裡面）
+  // identity-inline 故意不放入 hideIds — 它由 HTML 初始 display:none 永久隱藏
   const hideIds = [
     'company-chips-container', 'comparison-table-container', 'company-notice',
-    'custom-company-form', 'identity-inline',
+    'custom-company-form',
     'section-2',  // KPI 四格 + 情境模擬
   ];
 
@@ -777,6 +781,10 @@ function toggleCrossIndustryUI(isCross) {
   // section-1 的標題也需要調整
   const s1Title = document.querySelector('#section-1 > .section-title');
   if (s1Title) s1Title.textContent = isCross ? '① 客戶池金礦試算' : '① 制度對照';
+
+  // v4.8: section-nav ② 數字 連結跟隨 section-2 隱藏
+  const navLink2 = document.querySelector('.section-nav a[data-section="2"]');
+  if (navLink2) navLink2.style.display = isCross ? 'none' : '';
 
   // persona-context 保留（顯示目前身份）
   // Section 3（深度心理腳本）保留——異業也有腳本
@@ -844,13 +852,15 @@ function switchTab(tab, btnEl) {
     if (painPersonaId !== CID) {
       CID = painPersonaId;
       currentPersonaId = painPersonaId;
-      var isCross = ID_CONFIG[CID] && ID_CONFIG[CID].crossIndustry;
-      toggleCrossIndustryUI(isCross);
+      clearUserModified(); // 身份切換時清除手動修改標記，避免舊值殘留
       renderInputs(CID);
-      if (!isCross) {
-        applyCompanyDefaults(selectedCompanyId, CID);
-        applyBrokerDefaults(selectedBrokerId, CID);
-      }
+    }
+    // v4.8: 每次進入 Tab B 都確保異業/傳統 UI 狀態正確（含 URL 直連場景）
+    var isCross = ID_CONFIG[CID] && ID_CONFIG[CID].crossIndustry;
+    toggleCrossIndustryUI(isCross);
+    if (!isCross) {
+      applyCompanyDefaults(selectedCompanyId, CID);
+      applyBrokerDefaults(selectedBrokerId, CID);
     }
     // v4.1: 更新身份語境提示
     updatePersonaContext();
