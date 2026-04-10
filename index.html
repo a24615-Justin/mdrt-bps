@@ -329,6 +329,7 @@ const ID_CONFIG = {
     scRiskLabel:'客戶流失率', scRiskFn: sc=>'流失率 '+(sc.L*100).toFixed(0)+'%',
     sc:{ C:{L:.20,rb:.35}, B:{L:.15,rb:.40}, O:{L:.10,rb:.45} }},
   banker: { label:'🏦 銀行理專', badge:'banker', tradLabel:'銀行通路',
+    hideCompany: true,
     scRiskLabel:'適應期（月）', scRiskFn: sc=>'適應期 '+Math.round(sc.L*24)+'月',
     sc:{ C:{L:.50,rb:.40}, B:{L:.25,rb:.45}, O:{L:.15,rb:.50} }},
   manager: { label:'👑 壽險主管', badge:'manager', tradLabel:'傳統壽險',
@@ -681,8 +682,10 @@ function setId(id,btn){
   clearUserModified(); // v4.8: 身份切換清除手動修改，確保新身份套用正確預設
   document.querySelectorAll('.id-btn').forEach(b=>{b.className='id-btn';});
   btn.classList.add('active','active-'+id);
-  const isCross = ID_CONFIG[id] && ID_CONFIG[id].crossIndustry;
-  toggleCrossIndustryUI(isCross);
+  const cfg = ID_CONFIG[id] || {};
+  const isCross = !!cfg.crossIndustry;
+  const hideCompany = !!cfg.hideCompany;
+  toggleCrossIndustryUI(isCross, hideCompany);
   renderInputs(id);
   if (!isCross) {
     applyCompanyDefaults(selectedCompanyId,id);
@@ -775,28 +778,38 @@ function updateGoldMine() {
   }
 }
 
-// ─── Toggle UI for cross-industry personas ──────────────────────────
-function toggleCrossIndustryUI(isCross) {
+// ─── Toggle UI for cross-industry / hideCompany personas ──────────────────────────
+// isCross: 異業模式（房仲/車仲/醫療）— 隱藏公司+顯示金礦+隱藏 section-2
+// hideCompany: 隱藏公司區塊但保留傳統試算（銀行理專）— 不需要對照壽險公司
+function toggleCrossIndustryUI(isCross, hideCompany) {
   const goldMine = document.getElementById('gold-mine-container');
-  // 異業隱藏：公司chips + 對比表 + 公司通知 + 自訂表單 + KPI四格 + 情境模擬
-  // 注意：不隱藏 section-1 本身（金礦試算和參數在裡面）
-  // identity-inline / custom-company-form 不放入 hideIds — 它們由 HTML 初始 display:none，各自有獨立的 show/hide 邏輯
-  const hideIds = [
-    'company-chips-container', 'comparison-table-container', 'company-notice',
-    'section-2',  // KPI 四格 + 情境模擬
-  ];
 
-  if (goldMine) goldMine.style.display = isCross ? 'block' : 'none';
-  hideIds.forEach(id => {
+  // 公司相關元素：異業或 hideCompany 都隱藏
+  const companyIds = [
+    'company-chips-container', 'comparison-table-container', 'company-notice',
+  ];
+  const shouldHideCompany = isCross || hideCompany;
+  companyIds.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = isCross ? 'none' : '';
+    if (el) el.style.display = shouldHideCompany ? 'none' : '';
   });
 
-  // section-1 的標題也需要調整
-  const s1Title = document.querySelector('#section-1 > .section-title');
-  if (s1Title) s1Title.textContent = isCross ? '① 客戶池金礦試算' : '① 制度對照';
+  // 金礦：只有異業顯示
+  if (goldMine) goldMine.style.display = isCross ? 'block' : 'none';
 
-  // v4.8: section-nav ② 數字 連結跟隨 section-2 隱藏
+  // section-2（KPI 四格+情境模擬）：異業隱藏，hideCompany 保留
+  const section2 = document.getElementById('section-2');
+  if (section2) section2.style.display = isCross ? 'none' : '';
+
+  // section-1 標題
+  const s1Title = document.querySelector('#section-1 > .section-title');
+  if (s1Title) {
+    if (isCross) s1Title.textContent = '① 客戶池金礦試算';
+    else if (hideCompany) s1Title.textContent = '① 收入試算';
+    else s1Title.textContent = '① 制度對照';
+  }
+
+  // section-nav ② 數字：異業隱藏
   const navLink2 = document.querySelector('.section-nav a[data-section="2"]');
   if (navLink2) navLink2.style.display = isCross ? 'none' : '';
 
@@ -869,13 +882,15 @@ function switchTab(tab, btnEl) {
       clearUserModified(); // 身份切換時清除手動修改標記，避免舊值殘留
       renderInputs(CID);
     }
-    // v4.8: 每次進入 Tab B 都確保異業/傳統 UI 狀態正確（含 URL 直連場景）
-    var isCross = ID_CONFIG[CID] && ID_CONFIG[CID].crossIndustry;
-    toggleCrossIndustryUI(isCross);
+    // v4.8: 每次進入 Tab B 都確保異業/傳統/hideCompany UI 狀態正確
+    var _cfg = ID_CONFIG[CID] || {};
+    var isCross = !!_cfg.crossIndustry;
+    var hideCompany = !!_cfg.hideCompany;
+    toggleCrossIndustryUI(isCross, hideCompany);
     if (!isCross) {
       applyCompanyDefaults(selectedCompanyId, CID);
       applyBrokerDefaults(selectedBrokerId, CID);
-      updateCompanyNotice(); // v4.8: 身份切換後更新公司資訊欄
+      if (!hideCompany) updateCompanyNotice();
     }
     // v4.1: 更新身份語境提示
     updatePersonaContext();
