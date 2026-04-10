@@ -125,7 +125,8 @@
 .ic-bar-label {
   font-size: 11px;
   font-weight: 600;
-  width: 36px;
+  min-width: 52px;
+  white-space: nowrap;
   flex-shrink: 0;
   text-align: right;
 }
@@ -273,7 +274,8 @@
     height: 18px;
   }
   .ic-bar-label {
-    width: 30px;
+    min-width: 48px;
+    white-space: nowrap;
     font-size: 10px;
   }
   .ic-bar-val {
