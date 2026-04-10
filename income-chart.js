@@ -117,6 +117,11 @@
     const brokerId = (typeof selectedBrokerId !== 'undefined') ? selectedBrokerId : 'gongsheng';
     const brokerCompany = COMPANY_DB[brokerId] || COMPANY_DB['gongsheng'];
 
+    // v4.8: hideCompany 身份（如銀行理專）用 tradLabel 取代公司名
+    const _cfg = (typeof ID_CONFIG !== 'undefined' && typeof CID !== 'undefined') ? (ID_CONFIG[CID] || {}) : {};
+    const tradDisplayName = _cfg.hideCompany ? (_cfg.tradLabel || '現職') : company.short;
+    const brokerDisplayName = _cfg.hideCompany ? '保經端' : brokerCompany.short;
+
     const params = getCompanyParams(companyId);
     const tradData = calc10YearIncome(params.commRate, params.renewalRate || 3, params.renewalDecay, true, params.orgAllowance);
     const gsp = getGsParams();
@@ -141,7 +146,7 @@
         <div class="ic-highlight">
           <div class="ic-gap-number">${formatMoney(Math.abs(gap))}</div>
           <div class="ic-gap-label">
-            十年累計差距｜${brokerCompany.short}多出 <strong>${gapPercent}%</strong>
+            十年累計差距｜${brokerDisplayName}多出 <strong>${gapPercent}%</strong>
           </div>
         </div>
 
@@ -156,15 +161,15 @@
               <div class="ic-bar-group">
                 <div class="ic-bar-year">第 ${d.year} 年</div>
                 <div class="ic-bar-pair">
-                  <div class="ic-bar-row" role="group" aria-label="${company.short} 第${d.year}年累計 ${formatMoney(d.cumulative)}" title="年收入 ${formatMoney(d.annual)} / 累計 ${formatMoney(d.cumulative)}">
-                    <span class="ic-bar-label ic-label-trad">${company.short}</span>
+                  <div class="ic-bar-row" role="group" aria-label="${tradDisplayName} 第${d.year}年累計 ${formatMoney(d.cumulative)}" title="年收入 ${formatMoney(d.annual)} / 累計 ${formatMoney(d.cumulative)}">
+                    <span class="ic-bar-label ic-label-trad">${tradDisplayName}</span>
                     <div class="ic-bar-track">
                       <div class="ic-bar ic-bar-trad" style="width:${tradPct}%;" data-delay="${i * 150}"></div>
                     </div>
                     <span class="ic-bar-val">${formatMoney(d.cumulative)}</span>
                   </div>
-                  <div class="ic-bar-row" role="group" aria-label="${brokerCompany.short} 第${g.year}年累計 ${formatMoney(g.cumulative)}" title="年收入 ${formatMoney(g.annual)} / 累計 ${formatMoney(g.cumulative)}">
-                    <span class="ic-bar-label ic-label-gs">${brokerCompany.short}</span>
+                  <div class="ic-bar-row" role="group" aria-label="${brokerDisplayName} 第${g.year}年累計 ${formatMoney(g.cumulative)}" title="年收入 ${formatMoney(g.annual)} / 累計 ${formatMoney(g.cumulative)}">
+                    <span class="ic-bar-label ic-label-gs">${brokerDisplayName}</span>
                     <div class="ic-bar-track">
                       <div class="ic-bar ic-bar-gs" style="width:${gsPct}%;" data-delay="${i * 150 + 80}"></div>
                     </div>
