@@ -7,12 +7,17 @@
 function renderTabA(personaId) {
   var p = PERSONA_PAIN_POINTS[personaId];
   if (!p) return;
-  // v4.8: 新人無現職，section 標題動態調整
+  // v4.8: 新人先鼓勵入行，再做通路比較
   var radarSectionTitle = document.querySelector('#section-a1 .section-title');
   if (radarSectionTitle) {
     radarSectionTitle.textContent = personaId === 'newbie'
-      ? '壽險通路 vs 保經通路：五大關鍵差異'
+      ? '如果選擇保險業，壽險 vs 保經怎麼選？'
       : '現職 vs 保經：五大關鍵差異';
+  }
+  // 新人專屬鼓勵區塊
+  var encourageEl = document.getElementById('newbie-encourage');
+  if (encourageEl) {
+    encourageEl.style.display = personaId === 'newbie' ? 'block' : 'none';
   }
   renderRadar(p, personaId);
   renderDailySchedule(p);
@@ -94,7 +99,7 @@ function renderRadar(p, personaId) {
   var brokerLabel = personaId === 'newbie' ? '保經通路' : '保經';
   var legend = '';
   if (personaId === 'newbie') {
-    legend += '<div style="text-align:center;padding:8px 12px;background:#fefce8;border-radius:8px;margin-bottom:8px;font-size:12px;color:#92400e;">💡 新人尚無現職可比，以下為「壽險通路 vs 保經通路」的制度差異比較</div>';
+    legend += '<div style="text-align:center;padding:8px 12px;background:#eff6ff;border-radius:8px;margin-bottom:8px;font-size:12px;color:#1d4ed8;">💡 決定入行後，選對通路比努力更重要 — 以下比較壽險公司 vs 保經公司的制度差異</div>';
   }
   legend += '<div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:13px">'
     + '<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;display:inline-block"></span><span style="color:#e74c3c;font-weight:600">' + currentLabel + '</span></span>'
