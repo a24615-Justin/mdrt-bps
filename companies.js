@@ -278,18 +278,17 @@ const COMPANY_DB = {
     note: '承攬制老牌壽險；佣金結構較接近保經模式',
   },
 
-  // ═══ 公勝保經（教材主角）═══
+  // ═══ 保經端（預設對照）═══
   // GONGSHENG_COMPARE 已合併至此，v3.0 不再有獨立常數
   'gongsheng': {
-    name: '公勝保經', short: '公勝', icon: '🏅', type: 'broker',
+    name: '保經端', short: '保經端', icon: '🏅', type: 'broker',
     contract: '承攬制（純C計佣）', benefits: '自行投保（職業工會）',
-    marketShare: '連續 7 年保經業第一（2024 營收 44.7 億 / MDRT 710 人）',
+    marketShare: '保經通路參考數據',
     lastVerified: '2026-04-01',
     dataSources: {
-      marketShare: '鉅亨網 2025/2：2024 營收 44.7 億（YoY +47%）、千大企業第 583 名→連續 7 年中華徵信所保經業第一',
-      commRate: '公勝保經 2026 制度架構圖',
-      contract: '公勝保經官方制度說明',
-      mdrt: '2024 MDRT 710 人（達成率 118%）、2026 目標 1,000 人',
+      marketShare: '業界公開資訊整理',
+      commRate: '保經制度架構參考',
+      contract: '保經通路制度說明',
     },
     defaults: {
       // 以「專員」為預設起點，使用者可依實際職級調整
