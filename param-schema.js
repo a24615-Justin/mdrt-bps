@@ -660,7 +660,7 @@ function schemaToComputeParams(values, personaId) {
       _fixedIncome: values.fixedSalary ?? 620000,
       _renewalSunk: 0,  // 銀行理專無續佣
       ry_sunk: 0,
-      ry_decay: 0.6,
+      ry_decay: 0.98, // v4.8 fix: 與 v4.5 語意一致（純佣金結構遞減，不含脫落）
       broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       fypShrink: (values.fypShrink ?? 80) / 100,
@@ -689,7 +689,7 @@ function schemaToComputeParams(values, personaId) {
       _renewalSunk: values.renewalIncome ?? 0,
       ry_sunk: values.renewalIncome ?? 0,  // 向下相容（postRenewal 用：離職後仍發放的純續佣）
       _mRySunk: 0,
-      ry_decay: 0.6,
+      ry_decay: 0.98, // v4.8 fix: 與 v4.5 語意一致（純佣金結構遞減，不含脫落）
       broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       postResignYrs: values.postResignRenewalYrs ?? 0,
@@ -722,7 +722,7 @@ function schemaToComputeParams(values, personaId) {
       _fixedIncome: values.medIncome ?? 1100000,
       _renewalSunk: 0,
       ry_sunk: 0,
-      ry_decay: 0.6,
+      ry_decay: 0.98, // v4.8 fix: 與 v4.5 語意一致
       broker_comm_step: gsBrokerCommStep,
       tradGrowth: (values.tradGrowthRate ?? 0) / 100,
       L: Math.min(adapt / divisor, maxL),
@@ -746,7 +746,7 @@ function schemaToComputeParams(values, personaId) {
       FYP,
       rate_trad: tradProductComm * (values.commRateTrad ?? 18) / 100,
       ry_sunk: 0,
-      ry_decay: 0.6,
+      ry_decay: 0.98, // v4.8 fix: 與 v4.5 語意一致
       broker_comm_step: gsBrokerCommStep,
       L: Math.min(adapt / divisor, maxL),
       rb, ryr, or_: 0, nrec: 0, rfyp: 0, fyb,
