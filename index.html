@@ -22,11 +22,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=4.8.1">
-<link rel="stylesheet" href="pain-module.css?v=4.8.1">
+<link rel="stylesheet" href="styles-v2.css?v=5.0">
+<link rel="stylesheet" href="pain-module.css?v=5.0">
 
 <!-- Auth Gate: 白名單存取控制（不需要 Supabase SDK） -->
-<script src="auth-gate.js?v=2.0"></script>
+<script src="auth-gate.js?v=5.0"></script>
 </head>
 
 <body class="insurance">
@@ -36,23 +36,23 @@
 <div id="qr-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);flex-direction:column;align-items:center;justify-content:center;cursor:pointer" onclick="closeQR()">
   <div style="background:#fff;border-radius:20px;padding:32px 40px;text-align:center;max-width:400px;width:90%" onclick="event.stopPropagation()">
     <div style="font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#1a2d42;margin-bottom:4px">📱 掃描加入</div>
-    <div style="font-size:13px;color:#6a8ea8;margin-bottom:16px">掃描 QR Code 開啟試算工具</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:16px">掃描 QR Code 開啟試算工具</div>
     <div id="qr-img-wrap" style="display:flex;justify-content:center;margin-bottom:12px"></div>
     <div id="qr-url-display" style="font-family:'DM Mono',monospace;font-size:11px;color:#9a6e00;word-break:break-all;padding:8px;background:#f0f4f9;border-radius:8px;margin-bottom:16px"></div>
     <button onclick="closeQR()" style="background:#1a2d42;color:#fff;border:none;padding:10px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">關閉</button>
   </div>
 </div>
 
-<!-- ═══ Sticky Header ═══ -->
+<!-- ═══ Sticky Header (v2: navy background) ═══ -->
 <header class="header" role="banner">
   <div>
     <div class="header-top">
       <div class="header-badge">⚡ 增員推演 · BPS</div>
-      <button id="qr-toggle-btn" onclick="openQR()" style="margin-left:auto;background:var(--gold-dim);border:1px solid rgba(154,110,0,0.3);color:var(--gold);padding:3px 10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" title="顯示 QR Code 讓學員掃描">📱 QR</button>
+      <button id="qr-toggle-btn" onclick="openQR()" style="margin-left:auto;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.9);padding:3px 10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" title="顯示 QR Code 讓學員掃描">📱 QR</button>
     </div>
     <h1>保險增員收入推演</h1>
   </div>
-  <!-- v4.0: 主 Tab 切換（取代舊的 section-nav） -->
+  <!-- v5.0: 主 Tab 切換 -->
   <nav class="main-tabs" id="main-tabs" role="tablist" aria-label="主要功能切換">
     <button class="main-tab active" data-tab="A" role="tab" aria-selected="true" aria-controls="tab-A" id="tab-btn-A" onclick="switchTab('A',this)" tabindex="0">💡 為什麼做保經？</button>
     <button class="main-tab" data-tab="B" role="tab" aria-selected="false" aria-controls="tab-B" id="tab-btn-B" onclick="switchTab('B',this)" tabindex="-1">📊 制度收入試算</button>
@@ -125,7 +125,7 @@
     <div id="pain-scripts-container"></div>
   </div>
 
-  <!-- A-4: CTA → Tab B（收入試算用自己的數字才有意義） -->
+  <!-- A-4: CTA → Tab B -->
   <div class="section" id="section-a4">
     <div class="cta-bridge">
       <div class="cta-bridge-text">想看具體數字？</div>
@@ -136,7 +136,7 @@
 </div>
 </div>
 
-<!-- ═══════════════════════ TAB B: 制度收入試算 ═══════════════════════ -->
+<!-- ═══════════════════════ TAB B: 制度收入試算 (v2: restructured) ═══════════════════════ -->
 <div class="tab-panel" id="tab-B" role="tabpanel" aria-labelledby="tab-btn-B" style="display:none">
 <div class="container">
 
@@ -151,12 +151,12 @@
 <div class="section" id="section-1">
   <div class="section-title blue">① 制度對照</div>
 
-  <!-- v4.1: 身份語境提示（從 Tab A 帶入） -->
+  <!-- v4.1: 身份語境提示 -->
   <div class="persona-context" id="persona-context">
-    目前以 <span id="persona-context-label">🛡️ 保險同業</span> 身份試算 · <a href="#" onclick="switchTab('A',document.querySelector('.main-tab[data-tab=&quot;A&quot;]'));return false" style="color:var(--accent);text-decoration:underline">← 回 Tab A 切換</a>
+    目前以 <span id="persona-context-label">🛡️ 保險同業</span> 身份試算 · <a href="#" onclick="switchTab('A',document.querySelector('.main-tab[data-tab=&quot;A&quot;]'));return false" style="color:#2563eb;text-decoration:underline">← 回 Tab A 切換</a>
   </div>
 
-  <!-- v4.0: 身份由 Tab A 帶入，不再在 Tab B 顯示。隱藏保留 DOM 供 bridgeToTabB 同步 -->
+  <!-- 隱藏的 Tab B 身份切換器（供 bridgeToTabB 同步） -->
   <div class="identity-inline" id="identity-inline" style="display:none">
     <div class="identity-tabs-inline">
       <button class="id-btn active active-insurance" onclick="setId('insurance',this)">🛡️ 保險同業</button>
@@ -194,46 +194,49 @@
   <!-- Comparison Table -->
   <div id="comparison-table-container"></div>
 
-  <!-- PARAM_SCHEMA inputs -->
-  <div id="inputs-container"></div>
+  <!-- PARAM_SCHEMA inputs（v2: details 可收合，保留在 section-1） -->
+  <details class="params-collapsible" open>
+    <summary>⚙️ 調整假設參數</summary>
+    <div class="params-body">
+      <div id="inputs-container"></div>
+    </div>
+  </details>
 
-  <!-- 異業增員：客戶池金礦試算（realtor/auto only） -->
+  <!-- 異業增員：客戶池金礦試算（realtor/auto/medical only） -->
   <div id="gold-mine-container" style="display:none">
-    <div class="section" style="margin-top:24px;">
-      <div class="section-title" style="color:#D97706;">💎 您的客戶池裡藏著多少保費？</div>
-      <div style="background:linear-gradient(135deg,#FFF7ED,#FFFBEB);border:2px solid #F59E0B;border-radius:12px;padding:24px;margin-top:12px;">
-        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;font-size:15px;line-height:2.2;">
-          <span style="color:#6B7280;">既有客戶</span><strong id="gm-clients" style="text-align:right;">200 人</strong>
-          <span style="color:#6B7280;">× 預估轉換率</span><strong id="gm-conv" style="text-align:right;">15%</strong>
-          <span style="color:#6B7280;">= 潛在保險客戶</span><strong id="gm-insurance-clients" style="text-align:right;color:#D97706;">30 人</strong>
-          <span style="color:#6B7280;">× 平均年保費</span><strong id="gm-premium" style="text-align:right;">NT$ 4 萬</strong>
-        </div>
-        <div style="border-top:2px solid #F59E0B;margin:16px 0;padding-top:16px;display:grid;grid-template-columns:1fr auto;gap:8px;font-size:15px;line-height:2.2;">
-          <span style="color:#92400E;font-weight:600;">潛在年保費總額</span><strong id="gm-fyp" style="text-align:right;font-size:20px;color:#D97706;">NT$ 120 萬</strong>
-          <span style="color:#92400E;font-weight:600;">您的首年額外佣金</span><strong id="gm-first-year" style="text-align:right;font-size:20px;color:#059669;">NT$ 14.4 萬</strong>
-        </div>
-        <div style="margin-top:16px;padding:12px 16px;background:#FEF2F2;border-radius:8px;font-size:13px;line-height:1.8;">
-          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;">
-            <span style="color:#6B7280;">第 3 年起每年續佣</span><strong id="gm-renewal-y3" style="color:#059669;">NT$ 7.2 萬</strong>
-            <span style="color:#6B7280;">第 5 年起每年續佣</span><strong id="gm-renewal-y5" style="color:#059669;">NT$ 12 萬</strong>
-          </div>
-        </div>
-        <p id="gm-tagline" style="margin-top:16px;font-size:14px;color:#92400E;font-weight:600;text-align:center;">
-          📌 這筆保費目前正在流向別的保險業務員。<br>您不需要放棄現職，只需要順手多做一步。
-        </p>
-        <p style="margin-top:8px;font-size:11px;color:#9CA3AF;text-align:center;">
-          僅供參考，實際收入依個人表現與市場狀況而定
-        </p>
+    <div class="card" style="margin-top:16px;border:2px solid #F59E0B;background:linear-gradient(135deg,#FFF7ED,#FFFBEB);">
+      <div class="card-title" style="color:#D97706;">💎 您的客戶池裡藏著多少保費？</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;font-size:15px;line-height:2.2;">
+        <span style="color:#64748b;">既有客戶</span><strong id="gm-clients" style="text-align:right;">200 人</strong>
+        <span style="color:#64748b;">× 預估轉換率</span><strong id="gm-conv" style="text-align:right;">15%</strong>
+        <span style="color:#64748b;">= 潛在保險客戶</span><strong id="gm-insurance-clients" style="text-align:right;color:#D97706;">30 人</strong>
+        <span style="color:#64748b;">× 平均年保費</span><strong id="gm-premium" style="text-align:right;">NT$ 4 萬</strong>
       </div>
+      <div style="border-top:2px solid #F59E0B;margin:16px 0;padding-top:16px;display:grid;grid-template-columns:1fr auto;gap:8px;font-size:15px;line-height:2.2;">
+        <span style="color:#92400E;font-weight:600;">潛在年保費總額</span><strong id="gm-fyp" style="text-align:right;font-size:20px;color:#D97706;">NT$ 120 萬</strong>
+        <span style="color:#92400E;font-weight:600;">您的首年額外佣金</span><strong id="gm-first-year" style="text-align:right;font-size:20px;color:#059669;">NT$ 14.4 萬</strong>
+      </div>
+      <div style="margin-top:16px;padding:12px 16px;background:#FEF2F2;border-radius:8px;font-size:13px;line-height:1.8;">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;">
+          <span style="color:#64748b;">第 3 年起每年續佣</span><strong id="gm-renewal-y3" style="color:#059669;">NT$ 7.2 萬</strong>
+          <span style="color:#64748b;">第 5 年起每年續佣</span><strong id="gm-renewal-y5" style="color:#059669;">NT$ 12 萬</strong>
+        </div>
+      </div>
+      <p id="gm-tagline" style="margin-top:16px;font-size:14px;color:#92400E;font-weight:600;text-align:center;">
+        📌 這筆保費目前正在流向別的保險業務員。<br>您不需要放棄現職，只需要順手多做一步。
+      </p>
+      <p style="margin-top:8px;font-size:11px;color:#9CA3AF;text-align:center;">
+        僅供參考，實際收入依個人表現與市場狀況而定
+      </p>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ SECTION ②: 數字說話 ═══════════════════════ -->
+<!-- ═══════════════════════ SECTION ②: 數字說話 (v2: KPI first, params collapsible) ═══════════════════════ -->
 <div class="section" id="section-2">
   <div class="section-title gold">② 數字說話</div>
 
-  <!-- KPI 四格 -->
+  <!-- KPI 四格 (MOVED UP — conclusion first) -->
   <div class="kpi-grid" role="region" aria-label="五年收入關鍵指標">
     <div class="kpi trad">
       <div class="kpi-label" id="trad-label">傳統公司</div>
@@ -261,6 +264,9 @@
     </div>
   </div>
 
+  <!-- Phase 3: 參數雙欄紅藍對比 -->
+  <div id="param-comparison-container"></div>
+
   <!-- 損益兩平時間軸 -->
   <div class="card">
     <div class="chart-title">損益兩平時間軸</div>
@@ -275,8 +281,13 @@
   <!-- 5 年逐年對比 -->
   <div id="annual_comparison"></div>
 
-  <!-- 十年收入差距圖（P0-8: income-chart integration） -->
+  <!-- 十年收入差距圖 -->
   <div id="income-chart-container"></div>
+
+  <div class="disclaimer">
+    ⚠️ 以上所有數據均為數學模型推演，僅供趨勢參考，不構成任何形式之收入承諾或轉職建議。
+    實際收入因個人業績、公司政策、市場環境而異，請自行評估。
+  </div>
 </div>
 
 <!-- ═══════════════════════ SECTION ③: 進階探討 ═══════════════════════ -->
@@ -328,7 +339,7 @@
 </main>
 <!-- ═══ Footer ═══ -->
 <footer class="footer" role="contentinfo">
-  <div>保險增員收入推演 v4.7</div>
+  <div>保險增員收入推演 v5.0</div>
   <div class="disclaimer" id="footer-disclaimer">
     本工具所有數據僅供趨勢參考，不構成任何形式之收入承諾或轉職建議。
     實際收入因個人業績、公司政策、市場環境而異，請自行評估。
@@ -337,10 +348,10 @@
 </footer>
 
 <!-- ═══ External Scripts ═══ -->
-<script src="persona-pain-data.js?v=4.8.1"></script>
-<script src="companies.js?v=4.8.1"></script>
-<script src="param-schema.js?v=4.8.1"></script>
-<script src="calculator.js?v=4.8.1"></script>
+<script src="persona-pain-data.js?v=5.0"></script>
+<script src="companies.js?v=5.0"></script>
+<script src="param-schema.js?v=5.0"></script>
+<script src="calculator.js?v=5.0"></script>
 
 <script>
 // ─── Global State ─────────────────────────────────────────────────────────────
@@ -452,7 +463,7 @@ function updateComparisonTable(){
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+    <div style="font-size:10px;color:#64748b;margin-top:4px">
       ⚠️ 制度資訊僅供參考，實際條件因職級、年資、區域有異。佣金試算請見下方參數表。
     </div>`;
 }
@@ -739,8 +750,10 @@ function recalc(){
   updateComparisonTable();
   updateScenario();
   updateScripts(p,r);
-  // Update income chart if available
-  if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container');}
+  // Update income chart (v6.0: 傳入 compute params，統一引擎)
+  if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container',p);}
+  // Update param comparison (Phase 3)
+  if(typeof renderParamComparison==='function'){renderParamComparison(p,r);}
 }
 
 // ─── 異業增員：客戶池金礦試算 ──────────────────────────
@@ -973,6 +986,107 @@ function renderFooter(){
   g('footer-sources').innerHTML='📎 資料來源：'+DATA_DISCLAIMER.primarySources.join(' ｜ ')+'<br>最後更新：'+DATA_DISCLAIMER.lastUpdated;
 }
 
+// ─── Phase 3: 參數雙欄紅藍對比 ────────────────────────────────────────────────
+function renderParamComparison(p,r){
+  var box=g('param-comparison-container');if(!box)return;
+  var cfg=ID_CONFIG[CID]||{};var tradLabel=cfg.tradLabel||'傳統公司';
+  var persist=p.persistency??0.90;
+  var tradDecay=(persist*(p.ry_decay||0.6)).toFixed(3);
+  var brokerDecay=(persist*(p.broker_comm_step??0.95)).toFixed(3);
+  var fypShrink=(p._id==='banker')?(p.fypShrink??0.8):1;
+  var effectiveFYP=p.FYP*(1-p.L)*fypShrink;
+  var tradFYC=p.FYP*p.rate_trad;
+  var brokerFYC=effectiveFYP*p.rb;
+
+  function fm(v){return'NT$ '+(Math.round(v)/10000).toFixed(1)+' 萬';}
+  function fp(v){return(v*100).toFixed(1)+'%';}
+
+  var rows=[
+    {label:'有效 FYP',trad:fm(p.FYP),broker:fm(effectiveFYP),note:fypShrink<1?'保費縮水 '+fp(fypShrink):(p.L>0?'扣除客戶流失 '+fp(p.L):'')},
+    {label:'首年佣金率',trad:fp(p.rate_trad),broker:fp(p.rb),note:''},
+    {label:'首年佣金',trad:fm(tradFYC),broker:fm(brokerFYC),note:brokerFYC>tradFYC?'↑ 保經高 '+fm(brokerFYC-tradFYC):''},
+    {label:'續佣率',trad:fp(p.ryr||0),broker:fp(p.ryr||0),note:''},
+    {label:'續佣衰減係數',trad:tradDecay,broker:brokerDecay,note:'持續率 '+fp(persist)+' × 佣金遞減'},
+    {label:'固定收入/年',trad:fm(p._fixedIncome||0),broker:'—',note:p._fixedIncome>0?'轉職後歸零':''},
+    {label:'續佣沉沒/年',trad:fm((p._renewalSunk??p.ry_sunk)||0),broker:'—（重新累積）',note:'轉職最大成本'},
+  ];
+  if(p.nrec>0){
+    var orgY1=(p.nrec||0)*(p.rfyp||0)*(p.or_||0)*0.5;
+    rows.push({label:'組織獎金(Y1)',trad:'—',broker:fm(orgY1),note:p.nrec+'人 × 脫落率 '+fp(p.attrition??0.20)+'/年'});
+  }
+  if(p.brokerYEB>0){
+    rows.push({label:'年終獎金率',trad:'—',broker:fp(p.brokerYEB),note:'佣金 × 此比率'});
+  }
+
+  var html='<div class="pc-card"><div class="pc-header"><div class="pc-h-trad">🔴 '+tradLabel+'</div><div class="pc-h-vs">VS</div><div class="pc-h-broker">🔵 轉換後</div></div><div class="pc-body">';
+  rows.forEach(function(row){
+    html+='<div class="pc-row"><div class="pc-val pc-val-trad">'+row.trad+'</div><div class="pc-label">'+row.label+(row.note?'<span class="pc-note">'+row.note+'</span>':'')+'</div><div class="pc-val pc-val-broker">'+row.broker+'</div></div>';
+  });
+  html+='</div><div class="pc-footer">以上參數來自您的輸入，可在「⚙️ 調整假設參數」中修改</div></div>';
+  box.innerHTML=html;
+}
+
+// ─── Phase 4: 引導走查 ──────────────────────────────────────────────────────
+function initWalkthrough(){
+  if(localStorage.getItem('bps_walkthrough_done'))return;
+  var steps=[
+    {target:'#pain-identity-tabs',title:'① 選擇身份',desc:'先選擇你目前的身份，系統會自動調整所有假設參數。',pos:'bottom',tab:'A'},
+    {target:'#tab-btn-B',title:'② 制度收入試算',desc:'切換到「制度收入試算」查看具體數字對比。',pos:'bottom',tab:'A'},
+    {target:'.kpi-grid',title:'③ 關鍵指標',desc:'五年累計收入、淨利差距、收入超越點一目瞭然。',pos:'top',tab:'B'},
+    {target:'.params-collapsible',title:'④ 調整參數',desc:'展開調整你的實際數據，結果會即時更新。',pos:'top',tab:'B'},
+  ];
+  var idx=0;
+  var overlay=document.createElement('div');
+  overlay.id='wt-overlay';
+  overlay.innerHTML='<div class="wt-backdrop"></div><div class="wt-tooltip" id="wt-tip"><div class="wt-step" id="wt-step"></div><div class="wt-title" id="wt-title"></div><div class="wt-desc" id="wt-desc"></div><div class="wt-actions"><button class="wt-skip" id="wt-skip">跳過</button><button class="wt-next" id="wt-next">下一步</button></div></div>';
+  document.body.appendChild(overlay);
+
+  function show(i){
+    if(i>=steps.length){finish();return;}
+    var s=steps[i];
+    // FIX #1: 自動切 Tab，確保目標元素可見
+    if(s.tab&&currentTab!==s.tab){
+      var tabBtn=document.querySelector('.main-tab[data-tab="'+s.tab+'"]');
+      switchTab(s.tab,tabBtn);
+    }
+    var el=document.querySelector(s.target);
+    if(!el){idx++;show(idx);return;}
+    // FIX #1 續: 確認元素有尺寸（未被 display:none 隱藏）
+    var rect=el.getBoundingClientRect();
+    if(rect.width===0&&rect.height===0){idx++;show(idx);return;}
+    var tip=document.getElementById('wt-tip');
+    document.getElementById('wt-step').textContent=(i+1)+' / '+steps.length;
+    document.getElementById('wt-title').textContent=s.title;
+    document.getElementById('wt-desc').textContent=s.desc;
+    document.getElementById('wt-next').textContent=(i===steps.length-1)?'開始使用':'下一步 →';
+    // 定位 highlight — FIX #2: 保存原始 position/zIndex
+    el.dataset.wtOrigPos=el.style.position||'';
+    el.dataset.wtOrigZ=el.style.zIndex||'';
+    el.style.position='relative';el.style.zIndex='10001';
+    el.classList.add('wt-highlight');
+    // 定位 tooltip
+    var top=s.pos==='bottom'?rect.bottom+12:rect.top-tip.offsetHeight-12;
+    var left=Math.max(12,Math.min(rect.left,window.innerWidth-tip.offsetWidth-12));
+    tip.style.top=Math.max(12,top)+'px';tip.style.left=left+'px';
+    // 確保 tooltip 在視窗內
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  // FIX #2: 完整還原 position + zIndex
+  function clearHighlight(){
+    document.querySelectorAll('.wt-highlight').forEach(function(e){
+      e.classList.remove('wt-highlight');
+      e.style.position=e.dataset.wtOrigPos||'';
+      e.style.zIndex=e.dataset.wtOrigZ||'';
+      delete e.dataset.wtOrigPos;delete e.dataset.wtOrigZ;
+    });
+  }
+  function finish(){clearHighlight();overlay.remove();localStorage.setItem('bps_walkthrough_done','1');}
+
+  document.getElementById('wt-skip').onclick=finish;
+  document.getElementById('wt-next').onclick=function(){clearHighlight();idx++;show(idx);};
+  setTimeout(function(){show(0);},600);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 renderCompanyChips();
 updateCompanyNotice();
@@ -984,24 +1098,27 @@ initSectionNav();
 renderFooter();
 checkHashRoute();
 window.addEventListener('hashchange', checkHashRoute);
+// Phase 4: 引導走查（首次使用）
+initWalkthrough();
 </script>
 
 <!-- Pain Module (Tab A renderer) -->
-<script src="pain-module.js?v=4.8.1"></script>
+<script src="pain-module.js?v=5.0"></script>
 <script>
 // v4.0: Tab A 初始渲染
 if (typeof renderTabA === 'function') renderTabA(painPersonaId || 'insurance');
 </script>
 
-<!-- Income Chart Module (P0-8 will migrate GONGSHENG constants) -->
-<link rel="stylesheet" href="income-chart.css?v=4.8.1">
-<script src="income-chart.js?v=4.8.1"></script>
+<!-- Chart.js CDN (v6.0: 取代 CSS 橫條) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<!-- Income Chart Module (v6.0: Chart.js + compute5yr 統一引擎) -->
+<script src="income-chart.js?v=6.0"></script>
 
 <!-- html2canvas CDN (截圖分享) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
 <!-- URL 參數路由 + 截圖分享 -->
-<script src="share.js?v=4.8.1"></script>
+<script src="share.js?v=5.0"></script>
 
 <!-- 分享工具列（注入到頁面底部固定位置） -->
 <script>

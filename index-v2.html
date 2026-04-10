@@ -264,6 +264,9 @@
     </div>
   </div>
 
+  <!-- Phase 3: 參數雙欄紅藍對比 -->
+  <div id="param-comparison-container"></div>
+
   <!-- 損益兩平時間軸 -->
   <div class="card">
     <div class="chart-title">損益兩平時間軸</div>
@@ -747,8 +750,10 @@ function recalc(){
   updateComparisonTable();
   updateScenario();
   updateScripts(p,r);
-  // Update income chart if available
-  if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container');}
+  // Update income chart (v6.0: 傳入 compute params，統一引擎)
+  if(typeof IncomeChart!=='undefined'&&IncomeChart.render){IncomeChart.render('income-chart-container',p);}
+  // Update param comparison (Phase 3)
+  if(typeof renderParamComparison==='function'){renderParamComparison(p,r);}
 }
 
 // ─── 異業增員：客戶池金礦試算 ──────────────────────────
@@ -981,6 +986,107 @@ function renderFooter(){
   g('footer-sources').innerHTML='📎 資料來源：'+DATA_DISCLAIMER.primarySources.join(' ｜ ')+'<br>最後更新：'+DATA_DISCLAIMER.lastUpdated;
 }
 
+// ─── Phase 3: 參數雙欄紅藍對比 ────────────────────────────────────────────────
+function renderParamComparison(p,r){
+  var box=g('param-comparison-container');if(!box)return;
+  var cfg=ID_CONFIG[CID]||{};var tradLabel=cfg.tradLabel||'傳統公司';
+  var persist=p.persistency??0.90;
+  var tradDecay=(persist*(p.ry_decay||0.6)).toFixed(3);
+  var brokerDecay=(persist*(p.broker_comm_step??0.95)).toFixed(3);
+  var fypShrink=(p._id==='banker')?(p.fypShrink??0.8):1;
+  var effectiveFYP=p.FYP*(1-p.L)*fypShrink;
+  var tradFYC=p.FYP*p.rate_trad;
+  var brokerFYC=effectiveFYP*p.rb;
+
+  function fm(v){return'NT$ '+(Math.round(v)/10000).toFixed(1)+' 萬';}
+  function fp(v){return(v*100).toFixed(1)+'%';}
+
+  var rows=[
+    {label:'有效 FYP',trad:fm(p.FYP),broker:fm(effectiveFYP),note:fypShrink<1?'保費縮水 '+fp(fypShrink):(p.L>0?'扣除客戶流失 '+fp(p.L):'')},
+    {label:'首年佣金率',trad:fp(p.rate_trad),broker:fp(p.rb),note:''},
+    {label:'首年佣金',trad:fm(tradFYC),broker:fm(brokerFYC),note:brokerFYC>tradFYC?'↑ 保經高 '+fm(brokerFYC-tradFYC):''},
+    {label:'續佣率',trad:fp(p.ryr||0),broker:fp(p.ryr||0),note:''},
+    {label:'續佣衰減係數',trad:tradDecay,broker:brokerDecay,note:'持續率 '+fp(persist)+' × 佣金遞減'},
+    {label:'固定收入/年',trad:fm(p._fixedIncome||0),broker:'—',note:p._fixedIncome>0?'轉職後歸零':''},
+    {label:'續佣沉沒/年',trad:fm((p._renewalSunk??p.ry_sunk)||0),broker:'—（重新累積）',note:'轉職最大成本'},
+  ];
+  if(p.nrec>0){
+    var orgY1=(p.nrec||0)*(p.rfyp||0)*(p.or_||0)*0.5;
+    rows.push({label:'組織獎金(Y1)',trad:'—',broker:fm(orgY1),note:p.nrec+'人 × 脫落率 '+fp(p.attrition??0.20)+'/年'});
+  }
+  if(p.brokerYEB>0){
+    rows.push({label:'年終獎金率',trad:'—',broker:fp(p.brokerYEB),note:'佣金 × 此比率'});
+  }
+
+  var html='<div class="pc-card"><div class="pc-header"><div class="pc-h-trad">🔴 '+tradLabel+'</div><div class="pc-h-vs">VS</div><div class="pc-h-broker">🔵 轉換後</div></div><div class="pc-body">';
+  rows.forEach(function(row){
+    html+='<div class="pc-row"><div class="pc-val pc-val-trad">'+row.trad+'</div><div class="pc-label">'+row.label+(row.note?'<span class="pc-note">'+row.note+'</span>':'')+'</div><div class="pc-val pc-val-broker">'+row.broker+'</div></div>';
+  });
+  html+='</div><div class="pc-footer">以上參數來自您的輸入，可在「⚙️ 調整假設參數」中修改</div></div>';
+  box.innerHTML=html;
+}
+
+// ─── Phase 4: 引導走查 ──────────────────────────────────────────────────────
+function initWalkthrough(){
+  if(localStorage.getItem('bps_walkthrough_done'))return;
+  var steps=[
+    {target:'#pain-identity-tabs',title:'① 選擇身份',desc:'先選擇你目前的身份，系統會自動調整所有假設參數。',pos:'bottom',tab:'A'},
+    {target:'#tab-btn-B',title:'② 制度收入試算',desc:'切換到「制度收入試算」查看具體數字對比。',pos:'bottom',tab:'A'},
+    {target:'.kpi-grid',title:'③ 關鍵指標',desc:'五年累計收入、淨利差距、收入超越點一目瞭然。',pos:'top',tab:'B'},
+    {target:'.params-collapsible',title:'④ 調整參數',desc:'展開調整你的實際數據，結果會即時更新。',pos:'top',tab:'B'},
+  ];
+  var idx=0;
+  var overlay=document.createElement('div');
+  overlay.id='wt-overlay';
+  overlay.innerHTML='<div class="wt-backdrop"></div><div class="wt-tooltip" id="wt-tip"><div class="wt-step" id="wt-step"></div><div class="wt-title" id="wt-title"></div><div class="wt-desc" id="wt-desc"></div><div class="wt-actions"><button class="wt-skip" id="wt-skip">跳過</button><button class="wt-next" id="wt-next">下一步</button></div></div>';
+  document.body.appendChild(overlay);
+
+  function show(i){
+    if(i>=steps.length){finish();return;}
+    var s=steps[i];
+    // FIX #1: 自動切 Tab，確保目標元素可見
+    if(s.tab&&currentTab!==s.tab){
+      var tabBtn=document.querySelector('.main-tab[data-tab="'+s.tab+'"]');
+      switchTab(s.tab,tabBtn);
+    }
+    var el=document.querySelector(s.target);
+    if(!el){idx++;show(idx);return;}
+    // FIX #1 續: 確認元素有尺寸（未被 display:none 隱藏）
+    var rect=el.getBoundingClientRect();
+    if(rect.width===0&&rect.height===0){idx++;show(idx);return;}
+    var tip=document.getElementById('wt-tip');
+    document.getElementById('wt-step').textContent=(i+1)+' / '+steps.length;
+    document.getElementById('wt-title').textContent=s.title;
+    document.getElementById('wt-desc').textContent=s.desc;
+    document.getElementById('wt-next').textContent=(i===steps.length-1)?'開始使用':'下一步 →';
+    // 定位 highlight — FIX #2: 保存原始 position/zIndex
+    el.dataset.wtOrigPos=el.style.position||'';
+    el.dataset.wtOrigZ=el.style.zIndex||'';
+    el.style.position='relative';el.style.zIndex='10001';
+    el.classList.add('wt-highlight');
+    // 定位 tooltip
+    var top=s.pos==='bottom'?rect.bottom+12:rect.top-tip.offsetHeight-12;
+    var left=Math.max(12,Math.min(rect.left,window.innerWidth-tip.offsetWidth-12));
+    tip.style.top=Math.max(12,top)+'px';tip.style.left=left+'px';
+    // 確保 tooltip 在視窗內
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  // FIX #2: 完整還原 position + zIndex
+  function clearHighlight(){
+    document.querySelectorAll('.wt-highlight').forEach(function(e){
+      e.classList.remove('wt-highlight');
+      e.style.position=e.dataset.wtOrigPos||'';
+      e.style.zIndex=e.dataset.wtOrigZ||'';
+      delete e.dataset.wtOrigPos;delete e.dataset.wtOrigZ;
+    });
+  }
+  function finish(){clearHighlight();overlay.remove();localStorage.setItem('bps_walkthrough_done','1');}
+
+  document.getElementById('wt-skip').onclick=finish;
+  document.getElementById('wt-next').onclick=function(){clearHighlight();idx++;show(idx);};
+  setTimeout(function(){show(0);},600);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 renderCompanyChips();
 updateCompanyNotice();
@@ -992,6 +1098,8 @@ initSectionNav();
 renderFooter();
 checkHashRoute();
 window.addEventListener('hashchange', checkHashRoute);
+// Phase 4: 引導走查（首次使用）
+initWalkthrough();
 </script>
 
 <!-- Pain Module (Tab A renderer) -->
@@ -1001,9 +1109,10 @@ window.addEventListener('hashchange', checkHashRoute);
 if (typeof renderTabA === 'function') renderTabA(painPersonaId || 'insurance');
 </script>
 
-<!-- Income Chart Module (P0-8 will migrate GONGSHENG constants) -->
-<link rel="stylesheet" href="income-chart.css?v=5.0">
-<script src="income-chart.js?v=5.0"></script>
+<!-- Chart.js CDN (v6.0: 取代 CSS 橫條) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<!-- Income Chart Module (v6.0: Chart.js + compute5yr 統一引擎) -->
+<script src="income-chart.js?v=6.0"></script>
 
 <!-- html2canvas CDN (截圖分享) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
