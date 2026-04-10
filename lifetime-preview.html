@@ -127,26 +127,24 @@
     <div class="card-title">⚙️ 基本假設參數</div>
 
     <!-- 共用 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
-      <div>
-        <label style="color:var(--muted);display:block;margin-bottom:2px;">年繳保費 FYP（萬）</label>
-        <input type="number" id="fyp" value="300" min="50" max="5000" step="10" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
-      </div>
-      <div>
-        <label style="color:var(--muted);display:block;margin-bottom:2px;">商品平均佣金率 %</label>
-        <input type="number" id="productComm" value="60" min="10" max="100" step="5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
-        <div style="font-size:10px;color:var(--muted);margin-top:2px;">終身壽險 70-90% / 定期 30-50% / 投資型 15-25%</div>
-      </div>
+    <div style="font-size:13px;margin-bottom:16px;">
+      <label style="color:var(--muted);display:block;margin-bottom:2px;">年繳保費 FYP（萬）</label>
+      <input type="number" id="fyp" value="300" min="50" max="5000" step="10" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
     </div>
 
     <!-- 雙欄比較 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <!-- 傳統端 -->
       <div style="padding:14px;background:#fef2f2;border-radius:10px;border:1px solid #fecaca;">
         <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:10px;">🏢 維持不動（傳統端）</div>
         <div style="display:grid;gap:8px;font-size:13px;">
           <div>
-            <label style="color:var(--muted);display:block;margin-bottom:2px;">個人職級佣金率 %</label>
+            <label style="color:var(--muted);display:block;margin-bottom:2px;">商品首佣率 %</label>
+            <input type="number" id="tradProductComm" value="60" min="10" max="100" step="5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">終身壽險 70-90% / 定期 30-50% / 投資型 15-25%</div>
+          </div>
+          <div>
+            <label style="color:var(--muted);display:block;margin-bottom:2px;">個人職級率 %</label>
             <input type="number" id="tradRankRate" value="20" min="1" max="80" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">依職階與年資，公司給的分潤比率</div>
           </div>
@@ -159,6 +157,9 @@
             <label style="color:var(--muted);display:block;margin-bottom:2px;">續佣率 %</label>
             <input type="number" id="tradRenewalRate" value="3" min="0" max="20" step="0.5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
           </div>
+          <div style="padding:8px;background:rgba(220,38,38,0.06);border-radius:6px;font-size:11px;color:var(--muted);">
+            實際首佣 = FYP × <span id="tradEffRate">12.0</span>%<br>（商品 <span id="tradProdLabel">60</span>% × 職級 <span id="tradRankLabel">20</span>%）
+          </div>
         </div>
       </div>
       <!-- 保經端 -->
@@ -166,7 +167,12 @@
         <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;">🏅 轉職追趕（保經端）</div>
         <div style="display:grid;gap:8px;font-size:13px;">
           <div>
-            <label style="color:var(--muted);display:block;margin-bottom:2px;">個人職級佣金率 %</label>
+            <label style="color:var(--muted);display:block;margin-bottom:2px;">商品首佣率 %</label>
+            <input type="number" id="brokerProductComm" value="60" min="10" max="100" step="5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">保經可跨公司選品，加權平均通常相近或更高</div>
+          </div>
+          <div>
+            <label style="color:var(--muted);display:block;margin-bottom:2px;">個人職級率 %</label>
             <input type="number" id="brokerRankRate" value="40" min="1" max="80" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
             <div style="font-size:10px;color:var(--muted);margin-top:2px;">保經端給的分潤比率（通常高 1.5-2 倍）</div>
           </div>
@@ -178,6 +184,9 @@
           <div>
             <label style="color:var(--muted);display:block;margin-bottom:2px;">續佣率 %</label>
             <input type="number" id="brokerRenewalRate" value="5" min="0" max="20" step="0.5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+          </div>
+          <div style="padding:8px;background:rgba(37,99,235,0.06);border-radius:6px;font-size:11px;color:var(--muted);">
+            實際首佣 = FYP × <span id="brokerEffRate">24.0</span>%<br>（商品 <span id="brokerProdLabel">60</span>% × 職級 <span id="brokerRankLabel">40</span>%）
           </div>
         </div>
       </div>
@@ -305,20 +314,30 @@
 // ─── 三段式計算引擎 ────────────────────────────────────────────────────
 
 function getParams() {
-  const productComm = (Number(document.getElementById('productComm').value) || 60) / 100;
+  const tradProd = (Number(document.getElementById('tradProductComm').value) || 60) / 100;
+  const tradRank = (Number(document.getElementById('tradRankRate').value) || 20) / 100;
+  const brokerProd = (Number(document.getElementById('brokerProductComm').value) || 60) / 100;
+  const brokerRank = (Number(document.getElementById('brokerRankRate').value) || 40) / 100;
+
+  // 更新實際首佣率顯示
+  const g = id => document.getElementById(id);
+  if (g('tradEffRate')) g('tradEffRate').textContent = (tradProd * tradRank * 100).toFixed(1);
+  if (g('tradProdLabel')) g('tradProdLabel').textContent = (tradProd * 100).toFixed(0);
+  if (g('tradRankLabel')) g('tradRankLabel').textContent = (tradRank * 100).toFixed(0);
+  if (g('brokerEffRate')) g('brokerEffRate').textContent = (brokerProd * brokerRank * 100).toFixed(1);
+  if (g('brokerProdLabel')) g('brokerProdLabel').textContent = (brokerProd * 100).toFixed(0);
+  if (g('brokerRankLabel')) g('brokerRankLabel').textContent = (brokerRank * 100).toFixed(0);
+
   return {
-    fyp: (Number(document.getElementById('fyp').value) || 300) * 10000,
-    productComm,
-    // 傳統端：商品佣金率 × 職級率 = 實際首佣收入率
-    tradComm: productComm * (Number(document.getElementById('tradRankRate').value) || 20) / 100,
-    tradRenewalRate: (Number(document.getElementById('tradRenewalRate').value) || 3) / 100,
-    // 保經端：商品佣金率 × 職級率
-    brokerComm: productComm * (Number(document.getElementById('brokerRankRate').value) || 40) / 100,
-    brokerRenewalRate: (Number(document.getElementById('brokerRenewalRate').value) || 5) / 100,
-    lossRate: (Number(document.getElementById('lossRate').value) || 20) / 100,
-    existRenewal: (Number(document.getElementById('existRenewal').value) || 50) * 10000,
-    currentAge: Number(document.getElementById('currentAge').value) || 35,
-    retireAge: Number(document.getElementById('retireAge').value) || 60,
+    fyp: (Number(g('fyp').value) || 300) * 10000,
+    tradComm: tradProd * tradRank,
+    tradRenewalRate: (Number(g('tradRenewalRate').value) || 3) / 100,
+    brokerComm: brokerProd * brokerRank,
+    brokerRenewalRate: (Number(g('brokerRenewalRate').value) || 5) / 100,
+    lossRate: (Number(g('lossRate').value) || 20) / 100,
+    existRenewal: (Number(g('existRenewal').value) || 50) * 10000,
+    currentAge: Number(g('currentAge').value) || 35,
+    retireAge: Number(g('retireAge').value) || 60,
   };
 }
 
