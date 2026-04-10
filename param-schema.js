@@ -49,7 +49,7 @@ const PARAM_SCHEMA = [
     key: 'tradProductCommRate', label: '傳統端商品佣金率', section: 'current',
     type: 'percent', default: 60, suffix: '%',
     min: 10, max: 100, step: 1,
-    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    personas: ['ins', 'banker', 'mgr', 'new'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
     description: '留在現職時銷售商品的平均佣金率。終身壽險約 70-90%、定期壽險約 30-50%、投資型約 15-25%。此為加權平均。',
   },
@@ -57,7 +57,7 @@ const PARAM_SCHEMA = [
     key: 'commRateTrad', label: '個人佣金率（職階）', section: 'current',
     type: 'percent', default: 20, suffix: '%',
     min: 0, max: 100,
-    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    personas: ['ins', 'banker', 'mgr', 'new'], visibility: 'always',
     companyOverride: true, requiresVerification: true,
     description: '依個人職階與年資，公司給付的佣金分潤比率。實際首年收入 = FYP × 商品佣金率 × 此比率。',
     personaConfig: {
@@ -132,27 +132,7 @@ const PARAM_SCHEMA = [
     companyOverride: false, requiresVerification: false,
     description: '預估願意跟隨轉職的核心夥伴人數。此人數影響增員獎金計算。',
   },
-  {
-    key: 'medIncome', label: '年度醫療收入', section: 'current',
-    type: 'currency', default: 1100000, prefix: 'NT$',
-    personas: ['med'], visibility: 'always',
-    companyOverride: false, requiresVerification: false,
-    description: '目前醫療通路的年度收入。轉職後此收入歸零（沉沒成本）。',
-  },
-  {
-    key: 'referralClients', label: '轉介客戶數/年', section: 'current',
-    type: 'number', default: 50, min: 0,
-    personas: ['med'], visibility: 'always',
-    companyOverride: false, requiresVerification: false,
-    description: '每年可轉介的客戶數量，影響 FYP 的計算基數。',
-  },
-  {
-    key: 'avgPremium', label: '平均客戶保費', section: 'current',
-    type: 'currency', default: 150000, prefix: 'NT$',
-    personas: ['med'], visibility: 'always',
-    companyOverride: false, requiresVerification: false,
-    description: '每位客戶的平均年化保費，與客戶數相乘得出 FYP。',
-  },
+  // v4.8: medIncome / referralClients / avgPremium(med) 已移除 — 醫療通路改為異業金礦模型
   {
     key: 'newbieFyp', label: '預估第一年 FYP', section: 'current',
     type: 'currency', default: 800000, prefix: 'NT$',
@@ -191,7 +171,7 @@ const PARAM_SCHEMA = [
     key: 'adaptMonths', label: '適應期', section: 'risk',
     type: 'slider', default: 6,
     min: 1, max: 24, step: 1,
-    personas: ['banker', 'mgr', 'med', 'new'], visibility: 'always',
+    personas: ['banker', 'mgr', 'new'], visibility: 'always',
     companyOverride: false,
     description: '轉職後需要的適應/陣痛期月數，影響客戶流失率 L 的計算。',
     personaConfig: {
@@ -216,7 +196,7 @@ const PARAM_SCHEMA = [
     key: 'brokerProductCommRate', label: '保經端商品佣金率', section: 'advantage',
     type: 'percent', default: 60, suffix: '%',
     min: 10, max: 100, step: 1,
-    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    personas: ['ins', 'banker', 'mgr', 'new'], visibility: 'always',
     companyOverride: false, requiresVerification: false,
     description: '轉到保經後銷售商品的平均佣金率。保經可自由選擇商品，通常能銷售佣金率更高的商品組合。',
   },
@@ -224,7 +204,7 @@ const PARAM_SCHEMA = [
     key: 'brokerCommRate', label: '保經個人佣金率（職階）', section: 'advantage',
     type: 'percent', default: 40, suffix: '%',
     min: 0, max: 100,
-    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    personas: ['ins', 'banker', 'mgr', 'new'], visibility: 'always',
     companyOverride: false,
     description: '加入保經後的個人佣金分潤比率。保經首年收入 = FYP × 商品佣金率 × 此比率。',
   },
@@ -232,7 +212,7 @@ const PARAM_SCHEMA = [
     key: 'brokerRenewalRate', label: '保經續期佣金率', section: 'advantage',
     type: 'percent', default: 5, suffix: '%',
     min: 0, max: 30,
-    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'always',
+    personas: ['ins', 'banker', 'mgr', 'new'], visibility: 'always',
     companyOverride: false,
     description: '保經公司的續期佣金比率，每年從續期保費中獲得。',
   },
@@ -264,7 +244,7 @@ const PARAM_SCHEMA = [
     key: 'brokerYearEndBonus', label: '保經年終獎金率', section: 'advantage',
     type: 'percent', default: 6, suffix: '%',
     min: 0, max: 20, step: 1,
-    personas: ['ins', 'banker', 'mgr', 'med', 'new'], visibility: 'advanced',
+    personas: ['ins', 'banker', 'mgr', 'new'], visibility: 'advanced',
     companyOverride: false, requiresVerification: false,
     description: '保經公司年度總佣金的年終獎金比率。業界平均約 6%，直接加入保經端年收入。',
   },
@@ -283,7 +263,7 @@ const PARAM_SCHEMA = [
     key: 'tradGrowthRate', label: '傳統端年成長率', section: 'current',
     type: 'percent', default: 0, suffix: '%',
     min: 0, max: 30, step: 1,
-    personas: ['ins', 'banker', 'mgr', 'med'], visibility: 'advanced',
+    personas: ['ins', 'banker', 'mgr'], visibility: 'advanced',
     companyOverride: false, requiresVerification: false,
     description: '在傳統公司每年 FYP 的預估成長率。設為 0 表示維持不變（保守估計）。',
   },
@@ -337,7 +317,7 @@ const PARAM_SCHEMA = [
   {
     key: 'partTimeRatio', label: '投入比例', section: 'risk',
     type: 'slider', default: 100, suffix: '%', min: 20, max: 100, step: 10,
-    personas: ['med', 'new'], visibility: 'advanced',
+    personas: ['new'], visibility: 'advanced',
     companyOverride: false,
     description: '兼職投入程度。100% = 全職，50% = 半職（FYP 按此比例縮減）。適用於評估兼職轉換的場景。',
   },
@@ -374,21 +354,21 @@ const PARAM_SCHEMA = [
   {
     key: 'crossAvgCommRate', label: '平均商品佣金率', section: 'current',
     type: 'percent', default: 60, suffix: '%', min: 10, max: 100, step: 5,
-    personas: ['realtor', 'auto'], visibility: 'advanced',
+    personas: ['realtor', 'auto', 'med'], visibility: 'advanced',
     companyOverride: false,
     description: '保險商品的平均佣金率。終身壽險約 70-90%，定期壽險 30-50%，投資型 15-25%。',
   },
   {
     key: 'crossPersonalCommRate', label: '個人佣金率', section: 'current',
     type: 'percent', default: 20, suffix: '%', min: 10, max: 60, step: 5,
-    personas: ['realtor', 'auto'], visibility: 'advanced',
+    personas: ['realtor', 'auto', 'med'], visibility: 'advanced',
     companyOverride: false,
     description: '保經公司給付的佣金分潤比率。新人起步約 20%，資深可達 40-60%。',
   },
   {
     key: 'crossRenewalRate', label: '續佣率', section: 'current',
     type: 'percent', default: 10, suffix: '%', min: 0, max: 30, step: 1,
-    personas: ['realtor', 'auto'], visibility: 'advanced',
+    personas: ['realtor', 'auto', 'med'], visibility: 'advanced',
     companyOverride: false,
     description: '第 2 年起，每年續期佣金佔原始 FYP 的比例。通常 5-15%。',
   },
@@ -422,6 +402,36 @@ const PARAM_SCHEMA = [
     companyOverride: false,
     description: '交車客戶中願意跟您買保險的比例。車險是剛需，轉換率通常較高。',
   },
+
+  // ═══ 異業增員 — 醫療通路 (medical) ═══
+  {
+    key: 'medicalClients', label: '病患/客戶人脈數', section: 'current',
+    type: 'number', default: 300, min: 10, max: 5000, step: 10,
+    personas: ['med'], visibility: 'always',
+    companyOverride: false,
+    description: '您累計接觸過的病患與家屬。醫療專業帶來的信任感，是保險切入的天然優勢。',
+  },
+  {
+    key: 'medicalNewPatientsPerYear', label: '每年新增病患數', section: 'current',
+    type: 'number', default: 60, min: 10, max: 500, step: 10,
+    personas: ['med'], visibility: 'always',
+    companyOverride: false,
+    description: '每年新增的病患人數。每位病患都可能需要醫療險、壽險等保障規劃。',
+  },
+  {
+    key: 'medicalAvgPremium', label: '病患平均年保費', section: 'current',
+    type: 'currency', default: 50000, prefix: 'NT$', min: 10000, max: 300000, step: 5000,
+    personas: ['med'], visibility: 'always',
+    companyOverride: false,
+    description: '每位病患的預估年度保費（醫療險+壽險+意外險）。醫療從業人員推薦的保障規劃，客戶信任度較高。',
+  },
+  {
+    key: 'medicalConvRate', label: '預估轉換率', section: 'current',
+    type: 'percent', default: 20, suffix: '%', min: 5, max: 50, step: 1,
+    personas: ['med'], visibility: 'always',
+    companyOverride: false,
+    description: '病患中願意透過您規劃保險的比例。醫療專業背景帶來高度信任，轉換率通常高於一般業務。',
+  },
 ];
 
 // ─── Persona short ID mapping ───
@@ -451,7 +461,7 @@ function renderInputs(personaId) {
   const container = document.getElementById('inputs-container');
   if (!container) return;
 
-  const isCrossIndustry = personaShort === 'realtor' || personaShort === 'auto';
+  const isCrossIndustry = personaShort === 'realtor' || personaShort === 'auto' || personaShort === 'med';
   const sections = { current: [], risk: [], advantage: [] };
   const sectionLabels = isCrossIndustry
     ? { current: '您的客戶池與保險收入預估', risk: '', advantage: '' }

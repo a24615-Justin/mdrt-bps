@@ -334,9 +334,10 @@ const ID_CONFIG = {
   manager: { label:'👑 壽險主管', badge:'manager', tradLabel:'傳統壽險',
     scRiskLabel:'陣痛期（月）', scRiskFn: sc=>'陣痛期 '+Math.round(sc.L*36)+'月',
     sc:{ C:{L:.40,rb:.55}, B:{L:.25,rb:.60}, O:{L:.15,rb:.65} }},
-  medical: { label:'🩺 醫療通路', badge:'medical', tradLabel:'醫療通路',
-    scRiskLabel:'建立期（月）', scRiskFn: sc=>'建立期 '+Math.round(sc.L*18)+'月',
-    sc:{ C:{L:.45,rb:.40}, B:{L:.33,rb:.45}, O:{L:.20,rb:.50} }},
+  medical: { label:'🩺 醫療通路', badge:'medical', tradLabel:'醫療現職',
+    crossIndustry: true,
+    scRiskLabel:'轉換率', scRiskFn: sc=>'轉換率 '+Math.round(sc.L*100)+'%',
+    sc:{ C:{L:.10,rb:.25}, B:{L:.15,rb:.35}, O:{L:.20,rb:.45} }},
   newbie: { label:'🌱 新人培育', badge:'newbie', tradLabel:'傳統壽險',
     scRiskLabel:'空窗期（月）', scRiskFn: sc=>'空窗期 '+Math.round(sc.L*12)+'月',
     sc:{ C:{L:.35,rb:.35}, B:{L:.25,rb:.40}, O:{L:.15,rb:.45} }},
@@ -515,9 +516,9 @@ const SCRIPTS={
     ['第三層思維｜留下的是制度，還是傳承？',(p,r)=>`從制度面觀察，傳統壽險的組織津貼在離職或退休時通常歸零——這是制度設計，不是個人問題。<br><br>${p._follow>0?`您預估有 <strong>${p._follow} 位核心夥伴</strong> 願意跟著您走。`:'您身邊的核心夥伴，信任的是您這個人。'}<br><br>保經的承攬制度下，合約、組織、客戶以個人名義登記，具備傳承可能性。<strong>兩種制度的差異，值得在做決定前仔細評估。</strong>`]
   ],
   medical:[
-    ['第一層思維｜您的信任值多少錢？',(p,r)=>`醫療背景賦予您一件普通業務員花十年都買不到的東西——<strong>客戶的高度信任。</strong><br><br>您每年服務的 <strong>${p._clients} 位客戶</strong>，在聽到「醫療專業背景」時，成交率和保費規模都遠高於市場平均。<br><br>問題不是您有沒有能力，而是：<strong>您現在的制度，有沒有讓這份信任變成您應得的收入？</strong>`],
-    ['第二層思維｜平台決定天花板',(p,r)=>`在現有通路，佣金率 <strong>${fmtPct(p.rate_trad)}</strong>，且商品選擇受限。在保經，同樣的客戶、同樣的信任，佣金可達 <strong>${fmtPct(p.rb)}</strong>，且能為客戶選擇市場上最適合的商品。<br><br>模型顯示，光是佣金結構的差異，5年累計多出 <strong>${fmtM(r.diff5)} 萬元</strong>。<br><br><strong>您的專業沒有變，變的只是平台——而平台決定了您的天花板在哪裡。</strong>`],
-    ['第三層思維｜成為客戶的終身顧問',(p,r)=>`從制度面觀察，醫療通路的核心優勢在於客戶對專業背景的高度信任。<br><br>保經制度允許整合壽險、健康險、長照險、投資型等跨公司商品，在商品選擇上具有更大彈性。<br><br>醫療背景結合保經平台，有機會從單一轉介擴展為全方位財務健康規劃。<strong>這是否符合您的職涯方向，取決於您對專業發展的定位。</strong>`]
+    ['第一層｜病患的信任是最大資產',()=>`您每天接觸的病患和家屬，在醫療之外最大的擔心是什麼？萬一住院怎麼辦、家人的保障夠不夠。這些問題他們本來就會找人問——差別只在於：是跟陌生的業務員談，還是跟最信任的您談。<br><br><strong>醫療專業帶來的信任，是一般業務員花十年都建立不起來的。</strong>您不需要「推銷」，只需要在病患問起時，給出專業的保障建議。`],
+    ['第二層｜不用放棄本業的額外收入',()=>`跟房仲順手推車險一樣，醫療人員可以在本業之外，順手為病患做保障規劃。每位病患平均年保費約 NT$ 5 萬，您只需要服務其中 20% 的人。<br><br>這筆保費本來就存在——現在它流向了別的業務員。<strong>差別只在於：多問一句「保障方面需要幫忙嗎？」</strong><br><br>而且保險有續佣，服務過的病患每年續保，您自動收到佣金。三年後，光續佣就是一筆穩定的被動收入。`],
+    ['第三層｜從醫療專業到全方位顧問',()=>`保經制度允許整合壽險、健康險、長照險、投資型等跨公司商品。以您的醫療背景，在解釋保障內容時比一般業務員更具說服力。<br><br>這不是轉行，是在醫療本業之上多一條收入線。<strong>同一群病患，醫療照做、保費照收。</strong>`]
   ],
   newbie:[
     ['第一層思維｜第一步決定未來十年',(p,r)=>`剛入行的您，沉沒成本幾乎是零——這是一個極其珍貴的優勢，因為您可以從一開始就做出最正確的選擇，而不需要像許多前輩一樣，花十年才看清楚。<br><br>傳統公司 vs 保經公司，差異不只是佣金率。<strong>差異是：十年後，您的客戶是「屬於公司的」，還是「屬於您個人的」？</strong><br><br>入行第一步，就選擇讓自己的努力永遠為自己所有。`],
@@ -715,13 +716,23 @@ function updateGoldMine() {
   const container = document.getElementById('gold-mine-container');
   if (!container) return;
 
-  const clients = Number(getCurrentValue(CID === 'realtor' ? 'realtorClients' : 'autoClients', CID) ?? 200);
-  const convRate = Number(getCurrentValue(CID === 'realtor' ? 'realtorConvRate' : 'autoConvRate', CID) ?? 15) / 100;
-  const avgPremium = Number(getCurrentValue(CID === 'realtor' ? 'realtorAvgPremium' : 'autoAvgPremium', CID) ?? 40000);
+  // v4.8: medical 加入異業金礦模型（醫療人員兼職保險）
+  const keyMap = {
+    realtor: { clients: 'realtorClients', conv: 'realtorConvRate', premium: 'realtorAvgPremium', newPer: 'realtorNewClientsPerYear',
+               defClients: 200, defConv: 15, defPremium: 40000, defNew: 40 },
+    auto:    { clients: 'autoClients', conv: 'autoConvRate', premium: 'autoAvgPremium', newPer: 'autoNewUnitsPerYear',
+               defClients: 200, defConv: 15, defPremium: 40000, defNew: 40 },
+    medical: { clients: 'medicalClients', conv: 'medicalConvRate', premium: 'medicalAvgPremium', newPer: 'medicalNewPatientsPerYear',
+               defClients: 300, defConv: 20, defPremium: 50000, defNew: 60 },
+  };
+  const km = keyMap[CID] || keyMap.realtor;
+  const clients = Number(getCurrentValue(km.clients, CID) ?? km.defClients);
+  const convRate = Number(getCurrentValue(km.conv, CID) ?? km.defConv) / 100;
+  const avgPremium = Number(getCurrentValue(km.premium, CID) ?? km.defPremium);
   const commRate = Number(getCurrentValue('crossAvgCommRate', CID) ?? 60) / 100;
   const personalRate = Number(getCurrentValue('crossPersonalCommRate', CID) ?? 20) / 100;
   const renewalRate = Number(getCurrentValue('crossRenewalRate', CID) ?? 10) / 100;
-  const newPerYear = Number(getCurrentValue(CID === 'realtor' ? 'realtorNewClientsPerYear' : 'autoNewUnitsPerYear', CID) ?? 40);
+  const newPerYear = Number(getCurrentValue(km.newPer, CID) ?? km.defNew);
 
   const insuranceClients = Math.round(clients * convRate);
   const fyp = insuranceClients * avgPremium;
@@ -754,9 +765,12 @@ function updateGoldMine() {
   // 更新 tagline 依 persona
   const tagline = gi('gm-tagline');
   if (tagline) {
-    tagline.innerHTML = CID === 'auto'
-      ? '📌 這筆保費目前正在流向別的保險業務員。<br>每台交車順手多問一句，不需要額外找客戶。'
-      : '📌 這筆保費目前正在流向別的保險業務員。<br>您不需要放棄賣房，只需要順手多做一步。';
+    const taglines = {
+      auto: '📌 這筆保費目前正在流向別的保險業務員。<br>每台交車順手多問一句，不需要額外找客戶。',
+      medical: '📌 您的病患已經在買保險了，這筆保費正流向別人。<br>您不需要放棄醫療本業，只需要順手多做一步。',
+      realtor: '📌 這筆保費目前正在流向別的保險業務員。<br>您不需要放棄賣房，只需要順手多做一步。',
+    };
+    tagline.innerHTML = taglines[CID] || taglines.realtor;
   }
 }
 
