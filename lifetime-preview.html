@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>遠景收入分析 — BPS 原型</title>
+<style>
+  :root {
+    --navy: #1a2d42;
+    --accent: #2563eb;
+    --gold: #9a6e00;
+    --green: #059669;
+    --red: #dc2626;
+    --orange: #d97706;
+    --bg: #f0f4f9;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Serif TC', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+  /* Header */
+  .header { background: var(--navy); color: #fff; padding: 20px; text-align: center; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header .badge { display: inline-block; background: rgba(255,255,255,0.15); padding: 2px 10px; border-radius: 8px; font-size: 12px; margin-bottom: 8px; }
+
+  /* Card */
+  .card { background: var(--card); border-radius: 14px; padding: 24px; margin: 16px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; color: var(--navy); }
+
+  /* Age inputs */
+  .age-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .age-field { flex: 1; min-width: 140px; }
+  .age-field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .age-field input { width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 18px; font-weight: 600; text-align: center; }
+  .age-field input:focus { outline: none; border-color: var(--accent); }
+  .age-result { text-align: center; padding: 12px; background: linear-gradient(135deg, #eff6ff, #f0f9ff); border-radius: 10px; font-size: 15px; }
+  .age-result strong { font-size: 28px; color: var(--accent); }
+
+  /* Chart area */
+  .chart-wrap { position: relative; width: 100%; height: 380px; margin: 20px 0; }
+  canvas { width: 100% !important; height: 100% !important; }
+
+  /* Phase labels */
+  .phase-labels { display: flex; margin-bottom: 8px; font-size: 11px; font-weight: 600; }
+  .phase-label { text-align: center; padding: 4px 0; border-radius: 6px; }
+  .phase-precise { background: #dbeafe; color: #1d4ed8; }
+  .phase-extended { background: #fef3c7; color: #92400e; }
+  .phase-trend { background: #fee2e2; color: #991b1b; }
+
+  /* Legend */
+  .legend { display: flex; gap: 20px; justify-content: center; margin: 12px 0; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* Sunk cost */
+  .sunk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 600px) { .sunk-grid { grid-template-columns: 1fr; } }
+  .sunk-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc; border-radius: 10px; border: 1px solid var(--border); }
+  .sunk-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+  .sunk-item label { flex: 1; font-size: 14px; cursor: pointer; }
+  .sunk-item input[type="number"] { width: 100px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; text-align: right; }
+  .sunk-total { text-align: center; margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #fef2f2, #fff1f2); border-radius: 10px; border: 2px solid #fecaca; }
+  .sunk-total strong { font-size: 24px; color: var(--red); }
+
+  /* Risk panel */
+  .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .risk-grid { grid-template-columns: 1fr; } }
+  .risk-card { padding: 16px; background: #f8fafc; border-radius: 12px; text-align: center; }
+  .risk-value { font-size: 32px; font-weight: 900; margin: 8px 0; }
+  .risk-label { font-size: 13px; color: var(--muted); }
+  .risk-bar-wrap { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+  .risk-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+  /* Survival curve */
+  .survival-wrap { position: relative; height: 200px; margin: 16px 0; }
+
+  /* Disclaimer */
+  .disclaimer { font-size: 11px; color: var(--muted); padding: 12px 16px; background: #fefce8; border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; margin-top: 16px; line-height: 1.7; }
+
+  /* Scenario table */
+  .scenario-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  .scenario-table th { background: var(--navy); color: #fff; padding: 8px 12px; text-align: center; }
+  .scenario-table td { padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--border); }
+  .scenario-table tr:nth-child(even) { background: #f8fafc; }
+  .row-highlight { background: #eff6ff !important; font-weight: 600; }
+
+  /* Tabs in chart */
+  .mini-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .mini-tab { padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; cursor: pointer; background: #fff; }
+  .mini-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">WO-BPS-LIFETIME-V1 原型</div>
+  <h1>遠景收入分析</h1>
+</div>
+
+<div class="container">
+
+  <!-- ═══ 1. 年齡輸入 ═══ -->
+  <div class="card">
+    <div class="card-title">📅 工作年限設定</div>
+    <div class="age-row">
+      <div class="age-field">
+        <label>目前年齡</label>
+        <input type="number" id="currentAge" value="35" min="22" max="60" oninput="recalcAll()">
+      </div>
+      <div class="age-field">
+        <label>預計退休年齡</label>
+        <input type="number" id="retireAge" value="60" min="45" max="70" oninput="recalcAll()">
+      </div>
+    </div>
+    <div class="age-result">
+      剩餘工作年限 <strong id="remainYears">25</strong> 年
+      <div style="font-size:12px;color:var(--muted);margin-top:4px" id="ageNote"></div>
+    </div>
+  </div>
+
+  <!-- ═══ 2. 基本參數（簡化版） ═══ -->
+  <div class="card">
+    <div class="card-title">⚙️ 基本假設參數</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+      <div>
+        <label style="color:var(--muted);display:block;margin-bottom:2px;">年繳保費 FYP（萬）</label>
+        <input type="number" id="fyp" value="300" min="50" max="5000" step="10" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+      </div>
+      <div>
+        <label style="color:var(--muted);display:block;margin-bottom:2px;">傳統端佣金率 %</label>
+        <input type="number" id="tradComm" value="20" min="1" max="80" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+      </div>
+      <div>
+        <label style="color:var(--muted);display:block;margin-bottom:2px;">保經端佣金率 %</label>
+        <input type="number" id="brokerComm" value="40" min="1" max="80" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+      </div>
+      <div>
+        <label style="color:var(--muted);display:block;margin-bottom:2px;">續佣率 %</label>
+        <input type="number" id="renewalRate" value="5" min="0" max="20" step="0.5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+      </div>
+      <div>
+        <label style="color:var(--muted);display:block;margin-bottom:2px;">轉換適應損失 %</label>
+        <input type="number" id="lossRate" value="20" min="0" max="80" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+      </div>
+      <div>
+        <label style="color:var(--muted);display:block;margin-bottom:2px;">現有續佣收入（萬/年）</label>
+        <input type="number" id="existRenewal" value="50" min="0" max="500" step="5" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;" oninput="recalcAll()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 3. 三段式圖表 ═══ -->
+  <div class="card">
+    <div class="card-title">📊 三段式遠景收入比較</div>
+
+    <!-- Phase labels (dynamic width) -->
+    <div class="phase-labels" id="phaseLabels"></div>
+
+    <!-- Chart -->
+    <div class="chart-wrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>保經端</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div>傳統端</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(37,99,235,0.15)"></div>保經情境帶</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(220,38,38,0.15)"></div>傳統情境帶</div>
+    </div>
+
+    <!-- Scenario detail table -->
+    <div class="mini-tabs">
+      <div class="mini-tab active" onclick="showScenario('base',this)">基準</div>
+      <div class="mini-tab" onclick="showScenario('optimistic',this)">樂觀</div>
+      <div class="mini-tab" onclick="showScenario('conservative',this)">保守</div>
+    </div>
+    <table class="scenario-table" id="scenarioTable"></table>
+
+    <div class="disclaimer">
+      ⚠️ 超過 5 年之投射為趨勢性估算，可靠性隨年限遞減。本試算僅為數學模型推演，不構成收入保證或承諾。實際收入受個人業績、公司政策、法規變動、市場環境等多重因素影響。
+    </div>
+  </div>
+
+  <!-- ═══ 4. 沉沒成本 ═══ -->
+  <div class="card">
+    <div class="card-title">💰 離開原公司的隱性成本</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">勾選適用項目，選填估計金額（選填）</p>
+    <div class="sunk-grid">
+      <div class="sunk-item">
+        <input type="checkbox" id="sunk_pension" checked onchange="calcSunk()">
+        <label for="sunk_pension">退職金/養老金</label>
+        <input type="number" id="sunk_pension_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
+      </div>
+      <div class="sunk-item">
+        <input type="checkbox" id="sunk_groupIns" checked onchange="calcSunk()">
+        <label for="sunk_groupIns">團體保險額度</label>
+        <input type="number" id="sunk_groupIns_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
+      </div>
+      <div class="sunk-item">
+        <input type="checkbox" id="sunk_renewal" checked onchange="calcSunk()">
+        <label for="sunk_renewal">續期佣金（停發）</label>
+        <input type="number" id="sunk_renewal_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
+      </div>
+      <div class="sunk-item">
+        <input type="checkbox" id="sunk_orgBonus" onchange="calcSunk()">
+        <label for="sunk_orgBonus">組織利益損失</label>
+        <input type="number" id="sunk_orgBonus_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
+      </div>
+      <div class="sunk-item">
+        <input type="checkbox" id="sunk_yearEnd" onchange="calcSunk()">
+        <label for="sunk_yearEnd">年終/季獎金回吐</label>
+        <input type="number" id="sunk_yearEnd_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
+      </div>
+    </div>
+    <div class="sunk-total">
+      離開成本參考值 <strong id="sunkTotal">NT$ 0</strong>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">此金額僅供個人評估參考，不參與收入投射計算</div>
+    </div>
+  </div>
+
+  <!-- ═══ 5. 風險因子 ═══ -->
+  <div class="card">
+    <div class="card-title">⚠️ 「做到退休」的真實機率</div>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-label">13 個月定著率（業界平均）</div>
+        <div class="risk-value" style="color:var(--orange);">55%</div>
+        <div class="risk-bar-wrap"><div class="risk-bar" style="width:55%;background:var(--orange);"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">資料來源：2024 壽險公會年報</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-label">做到退休的機率</div>
+        <div class="risk-value" id="retireProb" style="color:var(--red);">3.2%</div>
+        <div class="risk-bar-wrap"><div class="risk-bar" id="retireProbBar" style="width:3.2%;background:var(--red);"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">基於定著率等比衰減估算</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-label">平均在職年數（推估）</div>
+        <div class="risk-value" id="avgTenure" style="color:var(--accent);">7.2 年</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">50% 業務員在此年限前離開</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-label">佣金率近 5 年趨勢</div>
+        <div class="risk-value" style="color:var(--red);font-size:20px;">📉 逐年下調</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">金管會強化費差損管理，各公司陸續調降</div>
+      </div>
+    </div>
+
+    <!-- 存活曲線 -->
+    <div style="margin-top:20px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">📉 存活曲線：每 100 人入行，N 年後剩幾人？</div>
+      <div class="survival-wrap">
+        <canvas id="survivalChart"></canvas>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠️ 定著率數據為全業界平均值，各公司、各通路差異顯著。個人實際留任受多重因素影響，此數據僅作為行業背景參考，不代表任何個人預測。
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Chart.js（輕量 CDN） ═══ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script>
+'use strict';
+
+// ─── 三段式計算引擎 ────────────────────────────────────────────────────
+
+function getParams() {
+  return {
+    fyp: (Number(document.getElementById('fyp').value) || 300) * 10000,
+    tradComm: (Number(document.getElementById('tradComm').value) || 20) / 100,
+    brokerComm: (Number(document.getElementById('brokerComm').value) || 40) / 100,
+    renewalRate: (Number(document.getElementById('renewalRate').value) || 5) / 100,
+    lossRate: (Number(document.getElementById('lossRate').value) || 20) / 100,
+    existRenewal: (Number(document.getElementById('existRenewal').value) || 50) * 10000,
+    currentAge: Number(document.getElementById('currentAge').value) || 35,
+    retireAge: Number(document.getElementById('retireAge').value) || 60,
+  };
+}
+
+// 三情境乘數
+const SCENARIOS = {
+  conservative: { fypGrowth: 0, commDrift: -0.002, decayBonus: 0.05 },
+  base:         { fypGrowth: 0, commDrift: 0,      decayBonus: 0 },
+  optimistic:   { fypGrowth: 0.03, commDrift: 0,   decayBonus: -0.03 },
+};
+
+function computeLifetime(p, scenario) {
+  const s = SCENARIOS[scenario];
+  const totalYears = Math.max(1, p.retireAge - p.currentAge);
+  const persistency = 0.90;
+  const tradDecayRate = persistency * 0.60;   // 傳統端：保單續期率 × 佣金遞減
+  const brokerDecayRate = persistency * 0.95; // 保經端：保單續期率 × 佣金遞減（較緩）
+
+  const tradAnnual = [];
+  const brokerAnnual = [];
+  let tradRenewalPool = p.existRenewal;
+  let brokerRenewalPool = 0;
+
+  for (let y = 1; y <= totalYears; y++) {
+    const yearGrowth = Math.pow(1 + s.fypGrowth, y - 1);
+    const commAdj = 1 + s.commDrift * y;
+    const decayAdj = 1 + s.decayBonus;
+
+    // 傳統端
+    const tradFYPIncome = p.fyp * yearGrowth * p.tradComm * Math.max(0.5, commAdj);
+    tradRenewalPool = tradRenewalPool * (tradDecayRate * decayAdj) + p.fyp * yearGrowth * p.renewalRate * persistency;
+    tradAnnual.push(tradFYPIncome + tradRenewalPool);
+
+    // 保經端
+    const effectiveFYP = p.fyp * yearGrowth * (1 - (y === 1 ? p.lossRate : Math.max(0, p.lossRate * 0.3)));
+    const brokerFYPIncome = effectiveFYP * p.brokerComm * Math.max(0.5, commAdj);
+    brokerRenewalPool = brokerRenewalPool * (brokerDecayRate * decayAdj) + effectiveFYP * p.renewalRate * persistency;
+    brokerAnnual.push(brokerFYPIncome + brokerRenewalPool);
+  }
+
+  // 累計
+  const tradCum = [], brokerCum = [];
+  let tc = 0, bc = 0;
+  for (let i = 0; i < totalYears; i++) {
+    tc += tradAnnual[i]; bc += brokerAnnual[i];
+    tradCum.push(tc); brokerCum.push(bc);
+  }
+
+  return { tradAnnual, brokerAnnual, tradCum, brokerCum, totalYears };
+}
+
+// ─── 風險因子計算 ──────────────────────────────────────────────────────
+
+function calcRetireProb(years) {
+  // 13 個月定著率 55% → 年化定著率約 55%^(12/13) ≈ 0.521
+  // 簡化：每年留存率約 85%（業界經驗值，含穩定後的存活率提升）
+  // 前 2 年脫落最嚴重（~55%），之後穩定在 ~90%
+  let survivors = 100;
+  const curve = [100];
+  for (let y = 1; y <= years; y++) {
+    const rate = y <= 1 ? 0.55 : y <= 3 ? 0.80 : y <= 5 ? 0.88 : 0.92;
+    survivors *= rate;
+    curve.push(Math.max(0.1, survivors));
+  }
+  return { prob: survivors, curve };
+}
+
+// ─── Chart 繪製 ──────────────────────────────────────────────────────
+
+let mainChartInst = null;
+let survivalChartInst = null;
+let lastResults = {};
+
+function drawMainChart() {
+  const p = getParams();
+  const totalYears = Math.max(1, p.retireAge - p.currentAge);
+
+  const base = computeLifetime(p, 'base');
+  const opt  = computeLifetime(p, 'optimistic');
+  const con  = computeLifetime(p, 'conservative');
+  lastResults = { base, optimistic: opt, conservative: con, totalYears, p };
+
+  const labels = Array.from({length: totalYears}, (_, i) => `Y${i+1}`);
+
+  // 相位標籤
+  const phaseEl = document.getElementById('phaseLabels');
+  const p1w = Math.min(5, totalYears) / totalYears * 100;
+  const p2w = Math.min(5, Math.max(0, totalYears - 5)) / totalYears * 100;
+  const p3w = Math.max(0, totalYears - 10) / totalYears * 100;
+  phaseEl.innerHTML = `
+    <div class="phase-label phase-precise" style="width:${p1w}%">精確期 1-5年</div>
+    ${p2w > 0 ? `<div class="phase-label phase-extended" style="width:${p2w}%">延伸期 6-10年</div>` : ''}
+    ${p3w > 0 ? `<div class="phase-label phase-trend" style="width:${p3w}%">趨勢期 11年+</div>` : ''}
+  `;
+
+  // 圖表資料
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  if (mainChartInst) mainChartInst.destroy();
+
+  // 保經情境帶（樂觀 - 保守之間）
+  const brokerUpper = opt.brokerCum.map(v => v / 10000);
+  const brokerLower = con.brokerCum.map(v => v / 10000);
+  const tradUpper = opt.tradCum.map(v => v / 10000);
+  const tradLower = con.tradCum.map(v => v / 10000);
+
+  mainChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        // 保經情境帶上界
+        { label: '保經（樂觀）', data: brokerUpper, borderColor: 'transparent', backgroundColor: 'rgba(37,99,235,0.10)', fill: '+1', pointRadius: 0, tension: 0.3 },
+        // 保經情境帶下界
+        { label: '保經（保守）', data: brokerLower, borderColor: 'transparent', backgroundColor: 'rgba(37,99,235,0.10)', fill: false, pointRadius: 0, tension: 0.3 },
+        // 傳統情境帶上界
+        { label: '傳統（樂觀）', data: tradUpper, borderColor: 'transparent', backgroundColor: 'rgba(220,38,38,0.08)', fill: '+1', pointRadius: 0, tension: 0.3 },
+        // 傳統情境帶下界
+        { label: '傳統（保守）', data: tradLower, borderColor: 'transparent', backgroundColor: 'rgba(220,38,38,0.08)', fill: false, pointRadius: 0, tension: 0.3 },
+        // 基準線
+        { label: '保經端（基準）', data: base.brokerCum.map(v => v / 10000), borderColor: '#2563eb', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: (ctx) => ctx.dataIndex < 5 ? 3 : 0, tension: 0.3 },
+        { label: '傳統端（基準）', data: base.tradCum.map(v => v / 10000), borderColor: '#dc2626', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: (ctx) => ctx.dataIndex < 5 ? 3 : 0, tension: 0.3, borderDash: [6, 3] },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              if (ctx.dataset.borderColor === 'transparent') return null;
+              return `${ctx.dataset.label}: NT$ ${Math.round(ctx.raw)} 萬`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            callback: (val, idx) => {
+              if (totalYears <= 15) return labels[idx];
+              return (idx + 1) % 5 === 0 || idx === 0 ? labels[idx] : '';
+            }
+          }
+        },
+        y: {
+          title: { display: true, text: '累計收入（萬）' },
+          ticks: { callback: v => v.toLocaleString() }
+        }
+      }
+    }
+  });
+
+  updateScenarioTable('base');
+}
+
+function showScenario(key, btnEl) {
+  document.querySelectorAll('.mini-tab').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  updateScenarioTable(key);
+}
+
+function updateScenarioTable(scenario) {
+  const r = lastResults[scenario];
+  if (!r) return;
+  const milestones = [1, 3, 5, 10, 15, 20, 25, 30].filter(y => y <= r.totalYears);
+
+  let html = '<thead><tr><th>年份</th><th>傳統端累計</th><th>保經端累計</th><th>差額</th></tr></thead><tbody>';
+  milestones.forEach(y => {
+    const i = y - 1;
+    const trad = Math.round(r.tradCum[i] / 10000);
+    const broker = Math.round(r.brokerCum[i] / 10000);
+    const diff = broker - trad;
+    const cls = y === 5 ? ' class="row-highlight"' : '';
+    const phase = y <= 5 ? '🟢' : y <= 10 ? '🟡' : '🔴';
+    html += `<tr${cls}><td>${phase} Y${y}</td><td>NT$ ${trad.toLocaleString()} 萬</td><td>NT$ ${broker.toLocaleString()} 萬</td><td style="color:${diff >= 0 ? 'var(--green)' : 'var(--red)'}">${diff >= 0 ? '+' : ''}${diff.toLocaleString()} 萬</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('scenarioTable').innerHTML = html;
+}
+
+// ─── 存活曲線 ──────────────────────────────────────────────────────
+
+function drawSurvivalChart(years) {
+  const { prob, curve } = calcRetireProb(years);
+
+  // Update KPIs
+  document.getElementById('retireProb').textContent = prob.toFixed(1) + '%';
+  document.getElementById('retireProbBar').style.width = Math.max(1, prob) + '%';
+
+  // 平均在職年數（中位數：何時降到 50 人）
+  let median = years;
+  for (let i = 0; i < curve.length; i++) {
+    if (curve[i] < 50) { median = i; break; }
+  }
+  document.getElementById('avgTenure').textContent = median + ' 年';
+
+  const labels = Array.from({length: years + 1}, (_, i) => i === 0 ? '入行' : `${i}年`);
+  const ctx = document.getElementById('survivalChart').getContext('2d');
+  if (survivalChartInst) survivalChartInst.destroy();
+
+  survivalChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '存活人數',
+        data: curve.map(v => Math.round(v * 10) / 10),
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220,38,38,0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: (ctx) => {
+          const idx = ctx.dataIndex;
+          return idx === 0 || idx === median || idx === curve.length - 1 ? 4 : 0;
+        },
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `每 100 人剩 ${ctx.raw} 人`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            callback: (val, idx) => {
+              if (years <= 15) return labels[idx];
+              return idx % 5 === 0 ? labels[idx] : '';
+            }
+          }
+        },
+        y: {
+          min: 0, max: 100,
+          title: { display: true, text: '每 100 人存活數' },
+        }
+      }
+    }
+  });
+}
+
+// ─── 沉沒成本 ──────────────────────────────────────────────────────
+
+function calcSunk() {
+  const items = ['pension', 'groupIns', 'renewal', 'orgBonus', 'yearEnd'];
+  let total = 0;
+  items.forEach(key => {
+    const checked = document.getElementById(`sunk_${key}`).checked;
+    const val = Number(document.getElementById(`sunk_${key}_val`).value) || 0;
+    if (checked) total += val;
+  });
+  document.getElementById('sunkTotal').textContent = 'NT$ ' + total.toLocaleString();
+}
+
+// ─── 全部重算 ──────────────────────────────────────────────────────
+
+function recalcAll() {
+  const p = getParams();
+  const remain = p.retireAge - p.currentAge;
+
+  document.getElementById('remainYears').textContent = remain;
+  const noteEl = document.getElementById('ageNote');
+  if (remain <= 0) {
+    noteEl.textContent = '⚠️ 退休年齡需大於目前年齡';
+    noteEl.style.color = 'var(--red)';
+    return;
+  } else if (remain > 40) {
+    noteEl.textContent = '⚠️ 工作年限超過 40 年，數據僅供參考';
+    noteEl.style.color = 'var(--orange)';
+  } else {
+    noteEl.textContent = '';
+  }
+
+  drawMainChart();
+  drawSurvivalChart(remain);
+}
+
+// ─── Init ──────────────────────────────────────────────────────────
+recalcAll();
+calcSunk();
+</script>
+
+</body>
+</html>
