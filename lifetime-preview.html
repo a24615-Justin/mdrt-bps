@@ -56,27 +56,6 @@
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
 
-  /* Sunk cost */
-  .sunk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (max-width: 600px) { .sunk-grid { grid-template-columns: 1fr; } }
-  .sunk-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc; border-radius: 10px; border: 1px solid var(--border); }
-  .sunk-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
-  .sunk-item label { flex: 1; font-size: 14px; cursor: pointer; }
-  .sunk-item input[type="number"] { width: 100px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; text-align: right; }
-  .sunk-total { text-align: center; margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #fef2f2, #fff1f2); border-radius: 10px; border: 2px solid #fecaca; }
-  .sunk-total strong { font-size: 24px; color: var(--red); }
-
-  /* Risk panel */
-  .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 600px) { .risk-grid { grid-template-columns: 1fr; } }
-  .risk-card { padding: 16px; background: #f8fafc; border-radius: 12px; text-align: center; }
-  .risk-value { font-size: 32px; font-weight: 900; margin: 8px 0; }
-  .risk-label { font-size: 13px; color: var(--muted); }
-  .risk-bar-wrap { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; margin-top: 8px; }
-  .risk-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-
-  /* Survival curve */
-  .survival-wrap { position: relative; height: 200px; margin: 16px 0; }
 
   /* Disclaimer */
   .disclaimer { font-size: 11px; color: var(--muted); padding: 12px 16px; background: #fefce8; border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; margin-top: 16px; line-height: 1.7; }
@@ -225,82 +204,7 @@
     </div>
   </div>
 
-  <!-- ═══ 4. 沉沒成本 ═══ -->
-  <div class="card">
-    <div class="card-title">💰 離開原公司的隱性成本</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">勾選適用項目，選填估計金額（選填）</p>
-    <div class="sunk-grid">
-      <div class="sunk-item">
-        <input type="checkbox" id="sunk_pension" checked onchange="calcSunk()">
-        <label for="sunk_pension">退職金/養老金</label>
-        <input type="number" id="sunk_pension_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
-      </div>
-      <div class="sunk-item">
-        <input type="checkbox" id="sunk_groupIns" checked onchange="calcSunk()">
-        <label for="sunk_groupIns">團體保險額度</label>
-        <input type="number" id="sunk_groupIns_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
-      </div>
-      <div class="sunk-item">
-        <input type="checkbox" id="sunk_renewal" checked onchange="calcSunk()">
-        <label for="sunk_renewal">續期佣金（停發）</label>
-        <input type="number" id="sunk_renewal_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
-      </div>
-      <div class="sunk-item">
-        <input type="checkbox" id="sunk_orgBonus" onchange="calcSunk()">
-        <label for="sunk_orgBonus">組織利益損失</label>
-        <input type="number" id="sunk_orgBonus_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
-      </div>
-      <div class="sunk-item">
-        <input type="checkbox" id="sunk_yearEnd" onchange="calcSunk()">
-        <label for="sunk_yearEnd">年終/季獎金回吐</label>
-        <input type="number" id="sunk_yearEnd_val" value="0" min="0" step="10000" placeholder="NT$" onchange="calcSunk()">
-      </div>
-    </div>
-    <div class="sunk-total">
-      離開成本參考值 <strong id="sunkTotal">NT$ 0</strong>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;">此金額僅供個人評估參考，不參與收入投射計算</div>
-    </div>
-  </div>
-
-  <!-- ═══ 5. 風險因子 ═══ -->
-  <div class="card">
-    <div class="card-title">⚠️ 「做到退休」的真實機率</div>
-    <div class="risk-grid">
-      <div class="risk-card">
-        <div class="risk-label">13 個月定著率（業界平均）</div>
-        <div class="risk-value" style="color:var(--orange);">55%</div>
-        <div class="risk-bar-wrap"><div class="risk-bar" style="width:55%;background:var(--orange);"></div></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">資料來源：2024 壽險公會年報</div>
-      </div>
-      <div class="risk-card">
-        <div class="risk-label">做到退休的機率</div>
-        <div class="risk-value" id="retireProb" style="color:var(--red);">3.2%</div>
-        <div class="risk-bar-wrap"><div class="risk-bar" id="retireProbBar" style="width:3.2%;background:var(--red);"></div></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">基於定著率等比衰減估算</div>
-      </div>
-      <div class="risk-card">
-        <div class="risk-label">平均在職年數（推估）</div>
-        <div class="risk-value" id="avgTenure" style="color:var(--accent);">7.2 年</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">50% 業務員在此年限前離開</div>
-      </div>
-      <div class="risk-card">
-        <div class="risk-label">佣金率近 5 年趨勢</div>
-        <div class="risk-value" style="color:var(--red);font-size:20px;">📉 逐年下調</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">金管會強化費差損管理，各公司陸續調降</div>
-      </div>
-    </div>
-
-    <!-- 存活曲線 -->
-    <div style="margin-top:20px;">
-      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">📉 存活曲線：每 100 人入行，N 年後剩幾人？</div>
-      <div class="survival-wrap">
-        <canvas id="survivalChart"></canvas>
-      </div>
-    </div>
-
-    <div class="disclaimer">
-      ⚠️ 定著率數據為全業界平均值，各公司、各通路差異顯著。個人實際留任受多重因素影響，此數據僅作為行業背景參考，不代表任何個人預測。
-    </div>
+  <!-- 沉沒成本 + 風險因子面板已移除（V1 原型精簡） -->
   </div>
 
 </div>
@@ -416,26 +320,10 @@ function computeLifetime(p, scenario) {
   return { tradAnnual, brokerAnnual, tradCum, brokerCum, totalYears, crossMonth };
 }
 
-// ─── 風險因子計算 ──────────────────────────────────────────────────────
-
-function calcRetireProb(years) {
-  // 13 個月定著率 55% → 年化定著率約 55%^(12/13) ≈ 0.521
-  // 簡化：每年留存率約 85%（業界經驗值，含穩定後的存活率提升）
-  // 前 2 年脫落最嚴重（~55%），之後穩定在 ~90%
-  let survivors = 100;
-  const curve = [100];
-  for (let y = 1; y <= years; y++) {
-    const rate = y <= 1 ? 0.55 : y <= 3 ? 0.80 : y <= 5 ? 0.88 : 0.92;
-    survivors *= rate;
-    curve.push(Math.max(0.1, survivors));
-  }
-  return { prob: survivors, curve };
-}
 
 // ─── Chart 繪製 ──────────────────────────────────────────────────────
 
 let mainChartInst = null;
-let survivalChartInst = null;
 let lastResults = {};
 
 function drawMainChart() {
@@ -554,86 +442,6 @@ function updateScenarioTable(scenario) {
   document.getElementById('scenarioTable').innerHTML = html;
 }
 
-// ─── 存活曲線 ──────────────────────────────────────────────────────
-
-function drawSurvivalChart(years) {
-  const { prob, curve } = calcRetireProb(years);
-
-  // Update KPIs
-  document.getElementById('retireProb').textContent = prob.toFixed(1) + '%';
-  document.getElementById('retireProbBar').style.width = Math.max(1, prob) + '%';
-
-  // 平均在職年數（中位數：何時降到 50 人）
-  let median = years;
-  for (let i = 0; i < curve.length; i++) {
-    if (curve[i] < 50) { median = i; break; }
-  }
-  document.getElementById('avgTenure').textContent = median + ' 年';
-
-  const labels = Array.from({length: years + 1}, (_, i) => i === 0 ? '入行' : `${i}年`);
-  const ctx = document.getElementById('survivalChart').getContext('2d');
-  if (survivalChartInst) survivalChartInst.destroy();
-
-  survivalChartInst = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: '存活人數',
-        data: curve.map(v => Math.round(v * 10) / 10),
-        borderColor: '#dc2626',
-        backgroundColor: 'rgba(220,38,38,0.08)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: (ctx) => {
-          const idx = ctx.dataIndex;
-          return idx === 0 || idx === median || idx === curve.length - 1 ? 4 : 0;
-        },
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `每 100 人剩 ${ctx.raw} 人`
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            callback: (val, idx) => {
-              if (years <= 15) return labels[idx];
-              return idx % 5 === 0 ? labels[idx] : '';
-            }
-          }
-        },
-        y: {
-          min: 0, max: 100,
-          title: { display: true, text: '每 100 人存活數' },
-        }
-      }
-    }
-  });
-}
-
-// ─── 沉沒成本 ──────────────────────────────────────────────────────
-
-function calcSunk() {
-  const items = ['pension', 'groupIns', 'renewal', 'orgBonus', 'yearEnd'];
-  let total = 0;
-  items.forEach(key => {
-    const checked = document.getElementById(`sunk_${key}`).checked;
-    const val = Number(document.getElementById(`sunk_${key}_val`).value) || 0;
-    if (checked) total += val;
-  });
-  document.getElementById('sunkTotal').textContent = 'NT$ ' + total.toLocaleString();
-}
-
 // ─── 全部重算 ──────────────────────────────────────────────────────
 
 function recalcAll() {
@@ -654,12 +462,10 @@ function recalcAll() {
   }
 
   drawMainChart();
-  drawSurvivalChart(remain);
 }
 
 // ─── Init ──────────────────────────────────────────────────────────
 recalcAll();
-calcSunk();
 </script>
 
 </body>
