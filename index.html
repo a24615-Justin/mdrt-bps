@@ -765,10 +765,9 @@ function toggleCrossIndustryUI(isCross) {
   const goldMine = document.getElementById('gold-mine-container');
   // 異業隱藏：公司chips + 對比表 + 公司通知 + 自訂表單 + KPI四格 + 情境模擬
   // 注意：不隱藏 section-1 本身（金礦試算和參數在裡面）
-  // identity-inline 故意不放入 hideIds — 它由 HTML 初始 display:none 永久隱藏
+  // identity-inline / custom-company-form 不放入 hideIds — 它們由 HTML 初始 display:none，各自有獨立的 show/hide 邏輯
   const hideIds = [
     'company-chips-container', 'comparison-table-container', 'company-notice',
-    'custom-company-form',
     'section-2',  // KPI 四格 + 情境模擬
   ];
 
